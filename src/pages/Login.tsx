@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { mapAuthError } from "@/lib/errors";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -33,13 +34,7 @@ const Login = () => {
     setLoading(false);
 
     if (error) {
-      if (error.message.includes("Invalid login credentials")) {
-        toast.error("Invalid email or password");
-      } else if (error.message.includes("Email not confirmed")) {
-        toast.error("Please verify your email before logging in");
-      } else {
-        toast.error(error.message);
-      }
+      toast.error(mapAuthError(error));
       return;
     }
 
