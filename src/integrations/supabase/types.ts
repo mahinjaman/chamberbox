@@ -18,62 +18,74 @@ export type Database = {
         Row: {
           appointment_date: string
           appointment_time: string
+          calendly_event_id: string | null
           chamber_id: string
           created_at: string
           doctor_id: string
           fee: number
           id: string
           is_follow_up: boolean | null
+          notification_sent_at: string | null
           patient_age: number | null
           patient_gender: string | null
           patient_name: string
           patient_phone: string
           payment_method: string | null
           payment_status: string | null
+          reminder_sent_at: string | null
           status: string | null
           symptoms: string | null
           token_number: number
           updated_at: string
+          whatsapp_number: string | null
         }
         Insert: {
           appointment_date: string
           appointment_time: string
+          calendly_event_id?: string | null
           chamber_id: string
           created_at?: string
           doctor_id: string
           fee: number
           id?: string
           is_follow_up?: boolean | null
+          notification_sent_at?: string | null
           patient_age?: number | null
           patient_gender?: string | null
           patient_name: string
           patient_phone: string
           payment_method?: string | null
           payment_status?: string | null
+          reminder_sent_at?: string | null
           status?: string | null
           symptoms?: string | null
           token_number: number
           updated_at?: string
+          whatsapp_number?: string | null
         }
         Update: {
           appointment_date?: string
           appointment_time?: string
+          calendly_event_id?: string | null
           chamber_id?: string
           created_at?: string
           doctor_id?: string
           fee?: number
           id?: string
           is_follow_up?: boolean | null
+          notification_sent_at?: string | null
           patient_age?: number | null
           patient_gender?: string | null
           patient_name?: string
           patient_phone?: string
           payment_method?: string | null
           payment_status?: string | null
+          reminder_sent_at?: string | null
           status?: string | null
           symptoms?: string | null
           token_number?: number
           updated_at?: string
+          whatsapp_number?: string | null
         }
         Relationships: [
           {
@@ -181,6 +193,89 @@ export type Database = {
             foreignKeyName: "chambers_doctor_id_fkey"
             columns: ["doctor_id"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_settings: {
+        Row: {
+          calendly_buffer_minutes: number | null
+          calendly_display_mode: string | null
+          calendly_enabled: boolean | null
+          calendly_event_type: string | null
+          calendly_url: string | null
+          calendly_verified: boolean | null
+          confirmation_template: string | null
+          created_at: string
+          doctor_id: string
+          followup_template: string | null
+          id: string
+          reminder_hours_before: number | null
+          reminder_template: string | null
+          send_booking_confirmation: boolean | null
+          send_followup_after: boolean | null
+          send_reminder_before: boolean | null
+          updated_at: string
+          whatsapp_api_key: string | null
+          whatsapp_api_provider: string | null
+          whatsapp_enabled: boolean | null
+          whatsapp_number: string | null
+          whatsapp_template_id: string | null
+        }
+        Insert: {
+          calendly_buffer_minutes?: number | null
+          calendly_display_mode?: string | null
+          calendly_enabled?: boolean | null
+          calendly_event_type?: string | null
+          calendly_url?: string | null
+          calendly_verified?: boolean | null
+          confirmation_template?: string | null
+          created_at?: string
+          doctor_id: string
+          followup_template?: string | null
+          id?: string
+          reminder_hours_before?: number | null
+          reminder_template?: string | null
+          send_booking_confirmation?: boolean | null
+          send_followup_after?: boolean | null
+          send_reminder_before?: boolean | null
+          updated_at?: string
+          whatsapp_api_key?: string | null
+          whatsapp_api_provider?: string | null
+          whatsapp_enabled?: boolean | null
+          whatsapp_number?: string | null
+          whatsapp_template_id?: string | null
+        }
+        Update: {
+          calendly_buffer_minutes?: number | null
+          calendly_display_mode?: string | null
+          calendly_enabled?: boolean | null
+          calendly_event_type?: string | null
+          calendly_url?: string | null
+          calendly_verified?: boolean | null
+          confirmation_template?: string | null
+          created_at?: string
+          doctor_id?: string
+          followup_template?: string | null
+          id?: string
+          reminder_hours_before?: number | null
+          reminder_template?: string | null
+          send_booking_confirmation?: boolean | null
+          send_followup_after?: boolean | null
+          send_reminder_before?: boolean | null
+          updated_at?: string
+          whatsapp_api_key?: string | null
+          whatsapp_api_provider?: string | null
+          whatsapp_enabled?: boolean | null
+          whatsapp_number?: string | null
+          whatsapp_template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_settings_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },

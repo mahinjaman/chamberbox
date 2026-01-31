@@ -25,6 +25,7 @@ import Settings from "./pages/Settings";
 import QueueStatus from "./pages/QueueStatus";
 import ProfileEditor from "./pages/ProfileEditor";
 import DoctorPublicProfile from "./pages/DoctorPublicProfile";
+import IntegrationSettings from "./pages/IntegrationSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -132,6 +133,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ProfileEditor />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/integrations"
+              element={
+                <ProtectedRoute>
+                  <IntegrationSettings />
                 </ProtectedRoute>
               }
             />
