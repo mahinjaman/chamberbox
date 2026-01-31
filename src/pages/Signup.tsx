@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { mapAuthError } from "@/lib/errors";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -51,11 +52,7 @@ const Signup = () => {
     setLoading(false);
 
     if (error) {
-      if (error.message.includes("already registered")) {
-        toast.error("This email is already registered");
-      } else {
-        toast.error(error.message);
-      }
+      toast.error(mapAuthError(error));
       return;
     }
 

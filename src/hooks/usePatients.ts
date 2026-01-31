@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { toast } from "sonner";
+import { mapDatabaseError } from "@/lib/errors";
 
 export interface Patient {
   id: string;
@@ -60,7 +61,7 @@ export const usePatients = () => {
       toast.success("Patient added successfully");
     },
     onError: (error) => {
-      toast.error("Failed to add patient: " + error.message);
+      toast.error(mapDatabaseError(error));
     },
   });
 
@@ -78,7 +79,7 @@ export const usePatients = () => {
       toast.success("Patient updated successfully");
     },
     onError: (error) => {
-      toast.error("Failed to update patient: " + error.message);
+      toast.error(mapDatabaseError(error));
     },
   });
 
@@ -96,7 +97,7 @@ export const usePatients = () => {
       toast.success("Patient deleted successfully");
     },
     onError: (error) => {
-      toast.error("Failed to delete patient: " + error.message);
+      toast.error(mapDatabaseError(error));
     },
   });
 

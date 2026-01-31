@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { toast } from "sonner";
+import { mapDatabaseError } from "@/lib/errors";
 
 export interface QueueToken {
   id: string;
@@ -73,7 +74,7 @@ export const useQueue = (date?: string) => {
       toast.success("Patient added to queue");
     },
     onError: (error) => {
-      toast.error("Failed to add to queue: " + error.message);
+      toast.error(mapDatabaseError(error));
     },
   });
 
@@ -98,7 +99,7 @@ export const useQueue = (date?: string) => {
       queryClient.invalidateQueries({ queryKey: ["queue", profile?.id, queueDate] });
     },
     onError: (error) => {
-      toast.error("Failed to update queue: " + error.message);
+      toast.error(mapDatabaseError(error));
     },
   });
 
