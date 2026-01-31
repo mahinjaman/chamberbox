@@ -20,6 +20,7 @@ import Prescriptions from "./pages/Prescriptions";
 import Finances from "./pages/Finances";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import QueueStatus from "./pages/QueueStatus";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Landing />} />
+            <Route path="/queue-status" element={<QueueStatus />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 
