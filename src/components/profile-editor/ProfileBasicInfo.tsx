@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,9 @@ import { useDoctorProfile, DoctorProfile } from "@/hooks/useDoctorProfile";
 import { SPECIALIZATIONS, LANGUAGES, COMMON_SERVICES } from "@/lib/doctor-profile-utils";
 import { Loader2, Plus, X, Upload, User } from "lucide-react";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { toast } from "sonner";
 
 interface ProfileBasicInfoProps {
   profile: DoctorProfile | null | undefined;
@@ -19,6 +22,7 @@ interface ProfileBasicInfoProps {
 
 export const ProfileBasicInfo = ({ profile }: ProfileBasicInfoProps) => {
   const { updateProfile } = useDoctorProfile();
+  const { user } = useAuth();
   
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || "",
@@ -33,6 +37,69 @@ export const ProfileBasicInfo = ({ profile }: ProfileBasicInfoProps) => {
 
   const [newDegree, setNewDegree] = useState("");
   const [newService, setNewService] = useState("");
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadImage = async (file: File, type: 'avatar' | 'cover') => {
+    if (!user) {
+      toast.error("Please log in to upload images");
+      return;
+    }
+
+    const isAvatar = type === 'avatar';
+    const setUploading = isAvatar ? setUploadingAvatar : setUploadingCover;
+    const maxSize = isAvatar ? 2 : 5; // MB
+    
+    if (file.size > maxSize * 1024 * 1024) {
+      toast.error(`File size must be less than ${maxSize}MB`);
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    setUploading(true);
+    
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${type}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('profile-images')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-images')
+        .getPublicUrl(fileName);
+
+      const updateField = isAvatar ? 'avatar_url' : 'cover_photo_url';
+      await updateProfile.mutateAsync({ [updateField]: publicUrl });
+      
+      toast.success(`${isAvatar ? 'Profile photo' : 'Cover photo'} updated!`);
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast.error(error.message || "Failed to upload image");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) uploadImage(file, 'avatar');
+  };
+
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) uploadImage(file, 'cover');
+  };
 
   const handleSave = () => {
     updateProfile.mutate(formData);
@@ -87,6 +154,22 @@ export const ProfileBasicInfo = ({ profile }: ProfileBasicInfoProps) => {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
+      {/* Hidden file inputs */}
+      <input
+        ref={coverInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleCoverChange}
+      />
+      <input
+        ref={avatarInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleAvatarChange}
+      />
+
       {/* Cover & Avatar */}
       <Card>
         <CardHeader>
@@ -97,10 +180,26 @@ export const ProfileBasicInfo = ({ profile }: ProfileBasicInfoProps) => {
           {/* Cover Photo */}
           <div className="space-y-2">
             <Label>Cover Photo (1920x400px)</Label>
-            <div className="relative h-32 rounded-lg bg-gradient-to-r from-primary/20 to-primary/5 border-2 border-dashed border-muted-foreground/25 flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors">
-              <div className="text-center">
-                <Upload className="w-8 h-8 mx-auto text-muted-foreground" />
-                <p className="text-sm text-muted-foreground mt-2">Click to upload cover photo</p>
+            <div 
+              onClick={() => !uploadingCover && coverInputRef.current?.click()}
+              className="relative h-32 rounded-lg bg-gradient-to-r from-primary/20 to-primary/5 border-2 border-dashed border-muted-foreground/25 flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors overflow-hidden"
+            >
+              {profile?.cover_photo_url ? (
+                <img 
+                  src={profile.cover_photo_url} 
+                  alt="Cover" 
+                  className="w-full h-full object-cover"
+                />
+              ) : null}
+              <div className={`absolute inset-0 flex items-center justify-center bg-background/60 ${profile?.cover_photo_url ? 'opacity-0 hover:opacity-100' : ''} transition-opacity`}>
+                {uploadingCover ? (
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                ) : (
+                  <div className="text-center">
+                    <Upload className="w-8 h-8 mx-auto text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground mt-2">Click to upload cover photo</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -109,14 +208,27 @@ export const ProfileBasicInfo = ({ profile }: ProfileBasicInfoProps) => {
           <div className="space-y-2">
             <Label>Profile Photo</Label>
             <div className="flex items-center gap-4">
-              <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center border-4 border-background shadow-lg">
+              <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center border-4 border-background shadow-lg overflow-hidden">
                 {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <User className="w-10 h-10 text-muted-foreground" />
                 )}
               </div>
-              <Button variant="outline">Upload Photo</Button>
+              <Button 
+                variant="outline" 
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={uploadingAvatar}
+              >
+                {uploadingAvatar ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  "Upload Photo"
+                )}
+              </Button>
             </div>
           </div>
         </CardContent>
