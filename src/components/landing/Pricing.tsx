@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check, Star } from "lucide-react";
@@ -56,9 +57,9 @@ const plans = [
   },
 ];
 
-export const Pricing = () => {
+export const Pricing = forwardRef<HTMLElement>((props, ref) => {
   return (
-    <section id="pricing" className="py-20 md:py-32">
+    <section ref={ref} id="pricing" className="py-20 md:py-32" {...props}>
       <div className="container px-4 md:px-6">
         {/* Section header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -149,4 +150,6 @@ export const Pricing = () => {
       </div>
     </section>
   );
-};
+});
+
+Pricing.displayName = "Pricing";
