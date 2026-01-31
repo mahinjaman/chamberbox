@@ -7,7 +7,8 @@ import {
   CreditCard, 
   Settings,
   LogOut,
-  BarChart3
+  BarChart3,
+  ListOrdered
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,6 +32,7 @@ const mainNavItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Patients", url: "/dashboard/patients", icon: Users },
   { title: "Queue", url: "/dashboard/queue", icon: Clock },
+  { title: "Queue Status", url: "/queue-status", icon: ListOrdered, external: true },
   { title: "Prescriptions", url: "/dashboard/prescriptions", icon: FileText },
   { title: "Finances", url: "/dashboard/finances", icon: CreditCard },
   { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
