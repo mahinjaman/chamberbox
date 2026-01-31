@@ -16,11 +16,12 @@ import { format, addDays, isSameDay, isAfter, startOfDay } from "date-fns";
 import { 
   Calendar as CalendarIcon, Clock, User, Phone, FileText, 
   CreditCard, Check, Loader2, ArrowLeft, ArrowRight,
-  Download, Share2, CheckCircle2
+  Download, Share2, CheckCircle2, MessageCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { WhatsAppConfirmation } from "./WhatsAppConfirmation";
 
 interface BookingWidgetProps {
   profile: DoctorProfile;
@@ -611,6 +612,16 @@ export const BookingWidget = ({ profile, chamber, availabilitySlots, onClose }: 
                 <p>📍 {chamber.name}</p>
                 <p>💰 Fee: {formatCurrency(fee)} (Pay at chamber)</p>
               </div>
+
+              {/* WhatsApp Confirmation */}
+              <WhatsAppConfirmation
+                patientName={formData.patient_name}
+                doctorName={profile.full_name}
+                date={selectedDate ? format(selectedDate, "PPP") : ""}
+                time={selectedTime ? formatTime12Hour(selectedTime) : ""}
+                tokenNumber={bookingResult.token_number}
+                chamberAddress={chamber.address}
+              />
 
               {/* Action Buttons */}
               <div className="grid grid-cols-2 gap-3">
