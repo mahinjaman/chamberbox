@@ -23,6 +23,8 @@ import Finances from "./pages/Finances";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import QueueStatus from "./pages/QueueStatus";
+import ProfileEditor from "./pages/ProfileEditor";
+import DoctorPublicProfile from "./pages/DoctorPublicProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +40,7 @@ const App = () => (
             {/* Public Routes */}
             <Route path="/" element={<Landing />} />
             <Route path="/queue-status" element={<QueueStatus />} />
+            <Route path="/doctor/:slug" element={<DoctorPublicProfile />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -121,6 +124,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfileEditor />
                 </ProtectedRoute>
               }
             />
