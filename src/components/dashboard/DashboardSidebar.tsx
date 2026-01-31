@@ -8,7 +8,8 @@ import {
   Settings,
   LogOut,
   BarChart3,
-  ListOrdered
+  ListOrdered,
+  Globe
 } from "lucide-react";
 import {
   Sidebar,
@@ -39,6 +40,7 @@ const mainNavItems = [
 ];
 
 const settingsNavItems = [
+  { title: "Public Profile", url: "/dashboard/profile", icon: Globe },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 

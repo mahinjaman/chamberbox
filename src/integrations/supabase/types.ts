@@ -14,6 +14,178 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          appointment_date: string
+          appointment_time: string
+          chamber_id: string
+          created_at: string
+          doctor_id: string
+          fee: number
+          id: string
+          is_follow_up: boolean | null
+          patient_age: number | null
+          patient_gender: string | null
+          patient_name: string
+          patient_phone: string
+          payment_method: string | null
+          payment_status: string | null
+          status: string | null
+          symptoms: string | null
+          token_number: number
+          updated_at: string
+        }
+        Insert: {
+          appointment_date: string
+          appointment_time: string
+          chamber_id: string
+          created_at?: string
+          doctor_id: string
+          fee: number
+          id?: string
+          is_follow_up?: boolean | null
+          patient_age?: number | null
+          patient_gender?: string | null
+          patient_name: string
+          patient_phone: string
+          payment_method?: string | null
+          payment_status?: string | null
+          status?: string | null
+          symptoms?: string | null
+          token_number: number
+          updated_at?: string
+        }
+        Update: {
+          appointment_date?: string
+          appointment_time?: string
+          chamber_id?: string
+          created_at?: string
+          doctor_id?: string
+          fee?: number
+          id?: string
+          is_follow_up?: boolean | null
+          patient_age?: number | null
+          patient_gender?: string | null
+          patient_name?: string
+          patient_phone?: string
+          payment_method?: string | null
+          payment_status?: string | null
+          status?: string | null
+          symptoms?: string | null
+          token_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_chamber_id_fkey"
+            columns: ["chamber_id"]
+            isOneToOne: false
+            referencedRelation: "chambers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      availability_slots: {
+        Row: {
+          chamber_id: string
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_active: boolean | null
+          slot_duration_minutes: number | null
+          start_time: string
+        }
+        Insert: {
+          chamber_id: string
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_active?: boolean | null
+          slot_duration_minutes?: number | null
+          start_time: string
+        }
+        Update: {
+          chamber_id?: string
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean | null
+          slot_duration_minutes?: number | null
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_slots_chamber_id_fkey"
+            columns: ["chamber_id"]
+            isOneToOne: false
+            referencedRelation: "chambers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chambers: {
+        Row: {
+          address: string
+          contact_number: string | null
+          created_at: string
+          doctor_id: string
+          id: string
+          is_primary: boolean | null
+          location_lat: number | null
+          location_lng: number | null
+          name: string
+          new_patient_fee: number | null
+          return_patient_fee: number | null
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          contact_number?: string | null
+          created_at?: string
+          doctor_id: string
+          id?: string
+          is_primary?: boolean | null
+          location_lat?: number | null
+          location_lng?: number | null
+          name: string
+          new_patient_fee?: number | null
+          return_patient_fee?: number | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          contact_number?: string | null
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          is_primary?: boolean | null
+          location_lat?: number | null
+          location_lng?: number | null
+          name?: string
+          new_patient_fee?: number | null
+          return_patient_fee?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chambers_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medicines: {
         Row: {
           brand_name: string
@@ -193,13 +365,25 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           bmdc_number: string | null
           chamber_address: string | null
+          cover_photo_url: string | null
           created_at: string
+          degrees: string[] | null
           email: string | null
+          experience_years: number | null
           full_name: string
           id: string
+          is_public: boolean | null
+          languages: string[] | null
+          patient_count: number | null
           phone: string | null
+          rating: number | null
+          seo_description: string | null
+          seo_title: string | null
+          services: string[] | null
+          slug: string | null
           specialization: string | null
           subscription_expires_at: string | null
           subscription_tier:
@@ -207,16 +391,29 @@ export type Database = {
             | null
           updated_at: string
           user_id: string
+          verified: boolean | null
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           bmdc_number?: string | null
           chamber_address?: string | null
+          cover_photo_url?: string | null
           created_at?: string
+          degrees?: string[] | null
           email?: string | null
+          experience_years?: number | null
           full_name: string
           id?: string
+          is_public?: boolean | null
+          languages?: string[] | null
+          patient_count?: number | null
           phone?: string | null
+          rating?: number | null
+          seo_description?: string | null
+          seo_title?: string | null
+          services?: string[] | null
+          slug?: string | null
           specialization?: string | null
           subscription_expires_at?: string | null
           subscription_tier?:
@@ -224,16 +421,29 @@ export type Database = {
             | null
           updated_at?: string
           user_id: string
+          verified?: boolean | null
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           bmdc_number?: string | null
           chamber_address?: string | null
+          cover_photo_url?: string | null
           created_at?: string
+          degrees?: string[] | null
           email?: string | null
+          experience_years?: number | null
           full_name?: string
           id?: string
+          is_public?: boolean | null
+          languages?: string[] | null
+          patient_count?: number | null
           phone?: string | null
+          rating?: number | null
+          seo_description?: string | null
+          seo_title?: string | null
+          services?: string[] | null
+          slug?: string | null
           specialization?: string | null
           subscription_expires_at?: string | null
           subscription_tier?:
@@ -241,6 +451,7 @@ export type Database = {
             | null
           updated_at?: string
           user_id?: string
+          verified?: boolean | null
         }
         Relationships: []
       }
