@@ -14,9 +14,11 @@ import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
 import NewPatient from "./pages/NewPatient";
 import EditPatient from "./pages/EditPatient";
+import PatientDetail from "./pages/PatientDetail";
 import Queue from "./pages/Queue";
 import Prescriptions from "./pages/Prescriptions";
 import Finances from "./pages/Finances";
+import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -69,6 +71,14 @@ const App = () => (
               }
             />
             <Route
+              path="/dashboard/patients/:id"
+              element={
+                <ProtectedRoute>
+                  <PatientDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dashboard/queue"
               element={
                 <ProtectedRoute>
@@ -89,6 +99,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Finances />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/analytics"
+              element={
+                <ProtectedRoute>
+                  <Analytics />
                 </ProtectedRoute>
               }
             />
