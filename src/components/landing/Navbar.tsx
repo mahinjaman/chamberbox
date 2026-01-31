@@ -28,6 +28,9 @@ export const Navbar = () => {
           <a href="#about" className="text-muted-foreground hover:text-foreground transition-colors">
             About
           </a>
+          <Link to="/queue-status" className="text-muted-foreground hover:text-foreground transition-colors">
+            Queue Status
+          </Link>
         </div>
 
         {/* Desktop CTA */}
@@ -75,6 +78,13 @@ export const Navbar = () => {
             >
               About
             </a>
+            <Link
+              to="/queue-status"
+              className="text-foreground py-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Queue Status
+            </Link>
             <hr className="border-border" />
             <Button variant="ghost" asChild className="justify-start">
               <Link to="/login">Log in</Link>
