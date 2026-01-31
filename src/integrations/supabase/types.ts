@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      medicines: {
+        Row: {
+          brand_name: string
+          brand_name_bn: string | null
+          created_at: string
+          default_dosage: string | null
+          dosage_form: string | null
+          generic_name: string
+          id: string
+          manufacturer: string | null
+          strength: string | null
+        }
+        Insert: {
+          brand_name: string
+          brand_name_bn?: string | null
+          created_at?: string
+          default_dosage?: string | null
+          dosage_form?: string | null
+          generic_name: string
+          id?: string
+          manufacturer?: string | null
+          strength?: string | null
+        }
+        Update: {
+          brand_name?: string
+          brand_name_bn?: string | null
+          created_at?: string
+          default_dosage?: string | null
+          dosage_form?: string | null
+          generic_name?: string
+          id?: string
+          manufacturer?: string | null
+          strength?: string | null
+        }
+        Relationships: []
+      }
       patients: {
         Row: {
           address: string | null
@@ -63,6 +99,93 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prescription_templates: {
+        Row: {
+          advice: string | null
+          created_at: string
+          doctor_id: string
+          id: string
+          medicines: Json
+          name: string
+        }
+        Insert: {
+          advice?: string | null
+          created_at?: string
+          doctor_id: string
+          id?: string
+          medicines?: Json
+          name: string
+        }
+        Update: {
+          advice?: string | null
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          medicines?: Json
+          name?: string
+        }
+        Relationships: []
+      }
+      prescriptions: {
+        Row: {
+          advice: string | null
+          created_at: string
+          doctor_id: string
+          id: string
+          language: string | null
+          medicines: Json
+          next_visit_date: string | null
+          patient_id: string
+          qr_code: string | null
+          template_name: string | null
+          updated_at: string
+          visit_id: string | null
+        }
+        Insert: {
+          advice?: string | null
+          created_at?: string
+          doctor_id: string
+          id?: string
+          language?: string | null
+          medicines?: Json
+          next_visit_date?: string | null
+          patient_id: string
+          qr_code?: string | null
+          template_name?: string | null
+          updated_at?: string
+          visit_id?: string | null
+        }
+        Update: {
+          advice?: string | null
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          language?: string | null
+          medicines?: Json
+          next_visit_date?: string | null
+          patient_id?: string
+          qr_code?: string | null
+          template_name?: string | null
+          updated_at?: string
+          visit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescriptions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescriptions_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
             referencedColumns: ["id"]
           },
         ]
@@ -171,6 +294,102 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_settings: {
+        Row: {
+          api_key: string | null
+          created_at: string
+          doctor_id: string
+          due_reminder: boolean | null
+          followup_reminder: boolean | null
+          gateway: string | null
+          id: string
+          sender_id: string | null
+          token_notification: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          api_key?: string | null
+          created_at?: string
+          doctor_id: string
+          due_reminder?: boolean | null
+          followup_reminder?: boolean | null
+          gateway?: string | null
+          id?: string
+          sender_id?: string | null
+          token_notification?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string | null
+          created_at?: string
+          doctor_id?: string
+          due_reminder?: boolean | null
+          followup_reminder?: boolean | null
+          gateway?: string | null
+          id?: string
+          sender_id?: string | null
+          token_notification?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string | null
+          doctor_id: string
+          id: string
+          patient_id: string | null
+          payment_method: string | null
+          transaction_date: string
+          type: string
+          visit_id: string | null
+        }
+        Insert: {
+          amount?: number
+          category: string
+          created_at?: string
+          description?: string | null
+          doctor_id: string
+          id?: string
+          patient_id?: string | null
+          payment_method?: string | null
+          transaction_date?: string
+          type: string
+          visit_id?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          doctor_id?: string
+          id?: string
+          patient_id?: string | null
+          payment_method?: string | null
+          transaction_date?: string
+          type?: string
+          visit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
             referencedColumns: ["id"]
           },
         ]

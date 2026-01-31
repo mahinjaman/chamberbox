@@ -36,7 +36,8 @@ import {
   Trash2, 
   Clock,
   Phone,
-  Loader2
+  Loader2,
+  Eye
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -125,8 +126,12 @@ const Patients = () => {
             </TableHeader>
             <TableBody>
               {filteredPatients.map((patient) => (
-                <TableRow key={patient.id}>
-                  <TableCell className="font-medium">{patient.name}</TableCell>
+                <TableRow key={patient.id} className="cursor-pointer hover:bg-muted/50">
+                  <TableCell className="font-medium">
+                    <Link to={`/dashboard/patients/${patient.id}`} className="hover:text-primary hover:underline">
+                      {patient.name}
+                    </Link>
+                  </TableCell>
                   <TableCell>
                     <a
                       href={`tel:${patient.phone}`}
@@ -161,6 +166,12 @@ const Patients = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Link to={`/dashboard/patients/${patient.id}`}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View
+                          </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => addToQueue(patient.id)}
                           disabled={isAddingToQueue}

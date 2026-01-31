@@ -6,7 +6,8 @@ import {
   FileText, 
   CreditCard, 
   Settings,
-  LogOut
+  LogOut,
+  BarChart3
 } from "lucide-react";
 import {
   Sidebar,
@@ -32,6 +33,7 @@ const mainNavItems = [
   { title: "Queue", url: "/dashboard/queue", icon: Clock },
   { title: "Prescriptions", url: "/dashboard/prescriptions", icon: FileText },
   { title: "Finances", url: "/dashboard/finances", icon: CreditCard },
+  { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
 ];
 
 const settingsNavItems = [
