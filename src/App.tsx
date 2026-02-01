@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/lib/auth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { FloatingWidgets } from "@/components/common/FloatingWidgets";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -27,6 +28,13 @@ import ProfileEditor from "./pages/ProfileEditor";
 import DoctorPublicProfile from "./pages/DoctorPublicProfile";
 import IntegrationSettings from "./pages/IntegrationSettings";
 import NotFound from "./pages/NotFound";
+
+// Admin Pages
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import DoctorManagement from "./pages/admin/DoctorManagement";
+import SubscriptionManagement from "./pages/admin/SubscriptionManagement";
+import TicketManagement from "./pages/admin/TicketManagement";
+import TutorialManagement from "./pages/admin/TutorialManagement";
 
 const queryClient = new QueryClient();
 
@@ -145,9 +153,52 @@ const App = () => (
               }
             />
 
+            {/* Admin Routes */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/doctors"
+              element={
+                <ProtectedRoute>
+                  <DoctorManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/subscriptions"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/tickets"
+              element={
+                <ProtectedRoute>
+                  <TicketManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/tutorials"
+              element={
+                <ProtectedRoute>
+                  <TutorialManagement />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <FloatingWidgets />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
