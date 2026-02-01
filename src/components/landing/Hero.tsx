@@ -65,24 +65,42 @@ export const Hero = () => {
           </div>
         </div>
 
-        {/* Hero image/mockup placeholder */}
+        {/* Platform Stats */}
         <div className="mt-16 max-w-5xl mx-auto animate-fade-in-up" style={{ animationDelay: "0.5s" }}>
-          <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-card">
-            <div className="aspect-video flex items-center justify-center p-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
-                {/* Dashboard preview cards */}
-                <div className="bg-background rounded-xl p-6 shadow-lg">
-                  <div className="text-4xl font-bold text-primary mb-2">42</div>
-                  <div className="text-muted-foreground text-sm">Patients Today</div>
-                </div>
-                <div className="bg-background rounded-xl p-6 shadow-lg">
-                  <div className="text-4xl font-bold text-success mb-2">#7</div>
-                  <div className="text-muted-foreground text-sm">Current Token</div>
-                </div>
-                <div className="bg-background rounded-xl p-6 shadow-lg">
-                  <div className="text-4xl font-bold text-accent mb-2">৳12,500</div>
-                  <div className="text-muted-foreground text-sm">Today's Earnings</div>
-                </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {/* Total Patients Served */}
+            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/10">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="text-3xl md:text-4xl font-bold text-primary mb-1">50K+</div>
+                <div className="text-white/70 text-sm font-medium">Patients Served</div>
+              </div>
+            </div>
+
+            {/* Total Doctors Onboarded */}
+            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-success/10 to-success/5 border border-success/20 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-success/10">
+              <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="text-3xl md:text-4xl font-bold text-success mb-1">500+</div>
+                <div className="text-white/70 text-sm font-medium">Doctors Onboarded</div>
+              </div>
+            </div>
+
+            {/* Total Token Count */}
+            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-info/10 to-info/5 border border-info/20 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-info/10">
+              <div className="absolute inset-0 bg-gradient-to-br from-info/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="text-3xl md:text-4xl font-bold text-info mb-1">200K+</div>
+                <div className="text-white/70 text-sm font-medium">Tokens Generated</div>
+              </div>
+            </div>
+
+            {/* Time Saved */}
+            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-warning/10 to-warning/5 border border-warning/20 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-warning/10">
+              <div className="absolute inset-0 bg-gradient-to-br from-warning/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="text-3xl md:text-4xl font-bold text-warning mb-1">10K+</div>
+                <div className="text-white/70 text-sm font-medium">Hours Saved</div>
               </div>
             </div>
           </div>
