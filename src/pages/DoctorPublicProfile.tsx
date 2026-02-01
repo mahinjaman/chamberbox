@@ -22,6 +22,10 @@ import { ProfileEducationSection } from "@/components/public-profile/ProfileEduc
 import { ProfileSocialLinksSection } from "@/components/public-profile/ProfileSocialLinksSection";
 import { ProfileChambersSection } from "@/components/public-profile/ProfileChambersSection";
 import { ProfileVideoSection } from "@/components/public-profile/ProfileVideoSection";
+import { ProfileCustomInfoSection } from "@/components/public-profile/ProfileCustomInfoSection";
+
+// Import CustomInfoItem from the hook
+import { CustomInfoItem } from "@/hooks/useDoctorProfile";
 
 interface Education {
   id: string;
@@ -63,9 +67,10 @@ const DoctorPublicProfile = () => {
   const isAvailableToday = activeDays.includes(today);
   const todaySlot = primarySlots.find(s => s.day_of_week === today);
 
-  // Parse education and social links from profile
+  // Parse education, social links, and custom info from profile
   const education = profile?.education as Education[] | null;
   const socialLinks = profile?.social_links as SocialLinks | null;
+  const customInfo = profile?.custom_info as CustomInfoItem[] | null;
 
   // Set page title for SEO
   useEffect(() => {
@@ -332,6 +337,9 @@ const DoctorPublicProfile = () => {
 
                 {/* Education Section */}
                 <ProfileEducationSection education={education} />
+
+                {/* Custom Info Section */}
+                <ProfileCustomInfoSection customInfo={customInfo} />
 
                 {/* Services */}
                 {profile.services && profile.services.length > 0 && (
