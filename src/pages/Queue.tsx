@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,12 +11,34 @@ import {
   Clock, 
   XCircle,
   Users,
-  Loader2
+  Loader2,
+  UserPlus,
+  Search,
+  Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 const Queue = () => {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isNewPatientDialogOpen, setIsNewPatientDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [newPatientName, setNewPatientName] = useState("");
+  const [newPatientPhone, setNewPatientPhone] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  
   const { 
     queue, 
     isLoading, 
@@ -23,9 +46,66 @@ const Queue = () => {
     waitingCount, 
     completedCount,
     callNext,
-    updateTokenStatus
+    updateTokenStatus,
+    addToQueue,
+    isAdding
   } = useQueue();
-  const { patients } = usePatients();
+  const { patients, addPatientAsync } = usePatients();
+
+  // Get patient IDs already in today's queue
+  const patientsInQueue = new Set(queue.map((t) => t.patient_id));
+  
+  // Filter patients not in queue and by search
+  const availablePatients = patients.filter((p) => {
+    const notInQueue = !patientsInQueue.has(p.id);
+    const matchesSearch = searchQuery === "" || 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.phone.includes(searchQuery);
+    return notInQueue && matchesSearch;
+  });
+
+  const handleAddToQueue = (patientId: string) => {
+    addToQueue(patientId);
+    setIsAddDialogOpen(false);
+    setSearchQuery("");
+  };
+
+  const handleCreateAndAddToQueue = async () => {
+    if (!newPatientName.trim() || !newPatientPhone.trim()) {
+      toast.error("Please enter both name and phone number");
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      // Create patient and get the returned data with ID
+      const newPatient = await addPatientAsync({ 
+        name: newPatientName.trim(), 
+        phone: newPatientPhone.trim(),
+        age: null,
+        gender: null,
+        blood_group: null,
+        address: null,
+        allergies: null,
+        chronic_conditions: null,
+      });
+      
+      if (newPatient?.id) {
+        // Add the newly created patient to queue
+        addToQueue(newPatient.id);
+        toast.success(`${newPatientName} added to queue`);
+      }
+      
+      // Reset form
+      setNewPatientName("");
+      setNewPatientPhone("");
+      setIsNewPatientDialogOpen(false);
+    } catch (error) {
+      console.error("Error creating patient:", error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   const handleCallNext = async () => {
     await callNext();
@@ -47,14 +127,141 @@ const Queue = () => {
       title="Queue Management"
       description={`${format(new Date(), "EEEE, MMMM d, yyyy")}`}
       actions={
-        <Button 
-          onClick={handleCallNext} 
-          disabled={waitingCount === 0}
-          size="lg"
-        >
-          <Play className="mr-2 h-4 w-4" />
-          Call Next Patient
-        </Button>
+        <div className="flex gap-2">
+          {/* New Patient Button */}
+          <Dialog open={isNewPatientDialogOpen} onOpenChange={setIsNewPatientDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                New Patient
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add New Patient to Queue</DialogTitle>
+                <DialogDescription>
+                  Create a new patient and automatically add them to today's queue.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-name">Patient Name *</Label>
+                  <Input
+                    id="new-name"
+                    placeholder="Enter patient name"
+                    value={newPatientName}
+                    onChange={(e) => setNewPatientName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-phone">Phone Number *</Label>
+                  <Input
+                    id="new-phone"
+                    placeholder="01XXXXXXXXX"
+                    value={newPatientPhone}
+                    onChange={(e) => setNewPatientPhone(e.target.value)}
+                    maxLength={11}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsNewPatientDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCreateAndAddToQueue}
+                  disabled={isCreating || !newPatientName.trim() || !newPatientPhone.trim()}
+                >
+                  {isCreating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Create & Add to Queue
+                    </>
+                  )}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Existing Patient Button */}
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <UserPlus className="mr-2 h-4 w-4" />
+                Add Existing
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add Patient to Queue</DialogTitle>
+                <DialogDescription>
+                  Select a patient to add to today's queue. They will get the next token number.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name or phone..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <ScrollArea className="h-[300px] pr-4">
+                  {availablePatients.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      {patients.length === 0 ? (
+                        <p>No patients registered yet</p>
+                      ) : searchQuery ? (
+                        <p>No patients found matching "{searchQuery}"</p>
+                      ) : (
+                        <p>All patients are already in today's queue</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {availablePatients.map((patient) => (
+                        <button
+                          key={patient.id}
+                          onClick={() => handleAddToQueue(patient.id)}
+                          disabled={isAdding}
+                          className="w-full flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent transition-colors text-left disabled:opacity-50"
+                        >
+                          <div>
+                            <p className="font-medium text-foreground">{patient.name}</p>
+                            <p className="text-sm text-muted-foreground">{patient.phone}</p>
+                          </div>
+                          {isAdding ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          ) : (
+                            <Badge variant="outline">Add</Badge>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button 
+            onClick={handleCallNext} 
+            disabled={waitingCount === 0}
+            size="lg"
+          >
+            <Play className="mr-2 h-4 w-4" />
+            Call Next Patient
+          </Button>
+        </div>
       }
     >
       {/* Stats */}
@@ -113,9 +320,13 @@ const Queue = () => {
           <CardContent className="text-center py-12">
             <Clock className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
             <h3 className="text-lg font-medium text-foreground mb-2">No patients in queue</h3>
-            <p className="text-muted-foreground">
-              Add patients to the queue from the Patients page
+            <p className="text-muted-foreground mb-4">
+              Add patients to the queue to get started
             </p>
+            <Button onClick={() => setIsNewPatientDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add New Patient
+            </Button>
           </CardContent>
         </Card>
       ) : (

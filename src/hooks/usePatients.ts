@@ -116,6 +116,7 @@ export const usePatients = () => {
     isLoading,
     error,
     addPatient: addPatient.mutate,
+    addPatientAsync: addPatient.mutateAsync,
     updatePatient: updatePatient.mutate,
     deletePatient: deletePatient.mutate,
     searchPatients,
