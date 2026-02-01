@@ -281,6 +281,33 @@ export type Database = {
           },
         ]
       }
+      investigations: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          name_bn: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          name_bn?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          name_bn?: string | null
+        }
+        Relationships: []
+      }
       medicines: {
         Row: {
           brand_name: string
@@ -403,6 +430,7 @@ export type Database = {
           created_at: string
           doctor_id: string
           id: string
+          investigations: Json | null
           language: string | null
           medicines: Json
           next_visit_date: string | null
@@ -417,6 +445,7 @@ export type Database = {
           created_at?: string
           doctor_id: string
           id?: string
+          investigations?: Json | null
           language?: string | null
           medicines?: Json
           next_visit_date?: string | null
@@ -431,6 +460,7 @@ export type Database = {
           created_at?: string
           doctor_id?: string
           id?: string
+          investigations?: Json | null
           language?: string | null
           medicines?: Json
           next_visit_date?: string | null

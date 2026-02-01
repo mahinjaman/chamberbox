@@ -23,6 +23,7 @@ export interface QueueToken {
     phone: string;
     age: number | null;
     gender: string | null;
+    blood_group: string | null;
   };
 }
 
@@ -40,7 +41,7 @@ export const useQueue = (sessionId?: string, date?: string) => {
         .from("queue_tokens")
         .select(`
           *,
-          patient:patients(name, phone, age, gender)
+          patient:patients(name, phone, age, gender, blood_group)
         `)
         .eq("doctor_id", profile.id)
         .eq("queue_date", queueDate)

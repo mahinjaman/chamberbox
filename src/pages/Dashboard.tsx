@@ -256,6 +256,7 @@ const Dashboard = () => {
           phone: currentToken.patient.phone,
           age: currentToken.patient.age,
           gender: currentToken.patient.gender,
+          blood_group: currentToken.patient.blood_group,
         } : null}
         onSuccess={handlePrescriptionSuccess}
       />

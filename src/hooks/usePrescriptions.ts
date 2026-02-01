@@ -12,12 +12,19 @@ export interface PrescriptionMedicine {
   instructions?: string;
 }
 
+export interface PrescriptionInvestigation {
+  id: string;
+  name: string;
+  name_bn?: string;
+}
+
 export interface Prescription {
   id: string;
   visit_id: string | null;
   doctor_id: string;
   patient_id: string;
   medicines: PrescriptionMedicine[];
+  investigations: PrescriptionInvestigation[];
   advice: string | null;
   next_visit_date: string | null;
   language: string;
@@ -30,6 +37,7 @@ export interface Prescription {
     phone: string;
     age: number | null;
     gender: string | null;
+    blood_group: string | null;
   };
 }
 
@@ -37,6 +45,7 @@ export interface PrescriptionInsert {
   patient_id: string;
   visit_id?: string;
   medicines: PrescriptionMedicine[];
+  investigations?: PrescriptionInvestigation[];
   advice?: string;
   next_visit_date?: string;
   language?: string;
@@ -65,7 +74,7 @@ export const usePrescriptions = (patientId?: string) => {
         .from("prescriptions")
         .select(`
           *,
-          patient:patients(name, phone, age, gender)
+          patient:patients(name, phone, age, gender, blood_group)
         `)
         .eq("doctor_id", profile.id)
         .order("created_at", { ascending: false });
@@ -79,7 +88,8 @@ export const usePrescriptions = (patientId?: string) => {
       
       return (data || []).map(p => ({
         ...p,
-        medicines: (p.medicines as unknown as PrescriptionMedicine[]) || []
+        medicines: (p.medicines as unknown as PrescriptionMedicine[]) || [],
+        investigations: (p.investigations as unknown as PrescriptionInvestigation[]) || []
       })) as Prescription[];
     },
     enabled: !!profile?.id,
@@ -115,6 +125,7 @@ export const usePrescriptions = (patientId?: string) => {
           patient_id: prescription.patient_id,
           visit_id: prescription.visit_id,
           medicines: prescription.medicines as unknown as any,
+          investigations: (prescription.investigations || []) as unknown as any,
           advice: prescription.advice,
           next_visit_date: prescription.next_visit_date,
           language: prescription.language,
