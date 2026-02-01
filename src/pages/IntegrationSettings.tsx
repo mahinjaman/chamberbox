@@ -22,14 +22,11 @@ const IntegrationSettings = () => {
   }
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      title="Integration Settings"
+      description="Connect external services for appointment booking and patient notifications"
+    >
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Integration Settings</h1>
-          <p className="text-muted-foreground">
-            Connect external services for appointment booking and patient notifications
-          </p>
-        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-flex">
