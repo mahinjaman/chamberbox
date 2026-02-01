@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQueue } from "@/hooks/useQueue";
+import { useQueueSessions, QueueSession } from "@/hooks/useQueueSessions";
 import { usePatients } from "@/hooks/usePatients";
+import { SessionManager } from "@/components/queue/SessionManager";
 import { 
   Play, 
   CheckCircle2, 
@@ -16,7 +18,8 @@ import {
   Search,
   Plus,
   FileText,
-  SkipForward
+  SkipForward,
+  CalendarClock
 } from "lucide-react";
 import { PrescriptionModal } from "@/components/queue/PrescriptionModal";
 import { cn } from "@/lib/utils";
@@ -42,6 +45,7 @@ import {
 import { toast } from "sonner";
 
 const Queue = () => {
+  const [selectedSession, setSelectedSession] = useState<QueueSession | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isNewPatientDialogOpen, setIsNewPatientDialogOpen] = useState(false);
   const [isPrescriptionPromptOpen, setIsPrescriptionPromptOpen] = useState(false);
@@ -54,6 +58,17 @@ const Queue = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [formErrors, setFormErrors] = useState<{ age?: string; gender?: string }>({});
   
+  const sessionDate = new Date().toISOString().split("T")[0];
+  
+  const {
+    sessions,
+    isLoading: isLoadingSessions,
+    createSession,
+    updateSessionStatus,
+    deleteSession,
+    isCreating: isCreatingSession,
+  } = useQueueSessions(sessionDate);
+
   const { 
     queue, 
     isLoading, 
@@ -64,7 +79,8 @@ const Queue = () => {
     updateTokenStatus,
     addToQueue,
     isAdding
-  } = useQueue();
+  } = useQueue(selectedSession?.id, sessionDate);
+  
   const { patients, addPatientAsync } = usePatients();
 
   // Get patient IDs already in today's queue
@@ -80,7 +96,7 @@ const Queue = () => {
   });
 
   const handleAddToQueue = (patientId: string) => {
-    addToQueue(patientId);
+    addToQueue(patientId, selectedSession?.id, selectedSession?.chamber_id);
     setIsAddDialogOpen(false);
     setSearchQuery("");
   };
@@ -122,7 +138,7 @@ const Queue = () => {
       
       if (newPatient?.id) {
         // Add the newly created patient to queue
-        addToQueue(newPatient.id);
+        addToQueue(newPatient.id, selectedSession?.id, selectedSession?.chamber_id);
         toast.success(`${newPatientName} added to queue`);
       }
       
@@ -364,72 +380,100 @@ const Queue = () => {
         </div>
       }
     >
-      {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-3 mb-8">
-        <Card className="bg-success/5 border-success/20">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
-                <Users className="w-6 h-6 text-success" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{completedCount}</p>
-                <p className="text-sm text-muted-foreground">Completed Today</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-warning/5 border-warning/20">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
-                <Clock className="w-6 h-6 text-warning" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{waitingCount}</p>
-                <p className="text-sm text-muted-foreground">Waiting in Queue</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Play className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">
-                  {currentToken ? `#${currentToken.token_number}` : "—"}
-                </p>
-                <p className="text-sm text-muted-foreground">Current Token</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      {/* Two Column Layout: Sessions + Queue */}
+      <div className="grid gap-6 lg:grid-cols-4">
+        {/* Left Column: Session Manager */}
+        <div className="lg:col-span-1">
+          <SessionManager
+            sessions={sessions}
+            selectedSession={selectedSession}
+            onSelectSession={setSelectedSession}
+            onCreateSession={createSession}
+            onUpdateStatus={(id, status) => updateSessionStatus({ id, status })}
+            onDeleteSession={deleteSession}
+            isCreating={isCreatingSession}
+            sessionDate={sessionDate}
+          />
         </div>
-      ) : queue.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <Clock className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-medium text-foreground mb-2">No patients in queue</h3>
-            <p className="text-muted-foreground mb-4">
-              Add patients to the queue to get started
-            </p>
-            <Button onClick={() => setIsNewPatientDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add New Patient
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
+
+        {/* Right Column: Queue */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* Stats */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card className="bg-success/5 border-success/20">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
+                    <Users className="w-6 h-6 text-success" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{completedCount}</p>
+                    <p className="text-sm text-muted-foreground">Completed</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-warning/5 border-warning/20">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
+                    <Clock className="w-6 h-6 text-warning" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{waitingCount}</p>
+                    <p className="text-sm text-muted-foreground">Waiting</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Play className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">
+                      {currentToken ? `#${currentToken.token_number}` : "—"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Current</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {!selectedSession ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <CalendarClock className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <h3 className="text-lg font-medium text-foreground mb-2">Select a Session</h3>
+                <p className="text-muted-foreground mb-4">
+                  Create or select a session to manage the queue
+                </p>
+              </CardContent>
+            </Card>
+          ) : isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : queue.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Clock className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <h3 className="text-lg font-medium text-foreground mb-2">No patients in queue</h3>
+                <p className="text-muted-foreground mb-4">
+                  Add patients to the queue to get started
+                </p>
+                <Button onClick={() => setIsNewPatientDialogOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add New Patient
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Current Patient */}
           {currentToken && (
@@ -584,9 +628,9 @@ const Queue = () => {
             </CardContent>
           </Card>
         </div>
-      )}
-
-      {/* Prescription Prompt Dialog */}
+        )}
+        </div>
+      </div>
       <Dialog open={isPrescriptionPromptOpen} onOpenChange={setIsPrescriptionPromptOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
