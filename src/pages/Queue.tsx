@@ -18,7 +18,7 @@ import {
   FileText,
   SkipForward
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { PrescriptionModal } from "@/components/queue/PrescriptionModal";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
@@ -42,10 +42,10 @@ import {
 import { toast } from "sonner";
 
 const Queue = () => {
-  const navigate = useNavigate();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isNewPatientDialogOpen, setIsNewPatientDialogOpen] = useState(false);
   const [isPrescriptionPromptOpen, setIsPrescriptionPromptOpen] = useState(false);
+  const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [newPatientName, setNewPatientName] = useState("");
   const [newPatientPhone, setNewPatientPhone] = useState("");
@@ -151,7 +151,7 @@ const Queue = () => {
 
   const handleMakePrescription = () => {
     if (currentToken) {
-      navigate(`/dashboard/prescriptions?patientId=${currentToken.patient_id}`);
+      setIsPrescriptionModalOpen(true);
     }
   };
 
@@ -163,8 +163,14 @@ const Queue = () => {
   const handleMakePrescriptionAndCallNext = () => {
     setIsPrescriptionPromptOpen(false);
     if (currentToken) {
-      navigate(`/dashboard/prescriptions?patientId=${currentToken.patient_id}`);
+      setIsPrescriptionModalOpen(true);
     }
+  };
+
+  const handlePrescriptionSuccess = async () => {
+    setIsPrescriptionModalOpen(false);
+    // After prescription is saved, call next patient
+    await callNext();
   };
 
   const handleComplete = (id: string) => {
@@ -601,6 +607,20 @@ const Queue = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Prescription Modal */}
+      <PrescriptionModal
+        isOpen={isPrescriptionModalOpen}
+        onClose={() => setIsPrescriptionModalOpen(false)}
+        patient={currentToken?.patient ? {
+          id: currentToken.patient_id,
+          name: currentToken.patient.name,
+          phone: currentToken.patient.phone,
+          age: currentToken.patient.age,
+          gender: currentToken.patient.gender,
+        } : null}
+        onSuccess={handlePrescriptionSuccess}
+      />
     </DashboardLayout>
   );
 };

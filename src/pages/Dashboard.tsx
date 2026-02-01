@@ -16,7 +16,7 @@ import {
   FileText,
   SkipForward
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
@@ -26,13 +26,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { PrescriptionModal } from "@/components/queue/PrescriptionModal";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const { profile } = useProfile();
   const { patients } = usePatients();
   const { queue, currentToken, waitingCount, completedCount, callNext } = useQueue();
   const [isPrescriptionPromptOpen, setIsPrescriptionPromptOpen] = useState(false);
+  const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false);
 
   const todaysPatients = completedCount + (currentToken ? 1 : 0);
   const estimatedEarnings = todaysPatients * 500; // Placeholder: ৳500 per visit
@@ -48,12 +49,17 @@ const Dashboard = () => {
   const handleMakePrescriptionAndCallNext = () => {
     setIsPrescriptionPromptOpen(false);
     if (currentToken) {
-      navigate(`/dashboard/prescriptions?patientId=${currentToken.patient_id}`);
+      setIsPrescriptionModalOpen(true);
     }
   };
 
   const handleSkipPrescription = async () => {
     setIsPrescriptionPromptOpen(false);
+    await callNext();
+  };
+
+  const handlePrescriptionSuccess = async () => {
+    setIsPrescriptionModalOpen(false);
     await callNext();
   };
 
@@ -239,6 +245,20 @@ const Dashboard = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Prescription Modal */}
+      <PrescriptionModal
+        isOpen={isPrescriptionModalOpen}
+        onClose={() => setIsPrescriptionModalOpen(false)}
+        patient={currentToken?.patient ? {
+          id: currentToken.patient_id,
+          name: currentToken.patient.name,
+          phone: currentToken.patient.phone,
+          age: currentToken.patient.age,
+          gender: currentToken.patient.gender,
+        } : null}
+        onSuccess={handlePrescriptionSuccess}
+      />
     </DashboardLayout>
   );
 };
