@@ -142,7 +142,7 @@ const QueueStatus: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 container max-w-lg mx-auto px-4 py-6 space-y-6">
+      <main className="relative z-10 container max-w-lg md:max-w-4xl lg:max-w-5xl mx-auto px-4 py-6 space-y-6">
         {/* Title */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -196,7 +196,7 @@ const QueueStatus: React.FC = () => {
                   />
 
                   {/* Bento Grid Layout */}
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-4">
                     {/* Current Serial - Full Width */}
                     <CurrentSerialCard
                       currentSerial={queueData.currentSerial}
@@ -204,35 +204,38 @@ const QueueStatus: React.FC = () => {
                       t={t}
                     />
 
-                    {/* Patient Position */}
-                    <PatientPositionCard
-                      patientSerial={queueData.patientSerial}
-                      currentSerial={queueData.currentSerial}
-                      patientsAhead={queueData.patientsAhead}
-                      t={t}
-                    />
+                    {/* Three cards side by side on desktop */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Patient Position */}
+                      <PatientPositionCard
+                        patientSerial={queueData.patientSerial}
+                        currentSerial={queueData.currentSerial}
+                        patientsAhead={queueData.patientsAhead}
+                        t={t}
+                      />
 
-                    {/* Wait Time */}
-                    <WaitTimeCard
-                      estimatedWaitMinutes={queueData.estimatedWaitMinutes}
-                      expectedCallTime={queueData.expectedCallTime}
-                      patientsAhead={queueData.patientsAhead}
-                      notificationsEnabled={notificationsEnabled}
-                      onToggleNotifications={handleToggleNotifications}
-                      t={t}
-                    />
+                      {/* Wait Time */}
+                      <WaitTimeCard
+                        estimatedWaitMinutes={queueData.estimatedWaitMinutes}
+                        expectedCallTime={queueData.expectedCallTime}
+                        patientsAhead={queueData.patientsAhead}
+                        notificationsEnabled={notificationsEnabled}
+                        onToggleNotifications={handleToggleNotifications}
+                        t={t}
+                      />
 
-                    {/* Doctor Info */}
-                    <DoctorInfoCard
-                      doctorName={queueData.doctorName}
-                      chamberName={queueData.chamberName}
-                      chamberAddress={queueData.chamberAddress}
-                      scheduleStart={queueData.scheduleStart}
-                      scheduleEnd={queueData.scheduleEnd}
-                      patientSerial={queueData.patientSerial}
-                      expectedCallTime={queueData.expectedCallTime}
-                      t={t}
-                    />
+                      {/* Doctor Info */}
+                      <DoctorInfoCard
+                        doctorName={queueData.doctorName}
+                        chamberName={queueData.chamberName}
+                        chamberAddress={queueData.chamberAddress}
+                        scheduleStart={queueData.scheduleStart}
+                        scheduleEnd={queueData.scheduleEnd}
+                        patientSerial={queueData.patientSerial}
+                        expectedCallTime={queueData.expectedCallTime}
+                        t={t}
+                      />
+                    </div>
                   </div>
                 </motion.div>
               )}
