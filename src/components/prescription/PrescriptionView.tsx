@@ -76,6 +76,8 @@ export const PrescriptionView = ({
             .next-visit { margin-top: 20px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 14px; }
             .footer { margin-top: 40px; text-align: right; }
             .signature-line { border-top: 1px solid #333; width: 200px; margin-left: auto; padding-top: 5px; }
+            .print-footer { margin-top: 40px; padding-top: 15px; border-top: 1px dashed #ccc; text-align: center; font-size: 11px; color: #777; }
+            .print-footer .software-name { font-weight: 600; color: #555; }
           </style>
         </head>
         <body>
@@ -86,6 +88,11 @@ export const PrescriptionView = ({
               <br />
               <span style="font-size: 12px; color: #555;">${profile?.specialization || ""}</span>
             </div>
+          </div>
+          <div class="print-footer">
+            <p>Printed on: ${format(new Date(), "dd MMM yyyy, hh:mm a")}</p>
+            <p class="software-name">Powered by ChamberBox</p>
+            <p>Contact: +880 1234-567890 | support@chamberbox.com</p>
           </div>
         </body>
       </html>
@@ -268,6 +275,13 @@ _This is a digital prescription from ChamberBox_
               </span>
             </div>
           )}
+
+          {/* Print Footer */}
+          <div className="mt-8 pt-4 border-t border-dashed text-center text-xs text-muted-foreground">
+            <p>Printed on: {format(new Date(), "dd MMM yyyy, hh:mm a")}</p>
+            <p className="font-semibold text-foreground/70 mt-1">Powered by ChamberBox</p>
+            <p>Contact: +880 1234-567890 | support@chamberbox.com</p>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
