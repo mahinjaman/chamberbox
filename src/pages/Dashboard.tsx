@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Button } from "@/components/ui/button";
@@ -11,19 +12,50 @@ import {
   CreditCard, 
   UserPlus,
   ArrowRight,
-  Play
+  Play,
+  FileText,
+  SkipForward
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { profile } = useProfile();
   const { patients } = usePatients();
   const { queue, currentToken, waitingCount, completedCount, callNext } = useQueue();
+  const [isPrescriptionPromptOpen, setIsPrescriptionPromptOpen] = useState(false);
 
   const todaysPatients = completedCount + (currentToken ? 1 : 0);
   const estimatedEarnings = todaysPatients * 500; // Placeholder: ৳500 per visit
+
+  const handleCallNextClick = () => {
+    if (currentToken) {
+      setIsPrescriptionPromptOpen(true);
+    } else {
+      callNext();
+    }
+  };
+
+  const handleMakePrescriptionAndCallNext = () => {
+    setIsPrescriptionPromptOpen(false);
+    if (currentToken) {
+      navigate(`/dashboard/prescriptions?patientId=${currentToken.patient_id}`);
+    }
+  };
+
+  const handleSkipPrescription = async () => {
+    setIsPrescriptionPromptOpen(false);
+    await callNext();
+  };
 
   return (
     <DashboardLayout
@@ -83,8 +115,8 @@ const Dashboard = () => {
               size="lg" 
               variant="outline" 
               className="justify-start h-auto py-4"
-              onClick={callNext}
-              disabled={waitingCount === 0}
+              onClick={handleCallNextClick}
+              disabled={waitingCount === 0 && !currentToken}
             >
               <Play className="mr-3 h-5 w-5" />
               <div className="text-left">
@@ -185,6 +217,28 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Prescription Prompt Dialog */}
+      <Dialog open={isPrescriptionPromptOpen} onOpenChange={setIsPrescriptionPromptOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create Prescription?</DialogTitle>
+            <DialogDescription>
+              {currentToken?.patient?.name} is currently being served. Would you like to create a prescription before calling the next patient?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 pt-4">
+            <Button onClick={handleMakePrescriptionAndCallNext} className="w-full">
+              <FileText className="mr-2 h-4 w-4" />
+              Make Prescription
+            </Button>
+            <Button variant="outline" onClick={handleSkipPrescription} className="w-full">
+              <SkipForward className="mr-2 h-4 w-4" />
+              Skip & Call Next
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

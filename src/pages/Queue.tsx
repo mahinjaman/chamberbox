@@ -151,7 +151,7 @@ const Queue = () => {
 
   const handleMakePrescription = () => {
     if (currentToken) {
-      navigate(`/prescriptions?patientId=${currentToken.patient_id}`);
+      navigate(`/dashboard/prescriptions?patientId=${currentToken.patient_id}`);
     }
   };
 
@@ -163,7 +163,7 @@ const Queue = () => {
   const handleMakePrescriptionAndCallNext = () => {
     setIsPrescriptionPromptOpen(false);
     if (currentToken) {
-      navigate(`/prescriptions?patientId=${currentToken.patient_id}`);
+      navigate(`/dashboard/prescriptions?patientId=${currentToken.patient_id}`);
     }
   };
 
