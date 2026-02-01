@@ -3,7 +3,7 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useQueue } from "@/hooks/useQueue";
+import { useQueue, QueueToken } from "@/hooks/useQueue";
 import { useQueueSessions, QueueSession } from "@/hooks/useQueueSessions";
 import { usePatients } from "@/hooks/usePatients";
 import { SessionManager } from "@/components/queue/SessionManager";
@@ -19,9 +19,11 @@ import {
   Plus,
   FileText,
   SkipForward,
-  CalendarClock
+  CalendarClock,
+  Banknote
 } from "lucide-react";
 import { PrescriptionModal } from "@/components/queue/PrescriptionModal";
+import { PaymentCollectionModal } from "@/components/queue/PaymentCollectionModal";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
@@ -50,6 +52,8 @@ const Queue = () => {
   const [isNewPatientDialogOpen, setIsNewPatientDialogOpen] = useState(false);
   const [isPrescriptionPromptOpen, setIsPrescriptionPromptOpen] = useState(false);
   const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [completingToken, setCompletingToken] = useState<QueueToken | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [newPatientName, setNewPatientName] = useState("");
   const [newPatientPhone, setNewPatientPhone] = useState("");
@@ -189,8 +193,16 @@ const Queue = () => {
     await callNext();
   };
 
-  const handleComplete = (id: string) => {
-    updateTokenStatus({ id, status: "completed" });
+  const handleComplete = (token: QueueToken) => {
+    setCompletingToken(token);
+    setIsPaymentModalOpen(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    if (completingToken) {
+      updateTokenStatus({ id: completingToken.id, status: "completed" });
+    }
+    setCompletingToken(null);
   };
 
   const handleCancel = (id: string) => {
@@ -509,10 +521,10 @@ const Queue = () => {
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() => handleComplete(currentToken.id)}
+                      onClick={() => handleComplete(currentToken)}
                     >
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
-                      Complete
+                      <Banknote className="mr-2 h-4 w-4" />
+                      Complete & Pay
                     </Button>
                     <Button
                       variant="outline"
@@ -664,6 +676,22 @@ const Queue = () => {
           gender: currentToken.patient.gender,
         } : null}
         onSuccess={handlePrescriptionSuccess}
+      />
+
+      {/* Payment Collection Modal */}
+      <PaymentCollectionModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => {
+          setIsPaymentModalOpen(false);
+          setCompletingToken(null);
+        }}
+        patient={completingToken?.patient ? {
+          id: completingToken.patient_id,
+          name: completingToken.patient.name,
+          phone: completingToken.patient.phone,
+        } : null}
+        tokenNumber={completingToken?.token_number}
+        onSuccess={handlePaymentSuccess}
       />
     </DashboardLayout>
   );
