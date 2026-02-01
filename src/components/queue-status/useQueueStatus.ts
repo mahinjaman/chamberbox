@@ -46,6 +46,8 @@ export const useQueueStatus = () => {
         const patientIds = patients.map(p => p.id);
 
         // Find queue token for today with this patient
+        // Build the query - if serial number provided, look for that specific token
+        // Otherwise, find any active token for this patient
         let tokenQuery = supabase
           .from('queue_tokens')
           .select(`
@@ -59,14 +61,15 @@ export const useQueueStatus = () => {
           `)
           .in('patient_id', patientIds)
           .eq('queue_date', today)
-          .in('status', ['waiting', 'current']) // Fixed: use 'current' instead of 'called'
-          .order('created_at', { ascending: false })
-          .limit(1);
+          .in('status', ['waiting', 'current']);
 
-        // If serial number provided, add filter
+        // If serial number provided, filter by it
         if (serialNumber) {
           tokenQuery = tokenQuery.eq('token_number', serialNumber);
         }
+        
+        // Order by token number descending to get the latest token first
+        tokenQuery = tokenQuery.order('token_number', { ascending: false }).limit(1);
 
         const { data: tokens, error: tokenError } = await tokenQuery;
 
@@ -98,6 +101,41 @@ export const useQueueStatus = () => {
 
         const token = tokens[0];
         const patient = patients.find(p => p.id === token.patient_id);
+
+        // Handle tokens without session (legacy tokens)
+        if (!token.session_id) {
+          // For legacy tokens without session, show basic info
+          const { data: doctor } = await supabase
+            .from('profiles')
+            .select('id, full_name, specialization')
+            .eq('id', token.doctor_id)
+            .single();
+
+          setQueueData({
+            currentSerial: 0,
+            patientSerial: token.token_number,
+            patientName: patient?.name,
+            patientPhone: phoneNumber,
+            patientsAhead: 0,
+            estimatedWaitMinutes: 0,
+            avgConsultationTime: 5,
+            queueStatus: 'waiting',
+            doctorName: doctor?.full_name || 'Doctor',
+            chamberName: '',
+            chamberAddress: '',
+            scheduleStart: '',
+            scheduleEnd: '',
+            lastUpdated: new Date(),
+            expectedCallTime: new Date(),
+            sessionId: '',
+            tokenStatus: token.status || 'waiting',
+          });
+
+          localStorage.setItem('queue_phone', phoneNumber);
+          setLastUpdated(new Date());
+          setIsLoading(false);
+          return;
+        }
 
         // Get session details
         const { data: session, error: sessionError } = await supabase
@@ -149,12 +187,12 @@ export const useQueueStatus = () => {
           return;
         }
 
-        // Count patients ahead
+        // Count patients ahead (use 'current' instead of 'called')
         const { count: patientsAhead } = await supabase
           .from('queue_tokens')
           .select('id', { count: 'exact', head: true })
           .eq('session_id', token.session_id)
-          .in('status', ['waiting', 'called'])
+          .in('status', ['waiting', 'current'])
           .lt('token_number', token.token_number);
 
         const ahead = patientsAhead || 0;
