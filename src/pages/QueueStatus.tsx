@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Moon, Sun, Languages } from 'lucide-react';
+import { Moon, Sun, Languages, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { QueueInputForm } from '@/components/queue-status/QueueInputForm';
 import { CurrentSerialCard } from '@/components/queue-status/CurrentSerialCard';
@@ -104,7 +104,7 @@ const QueueStatus: React.FC = () => {
         <div className="container max-w-lg mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center gap-2">
+            <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-success flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-lg">Q</span>
               </div>
@@ -112,10 +112,31 @@ const QueueStatus: React.FC = () => {
                 <h1 className="text-lg font-bold text-foreground">ChamberBox</h1>
                 <p className="text-xs text-muted-foreground">{t.subtitle}</p>
               </div>
-            </div>
+            </a>
 
             {/* Controls */}
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="hidden sm:flex"
+              >
+                <a href="/">
+                  <Home className="h-4 w-4 mr-2" />
+                  Home
+                </a>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                className="sm:hidden"
+              >
+                <a href="/">
+                  <Home className="h-4 w-4" />
+                </a>
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
