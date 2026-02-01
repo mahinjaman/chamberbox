@@ -45,6 +45,12 @@ export interface SocialLinks {
   website?: string;
 }
 
+export interface CustomInfoItem {
+  id: string;
+  label: string;
+  value: string;
+}
+
 export interface DoctorProfile {
   id: string;
   user_id: string;
@@ -71,6 +77,7 @@ export interface DoctorProfile {
   social_links: SocialLinks | null;
   youtube_url: string | null;
   education: Education[] | null;
+  custom_info: CustomInfoItem[] | null;
   created_at: string;
   updated_at: string;
 }
