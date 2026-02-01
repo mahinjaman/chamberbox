@@ -1,28 +1,53 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { usePublicDoctorProfile } from "@/hooks/useDoctorProfile";
+import { usePublicDoctorVideos } from "@/hooks/useDoctorVideos";
 import { usePublicIntegrationSettings } from "@/hooks/useIntegrationSettings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DAYS_OF_WEEK, formatTime12Hour, formatCurrency, formatPhoneNumber } from "@/lib/doctor-profile-utils";
 import { 
   MapPin, Clock, Phone, Star, Users, Award, Calendar, 
   ExternalLink, MessageCircle, ChevronDown, ChevronUp,
-  Shield, ArrowLeft
+  Shield, ArrowLeft, Building2, Video, User
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookingWidget } from "@/components/public-profile/BookingWidget";
 import { CalendlyWidget } from "@/components/public-profile/CalendlyWidget";
 import { QueueBookingWidget } from "@/components/public-profile/QueueBookingWidget";
+import { ProfileEducationSection } from "@/components/public-profile/ProfileEducationSection";
+import { ProfileSocialLinksSection } from "@/components/public-profile/ProfileSocialLinksSection";
+import { ProfileChambersSection } from "@/components/public-profile/ProfileChambersSection";
+import { ProfileVideoSection } from "@/components/public-profile/ProfileVideoSection";
+
+interface Education {
+  id: string;
+  degree: string;
+  institution: string;
+  year?: string;
+  country?: string;
+}
+
+interface SocialLinks {
+  facebook?: string;
+  twitter?: string;
+  linkedin?: string;
+  instagram?: string;
+  website?: string;
+  youtube?: string;
+}
 
 const DoctorPublicProfile = () => {
   const { slug } = useParams<{ slug: string }>();
   const { profile, chambers, availabilitySlots, isLoading, notFound } = usePublicDoctorProfile(slug || "");
+  const { introVideo, feedVideos } = usePublicDoctorVideos(profile?.id || "");
   const [bioExpanded, setBioExpanded] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
   const [useBuiltInBooking, setUseBuiltInBooking] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
   
   // Get integration settings for Calendly/WhatsApp
   const { settings: integrationSettings } = usePublicIntegrationSettings(profile?.id || "");
@@ -37,6 +62,10 @@ const DoctorPublicProfile = () => {
   const today = new Date().getDay();
   const isAvailableToday = activeDays.includes(today);
   const todaySlot = primarySlots.find(s => s.day_of_week === today);
+
+  // Parse education and social links from profile
+  const education = profile?.education as Education[] | null;
+  const socialLinks = profile?.social_links as SocialLinks | null;
 
   // Set page title for SEO
   useEffect(() => {
@@ -72,6 +101,9 @@ const DoctorPublicProfile = () => {
       </div>
     );
   }
+
+  const hasVideos = introVideo || feedVideos.length > 0;
+  const hasMultipleChambers = chambers && chambers.length > 1;
 
   return (
     <div className="min-h-screen bg-background">
@@ -136,6 +168,11 @@ const DoctorPublicProfile = () => {
                     {profile.degrees.join(" | ")}
                   </p>
                 )}
+                
+                {/* Social Links */}
+                <div className="mt-3">
+                  <ProfileSocialLinksSection socialLinks={socialLinks} youtubeUrl={profile.youtube_url} />
+                </div>
               </div>
             </motion.div>
           </div>
@@ -178,162 +215,225 @@ const DoctorPublicProfile = () => {
               </div>
             </motion.div>
 
-            {/* Chamber Location */}
-            {primaryChamber && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <Card>
-                  <CardContent className="p-5 space-y-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="w-5 h-5 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{primaryChamber.name}</h3>
-                        <p className="text-sm text-muted-foreground">{primaryChamber.address}</p>
-                      </div>
-                      <Button variant="outline" size="sm" asChild>
-                        <a 
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(primaryChamber.address)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <ExternalLink className="w-4 h-4 mr-1" />
-                          Directions
-                        </a>
-                      </Button>
-                    </div>
+            {/* Tabbed Content */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="overview" className="gap-2">
+                  <User className="w-4 h-4" />
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="chambers" className="gap-2">
+                  <Building2 className="w-4 h-4" />
+                  Chambers {chambers && chambers.length > 1 && `(${chambers.length})`}
+                </TabsTrigger>
+                <TabsTrigger value="videos" className="gap-2">
+                  <Video className="w-4 h-4" />
+                  Videos {feedVideos.length > 0 && `(${feedVideos.length + (introVideo ? 1 : 0)})`}
+                </TabsTrigger>
+              </TabsList>
 
-                    {/* Schedule */}
-                    {activeDays.length > 0 && (
-                      <div className="flex items-center gap-3 pt-3 border-t">
-                        <Calendar className="w-5 h-5 text-muted-foreground" />
-                        <div className="flex flex-wrap gap-2 items-center">
-                          {activeDays.map(d => (
-                            <Badge 
-                              key={d} 
-                              variant={d === today ? "default" : "outline"}
-                              className={d === today ? "bg-green-500" : ""}
+              <TabsContent value="overview" className="space-y-6">
+                {/* Primary Chamber Location */}
+                {primaryChamber && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <Card>
+                      <CardContent className="p-5 space-y-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <MapPin className="w-5 h-5 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold">{primaryChamber.name}</h3>
+                              <Badge variant="outline" className="text-xs">Primary</Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{primaryChamber.address}</p>
+                          </div>
+                          <Button variant="outline" size="sm" asChild>
+                            <a 
+                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(primaryChamber.address)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
                             >
-                              {DAYS_OF_WEEK.find(day => day.value === d)?.short}
-                            </Badge>
-                          ))}
-                          {primarySlots[0] && (
-                            <span className="text-sm text-muted-foreground ml-2">
-                              {formatTime12Hour(primarySlots[0].start_time.slice(0, 5))} - {formatTime12Hour(primarySlots[0].end_time.slice(0, 5))}
-                            </span>
-                          )}
+                              <ExternalLink className="w-4 h-4 mr-1" />
+                              Directions
+                            </a>
+                          </Button>
                         </div>
-                      </div>
-                    )}
 
-                    {/* Contact */}
-                    {primaryChamber.contact_number && (
-                      <div className="flex items-center gap-3 pt-3 border-t">
-                        <Phone className="w-5 h-5 text-muted-foreground" />
-                        <a 
-                          href={`tel:${primaryChamber.contact_number}`}
-                          className="text-primary hover:underline"
-                        >
-                          {formatPhoneNumber(primaryChamber.contact_number)}
-                        </a>
-                        <Button variant="outline" size="sm" asChild className="ml-auto">
-                          <a 
-                            href={`https://wa.me/88${primaryChamber.contact_number.replace(/\D/g, "")}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <MessageCircle className="w-4 h-4 mr-1" />
-                            WhatsApp
-                          </a>
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* Services */}
-            {profile.services && profile.services.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <Card>
-                  <CardContent className="p-5">
-                    <h3 className="font-semibold mb-3">Services Offered</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {profile.services.map(service => (
-                        <Badge key={service} variant="secondary">{service}</Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* About */}
-            {profile.bio && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <Card>
-                  <CardContent className="p-5">
-                    <h3 className="font-semibold mb-3">About</h3>
-                    <p className={`text-muted-foreground ${!bioExpanded ? "line-clamp-3" : ""}`}>
-                      {profile.bio}
-                    </p>
-                    {profile.bio.length > 200 && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => setBioExpanded(!bioExpanded)}
-                        className="mt-2 -ml-2"
-                      >
-                        {bioExpanded ? (
-                          <>
-                            <ChevronUp className="w-4 h-4 mr-1" />
-                            Show Less
-                          </>
-                        ) : (
-                          <>
-                            <ChevronDown className="w-4 h-4 mr-1" />
-                            Read More
-                          </>
+                        {/* Schedule */}
+                        {activeDays.length > 0 && (
+                          <div className="flex items-center gap-3 pt-3 border-t">
+                            <Calendar className="w-5 h-5 text-muted-foreground" />
+                            <div className="flex flex-wrap gap-2 items-center">
+                              {activeDays.map(d => (
+                                <Badge 
+                                  key={d} 
+                                  variant={d === today ? "default" : "outline"}
+                                  className={d === today ? "bg-green-500" : ""}
+                                >
+                                  {DAYS_OF_WEEK.find(day => day.value === d)?.short}
+                                </Badge>
+                              ))}
+                              {primarySlots[0] && (
+                                <span className="text-sm text-muted-foreground ml-2">
+                                  {formatTime12Hour(primarySlots[0].start_time.slice(0, 5))} - {formatTime12Hour(primarySlots[0].end_time.slice(0, 5))}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         )}
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
 
-            {/* Languages */}
-            {profile.languages && profile.languages.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                <Card>
-                  <CardContent className="p-5">
-                    <h3 className="font-semibold mb-3">Languages</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {profile.languages.map(lang => (
-                        <Badge key={lang} variant="outline">{lang}</Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
+                        {/* Contact */}
+                        {primaryChamber.contact_number && (
+                          <div className="flex items-center gap-3 pt-3 border-t">
+                            <Phone className="w-5 h-5 text-muted-foreground" />
+                            <a 
+                              href={`tel:${primaryChamber.contact_number}`}
+                              className="text-primary hover:underline"
+                            >
+                              {formatPhoneNumber(primaryChamber.contact_number)}
+                            </a>
+                            <Button variant="outline" size="sm" asChild className="ml-auto">
+                              <a 
+                                href={`https://wa.me/88${primaryChamber.contact_number.replace(/\D/g, "")}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <MessageCircle className="w-4 h-4 mr-1" />
+                                WhatsApp
+                              </a>
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* Show more chambers hint */}
+                        {hasMultipleChambers && (
+                          <div className="pt-3 border-t">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => setActiveTab("chambers")}
+                              className="w-full"
+                            >
+                              <Building2 className="w-4 h-4 mr-2" />
+                              View all {chambers.length} chambers
+                            </Button>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+
+                {/* Education Section */}
+                <ProfileEducationSection education={education} />
+
+                {/* Services */}
+                {profile.services && profile.services.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <Card>
+                      <CardContent className="p-5">
+                        <h3 className="font-semibold mb-3">Services Offered</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {profile.services.map(service => (
+                            <Badge key={service} variant="secondary">{service}</Badge>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+
+                {/* About */}
+                {profile.bio && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <Card>
+                      <CardContent className="p-5">
+                        <h3 className="font-semibold mb-3">About</h3>
+                        <p className={`text-muted-foreground ${!bioExpanded ? "line-clamp-3" : ""}`}>
+                          {profile.bio}
+                        </p>
+                        {profile.bio.length > 200 && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => setBioExpanded(!bioExpanded)}
+                            className="mt-2 -ml-2"
+                          >
+                            {bioExpanded ? (
+                              <>
+                                <ChevronUp className="w-4 h-4 mr-1" />
+                                Show Less
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="w-4 h-4 mr-1" />
+                                Read More
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+
+                {/* Languages */}
+                {profile.languages && profile.languages.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <Card>
+                      <CardContent className="p-5">
+                        <h3 className="font-semibold mb-3">Languages</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {profile.languages.map(lang => (
+                            <Badge key={lang} variant="outline">{lang}</Badge>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+
+                {/* Intro Video Preview */}
+                {introVideo && (
+                  <ProfileVideoSection introVideo={introVideo} feedVideos={[]} />
+                )}
+              </TabsContent>
+
+              <TabsContent value="chambers">
+                <ProfileChambersSection chambers={chambers} availabilitySlots={availabilitySlots} />
+              </TabsContent>
+
+              <TabsContent value="videos">
+                {hasVideos ? (
+                  <ProfileVideoSection introVideo={introVideo} feedVideos={feedVideos} />
+                ) : (
+                  <Card>
+                    <CardContent className="p-8 text-center text-muted-foreground">
+                      <Video className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p>No videos available yet</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Right Column - Booking Widgets (Desktop) */}

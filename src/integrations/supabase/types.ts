@@ -198,6 +198,53 @@ export type Database = {
           },
         ]
       }
+      doctor_videos: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          doctor_id: string
+          id: string
+          is_active: boolean | null
+          is_intro: boolean | null
+          title: string | null
+          updated_at: string
+          youtube_url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          doctor_id: string
+          id?: string
+          is_active?: boolean | null
+          is_intro?: boolean | null
+          title?: string | null
+          updated_at?: string
+          youtube_url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          doctor_id?: string
+          id?: string
+          is_active?: boolean | null
+          is_intro?: boolean | null
+          title?: string | null
+          updated_at?: string
+          youtube_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_videos_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_settings: {
         Row: {
           calendly_buffer_minutes: number | null

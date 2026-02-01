@@ -10,7 +10,8 @@ import { ProfilePublicSettings } from "@/components/profile-editor/ProfilePublic
 import { ProfilePreview } from "@/components/profile-editor/ProfilePreview";
 import { ProfileSocialLinks } from "@/components/profile-editor/ProfileSocialLinks";
 import { ProfileEducation } from "@/components/profile-editor/ProfileEducation";
-import { Loader2, User, Building2, Globe, Eye, Plug, ArrowRight, Share2, GraduationCap } from "lucide-react";
+import { ProfileVideos } from "@/components/profile-editor/ProfileVideos";
+import { Loader2, User, Building2, Globe, Eye, Plug, ArrowRight, Share2, GraduationCap, Video } from "lucide-react";
 
 const ProfileEditor = () => {
   const { profile, chambers, availabilitySlots, isLoading } = useDoctorProfile();
@@ -43,7 +44,7 @@ const ProfileEditor = () => {
       <div className="space-y-6">
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 lg:w-auto lg:inline-flex">
+          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7 lg:w-auto lg:inline-flex">
             <TabsTrigger value="basic" className="gap-2">
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Basic Info</span>
@@ -55,6 +56,10 @@ const ProfileEditor = () => {
             <TabsTrigger value="social" className="gap-2">
               <Share2 className="w-4 h-4" />
               <span className="hidden sm:inline">Social</span>
+            </TabsTrigger>
+            <TabsTrigger value="videos" className="gap-2">
+              <Video className="w-4 h-4" />
+              <span className="hidden sm:inline">Videos</span>
             </TabsTrigger>
             <TabsTrigger value="chambers" className="gap-2">
               <Building2 className="w-4 h-4" />
@@ -80,6 +85,10 @@ const ProfileEditor = () => {
 
           <TabsContent value="social">
             <ProfileSocialLinks profile={profile} />
+          </TabsContent>
+
+          <TabsContent value="videos">
+            <ProfileVideos profile={profile} />
           </TabsContent>
 
           <TabsContent value="chambers">

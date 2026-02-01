@@ -17,6 +17,7 @@ interface SocialLinks {
   linkedin?: string;
   instagram?: string;
   website?: string;
+  youtube?: string;
 }
 
 const SOCIAL_PLATFORMS = [
@@ -24,6 +25,7 @@ const SOCIAL_PLATFORMS = [
   { key: "twitter", label: "X (Twitter)", icon: Twitter, placeholder: "https://x.com/yourhandle" },
   { key: "linkedin", label: "LinkedIn", icon: Linkedin, placeholder: "https://linkedin.com/in/yourprofile" },
   { key: "instagram", label: "Instagram", icon: Instagram, placeholder: "https://instagram.com/yourhandle" },
+  { key: "youtube", label: "YouTube Channel", icon: Youtube, placeholder: "https://youtube.com/@yourchannel" },
   { key: "website", label: "Personal Website", icon: Globe, placeholder: "https://yourwebsite.com" },
 ];
 
