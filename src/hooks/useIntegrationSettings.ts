@@ -150,26 +150,18 @@ export const useIntegrationSettings = () => {
 };
 
 // Hook for public profile to get integration settings
+// Uses secure view that only exposes safe fields (no API keys)
 export const usePublicIntegrationSettings = (doctorId: string) => {
   const { data: settings, isLoading } = useQuery({
     queryKey: ["public-integration-settings", doctorId],
     queryFn: async () => {
       if (!doctorId) return null;
       
-      // We only fetch public-safe settings (no API keys)
+      // Query the secure view that only contains public-safe fields
+      // This view excludes sensitive fields like whatsapp_api_key
       const { data, error } = await supabase
-        .from("integration_settings")
-        .select(`
-          id,
-          doctor_id,
-          calendly_enabled,
-          calendly_url,
-          calendly_display_mode,
-          calendly_event_type,
-          calendly_buffer_minutes,
-          whatsapp_enabled,
-          whatsapp_number
-        `)
+        .from("public_integration_settings")
+        .select("*")
         .eq("doctor_id", doctorId)
         .maybeSingle();
       
