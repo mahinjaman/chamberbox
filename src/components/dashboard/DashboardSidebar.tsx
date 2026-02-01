@@ -11,7 +11,8 @@ import {
   ListOrdered,
   Globe,
   Plug,
-  Shield
+  Shield,
+  MessageSquare
 } from "lucide-react";
 import {
   Sidebar,
@@ -45,6 +46,7 @@ const mainNavItems = [
 const settingsNavItems = [
   { title: "Public Profile", url: "/dashboard/profile", icon: Globe },
   { title: "Integrations", url: "/dashboard/integrations", icon: Plug },
+  { title: "My Tickets", url: "/dashboard/tickets", icon: MessageSquare },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 

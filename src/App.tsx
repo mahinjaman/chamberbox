@@ -27,6 +27,7 @@ import QueueStatus from "./pages/QueueStatus";
 import ProfileEditor from "./pages/ProfileEditor";
 import DoctorPublicProfile from "./pages/DoctorPublicProfile";
 import IntegrationSettings from "./pages/IntegrationSettings";
+import MyTickets from "./pages/MyTickets";
 import NotFound from "./pages/NotFound";
 
 // Admin Pages
@@ -149,6 +150,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <IntegrationSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/tickets"
+              element={
+                <ProtectedRoute>
+                  <MyTickets />
                 </ProtectedRoute>
               }
             />
