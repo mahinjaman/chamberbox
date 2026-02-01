@@ -2,6 +2,7 @@ import { Navbar } from "@/components/landing/Navbar";
 import { Hero } from "@/components/landing/Hero";
 import { Features } from "@/components/landing/Features";
 import Pricing from "@/components/landing/Pricing";
+import PaymentMethods from "@/components/landing/PaymentMethods";
 import Footer from "@/components/landing/Footer";
 
 const Landing = () => {
@@ -11,6 +12,7 @@ const Landing = () => {
       <Hero />
       <Features />
       <Pricing />
+      <PaymentMethods />
       <Footer />
     </div>
   );

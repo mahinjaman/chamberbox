@@ -58,7 +58,7 @@ const plans = [
 
 const Pricing = () => {
   return (
-    <section id="pricing" className="py-20 md:py-32">
+    <section id="pricing" className="py-20 md:py-32 bg-background">
       <div className="container px-4 md:px-6">
         {/* Section header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -132,72 +132,6 @@ const Pricing = () => {
               </Button>
             </div>
           ))}
-        </div>
-
-        {/* Payment methods */}
-        <div className="mt-16 text-center">
-          <p className="text-muted-foreground text-sm mb-6 uppercase tracking-wider font-medium">
-            Accepted Payment Methods
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-            {/* bKash */}
-            <div className="group relative">
-              <div className="absolute -inset-1 rounded-xl bg-[#E2136E]/30 blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500" />
-              <div className="relative flex items-center gap-2 px-5 py-3 rounded-xl bg-card/80 border border-[#E2136E]/30 backdrop-blur-sm transition-all duration-300 group-hover:border-[#E2136E]/60 group-hover:shadow-lg group-hover:shadow-[#E2136E]/20 group-hover:scale-105">
-                <div className="w-8 h-8 rounded-lg bg-[#E2136E] flex items-center justify-center shadow-lg shadow-[#E2136E]/30">
-                  <span className="text-white font-bold text-xs">b</span>
-                </div>
-                <span className="font-semibold text-foreground">bKash</span>
-              </div>
-            </div>
-
-            {/* Nagad */}
-            <div className="group relative">
-              <div className="absolute -inset-1 rounded-xl bg-[#F6921E]/30 blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500" />
-              <div className="relative flex items-center gap-2 px-5 py-3 rounded-xl bg-card/80 border border-[#F6921E]/30 backdrop-blur-sm transition-all duration-300 group-hover:border-[#F6921E]/60 group-hover:shadow-lg group-hover:shadow-[#F6921E]/20 group-hover:scale-105">
-                <div className="w-8 h-8 rounded-lg bg-[#F6921E] flex items-center justify-center shadow-lg shadow-[#F6921E]/30">
-                  <span className="text-white font-bold text-xs">N</span>
-                </div>
-                <span className="font-semibold text-foreground">Nagad</span>
-              </div>
-            </div>
-
-            {/* Rocket */}
-            <div className="group relative">
-              <div className="absolute -inset-1 rounded-xl bg-[#8C3494]/30 blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500" />
-              <div className="relative flex items-center gap-2 px-5 py-3 rounded-xl bg-card/80 border border-[#8C3494]/30 backdrop-blur-sm transition-all duration-300 group-hover:border-[#8C3494]/60 group-hover:shadow-lg group-hover:shadow-[#8C3494]/20 group-hover:scale-105">
-                <div className="w-8 h-8 rounded-lg bg-[#8C3494] flex items-center justify-center shadow-lg shadow-[#8C3494]/30">
-                  <span className="text-white font-bold text-xs">R</span>
-                </div>
-                <span className="font-semibold text-foreground">Rocket</span>
-              </div>
-            </div>
-
-            {/* Visa */}
-            <div className="group relative">
-              <div className="absolute -inset-1 rounded-xl bg-[#1A1F71]/30 blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500" />
-              <div className="relative flex items-center gap-2 px-5 py-3 rounded-xl bg-card/80 border border-[#1A1F71]/30 backdrop-blur-sm transition-all duration-300 group-hover:border-[#1A1F71]/60 group-hover:shadow-lg group-hover:shadow-[#1A1F71]/20 group-hover:scale-105">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#1A1F71] to-[#2557D6] flex items-center justify-center shadow-lg shadow-[#1A1F71]/30">
-                  <span className="text-white font-bold text-[10px]">VISA</span>
-                </div>
-                <span className="font-semibold text-foreground">Visa</span>
-              </div>
-            </div>
-
-            {/* Mastercard */}
-            <div className="group relative">
-              <div className="absolute -inset-1 rounded-xl bg-[#EB001B]/30 blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500" />
-              <div className="relative flex items-center gap-2 px-5 py-3 rounded-xl bg-card/80 border border-[#EB001B]/30 backdrop-blur-sm transition-all duration-300 group-hover:border-[#EB001B]/60 group-hover:shadow-lg group-hover:shadow-[#EB001B]/20 group-hover:scale-105">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#EB001B] to-[#F79E1B] flex items-center justify-center shadow-lg shadow-[#EB001B]/30">
-                  <div className="flex -space-x-1">
-                    <div className="w-3 h-3 rounded-full bg-[#EB001B]" />
-                    <div className="w-3 h-3 rounded-full bg-[#F79E1B] opacity-80" />
-                  </div>
-                </div>
-                <span className="font-semibold text-foreground">Mastercard</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </section>
