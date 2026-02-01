@@ -1,6 +1,9 @@
 import { ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "./DashboardSidebar";
+import { Globe } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -25,6 +28,12 @@ export const DashboardLayout = ({ children, title, description, actions }: Dashb
                 <p className="text-sm text-muted-foreground">{description}</p>
               )}
             </div>
+            <Button variant="outline" size="sm" asChild className="hidden sm:flex">
+              <Link to="/dashboard/profile">
+                <Globe className="w-4 h-4 mr-2" />
+                Public Profile
+              </Link>
+            </Button>
             {actions && <div className="flex items-center gap-2">{actions}</div>}
           </header>
           <main className="flex-1 p-6">

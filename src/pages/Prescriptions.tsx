@@ -30,7 +30,15 @@ import {
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
-const DURATION_PRESETS = ["3 days", "5 days", "7 days", "10 days", "14 days", "1 month"];
+const DURATION_PRESETS = [
+  { value: "3 days", label_en: "3 days", label_bn: "৩ দিন" },
+  { value: "5 days", label_en: "5 days", label_bn: "৫ দিন" },
+  { value: "7 days", label_en: "7 days", label_bn: "৭ দিন" },
+  { value: "10 days", label_en: "10 days", label_bn: "১০ দিন" },
+  { value: "14 days", label_en: "14 days", label_bn: "১৪ দিন" },
+  { value: "1 month", label_en: "1 month", label_bn: "১ মাস" },
+  { value: "continue", label_en: "Continue", label_bn: "চলবে" },
+];
 const ADVICE_SHORTCUTS = [
   "Drink plenty of water",
   "Take rest",
@@ -39,6 +47,15 @@ const ADVICE_SHORTCUTS = [
   "Take medicines after meals",
   "Avoid cold drinks",
 ];
+
+// Helper to get duration display label
+const getDurationLabel = (value: string, lang: "english" | "bangla") => {
+  const preset = DURATION_PRESETS.find((d) => d.value === value);
+  if (preset) {
+    return lang === "bangla" ? preset.label_bn : preset.label_en;
+  }
+  return value; // fallback to raw value for custom durations
+};
 
 const Prescriptions = () => {
   const { profile } = useProfile();
@@ -297,7 +314,9 @@ const Prescriptions = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                   {DURATION_PRESETS.map((d) => (
-                                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                                    <SelectItem key={d.value} value={d.value}>
+                                      {language === "bangla" ? d.label_bn : d.label_en}
+                                    </SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>
@@ -434,7 +453,7 @@ const Prescriptions = () => {
                         </div>
                         <div className="text-right text-gray-600">
                           <div>{med.dosage}</div>
-                          <div className="text-xs">{med.duration}</div>
+                          <div className="text-xs">{getDurationLabel(med.duration, language)}</div>
                         </div>
                       </div>
                     ))}
