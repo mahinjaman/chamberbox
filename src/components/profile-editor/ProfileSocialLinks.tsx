@@ -39,15 +39,12 @@ export const ProfileSocialLinks = ({ profile }: ProfileSocialLinksProps) => {
     }
     return {};
   });
-  
-  const [youtubeUrl, setYoutubeUrl] = useState(profile?.youtube_url || "");
 
   useEffect(() => {
     const links = profile?.social_links;
     if (links && typeof links === 'object' && !Array.isArray(links)) {
       setSocialLinks(links as SocialLinks);
     }
-    setYoutubeUrl(profile?.youtube_url || "");
   }, [profile]);
 
   const handleSocialChange = (key: string, value: string) => {
@@ -57,29 +54,8 @@ export const ProfileSocialLinks = ({ profile }: ProfileSocialLinksProps) => {
   const handleSave = () => {
     updateProfile.mutate({
       social_links: socialLinks,
-      youtube_url: youtubeUrl || null,
     });
   };
-
-  const getYoutubeEmbedUrl = (url: string) => {
-    if (!url) return null;
-    
-    // Handle various YouTube URL formats
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/,
-      /youtube\.com\/shorts\/([^&\s]+)/,
-    ];
-    
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match) {
-        return `https://www.youtube.com/embed/${match[1]}`;
-      }
-    }
-    return null;
-  };
-
-  const embedUrl = getYoutubeEmbedUrl(youtubeUrl);
 
   return (
     <motion.div
@@ -114,50 +90,6 @@ export const ProfileSocialLinks = ({ profile }: ProfileSocialLinksProps) => {
               />
             </div>
           ))}
-        </CardContent>
-      </Card>
-
-      {/* YouTube Video */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Youtube className="w-5 h-5 text-destructive" />
-            Introduction Video
-          </CardTitle>
-          <CardDescription>
-            Add a YouTube video to introduce yourself to patients
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="youtube">YouTube Video URL</Label>
-            <Input
-              id="youtube"
-              type="url"
-              value={youtubeUrl}
-              onChange={(e) => setYoutubeUrl(e.target.value)}
-              placeholder="https://www.youtube.com/watch?v=..."
-            />
-            <p className="text-xs text-muted-foreground">
-              Supports youtube.com/watch, youtu.be, and YouTube Shorts links
-            </p>
-          </div>
-
-          {/* Preview */}
-          {embedUrl && (
-            <div className="space-y-2">
-              <Label>Preview</Label>
-              <div className="aspect-video rounded-lg overflow-hidden border bg-muted">
-                <iframe
-                  src={embedUrl}
-                  title="YouTube video preview"
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
