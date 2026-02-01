@@ -29,6 +29,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 const Queue = () => {
@@ -37,7 +44,10 @@ const Queue = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [newPatientName, setNewPatientName] = useState("");
   const [newPatientPhone, setNewPatientPhone] = useState("");
+  const [newPatientAge, setNewPatientAge] = useState("");
+  const [newPatientGender, setNewPatientGender] = useState<"male" | "female" | "">("");
   const [isCreating, setIsCreating] = useState(false);
+  const [formErrors, setFormErrors] = useState<{ age?: string; gender?: string }>({});
   
   const { 
     queue, 
@@ -76,14 +86,29 @@ const Queue = () => {
       return;
     }
 
+    // Validate mandatory fields
+    const newErrors: { age?: string; gender?: string } = {};
+    if (!newPatientAge || parseInt(newPatientAge) <= 0) {
+      newErrors.age = "Age is required";
+    }
+    if (!newPatientGender) {
+      newErrors.gender = "Gender is required";
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setFormErrors(newErrors);
+      return;
+    }
+    
+    setFormErrors({});
     setIsCreating(true);
     try {
       // Create patient and get the returned data with ID
       const newPatient = await addPatientAsync({ 
         name: newPatientName.trim(), 
         phone: newPatientPhone.trim(),
-        age: null,
-        gender: null,
+        age: parseInt(newPatientAge),
+        gender: newPatientGender as "male" | "female",
         blood_group: null,
         address: null,
         allergies: null,
@@ -99,6 +124,8 @@ const Queue = () => {
       // Reset form
       setNewPatientName("");
       setNewPatientPhone("");
+      setNewPatientAge("");
+      setNewPatientGender("");
       setIsNewPatientDialogOpen(false);
     } catch (error) {
       console.error("Error creating patient:", error);
@@ -144,24 +171,62 @@ const Queue = () => {
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="new-name">Patient Name *</Label>
-                  <Input
-                    id="new-name"
-                    placeholder="Enter patient name"
-                    value={newPatientName}
-                    onChange={(e) => setNewPatientName(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="new-phone">Phone Number *</Label>
-                  <Input
-                    id="new-phone"
-                    placeholder="01XXXXXXXXX"
-                    value={newPatientPhone}
-                    onChange={(e) => setNewPatientPhone(e.target.value)}
-                    maxLength={11}
-                  />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-name">Patient Name *</Label>
+                    <Input
+                      id="new-name"
+                      placeholder="Enter patient name"
+                      value={newPatientName}
+                      onChange={(e) => setNewPatientName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-phone">Phone Number *</Label>
+                    <Input
+                      id="new-phone"
+                      placeholder="01XXXXXXXXX"
+                      value={newPatientPhone}
+                      onChange={(e) => setNewPatientPhone(e.target.value)}
+                      maxLength={11}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-age">Age *</Label>
+                    <Input
+                      id="new-age"
+                      type="number"
+                      placeholder="Age in years"
+                      min="1"
+                      max="150"
+                      value={newPatientAge}
+                      onChange={(e) => {
+                        setNewPatientAge(e.target.value);
+                        if (formErrors.age) setFormErrors({ ...formErrors, age: undefined });
+                      }}
+                      className={formErrors.age ? "border-destructive" : ""}
+                    />
+                    {formErrors.age && <p className="text-sm text-destructive">{formErrors.age}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-gender">Gender *</Label>
+                    <Select
+                      value={newPatientGender}
+                      onValueChange={(value) => {
+                        setNewPatientGender(value as "male" | "female");
+                        if (formErrors.gender) setFormErrors({ ...formErrors, gender: undefined });
+                      }}
+                    >
+                      <SelectTrigger className={formErrors.gender ? "border-destructive" : ""}>
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {formErrors.gender && <p className="text-sm text-destructive">{formErrors.gender}</p>}
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end gap-2">
