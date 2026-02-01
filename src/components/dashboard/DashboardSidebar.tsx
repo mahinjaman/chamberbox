@@ -10,7 +10,8 @@ import {
   BarChart3,
   ListOrdered,
   Globe,
-  Plug
+  Plug,
+  Shield
 } from "lucide-react";
 import {
   Sidebar,
@@ -28,6 +29,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { useProfile } from "@/hooks/useProfile";
+import { useAdmin } from "@/hooks/useAdmin";
 import { cn } from "@/lib/utils";
 
 const mainNavItems = [
@@ -50,6 +52,7 @@ export const DashboardSidebar = () => {
   const location = useLocation();
   const { signOut } = useAuth();
   const { profile } = useProfile();
+  const { isAdmin } = useAdmin();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
 
@@ -121,6 +124,31 @@ export const DashboardSidebar = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Admin Section - Only visible to admins */}
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel className={cn(collapsed && "sr-only")}>
+              Admin
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location.pathname.startsWith("/admin")}
+                    tooltip="Admin Panel"
+                  >
+                    <Link to="/admin">
+                      <Shield className="w-5 h-5" />
+                      <span>Admin Panel</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border">
