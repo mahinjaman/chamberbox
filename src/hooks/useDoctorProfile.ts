@@ -29,6 +29,22 @@ export interface AvailabilitySlot {
   created_at: string;
 }
 
+export interface Education {
+  id: string;
+  degree: string;
+  institution: string;
+  year: string;
+  country?: string;
+}
+
+export interface SocialLinks {
+  facebook?: string;
+  twitter?: string;
+  linkedin?: string;
+  instagram?: string;
+  website?: string;
+}
+
 export interface DoctorProfile {
   id: string;
   user_id: string;
@@ -52,6 +68,9 @@ export interface DoctorProfile {
   seo_description: string | null;
   patient_count: number;
   rating: number;
+  social_links: SocialLinks | null;
+  youtube_url: string | null;
+  education: Education[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -71,7 +90,7 @@ export const useDoctorProfile = () => {
         .single();
       
       if (error) throw error;
-      return data as DoctorProfile;
+      return data as unknown as DoctorProfile;
     },
     enabled: !!user,
   });
@@ -114,7 +133,7 @@ export const useDoctorProfile = () => {
       if (!profile) throw new Error("No profile found");
       const { error } = await supabase
         .from("profiles")
-        .update(updates)
+        .update(updates as unknown as Record<string, unknown>)
         .eq("id", profile.id);
       
       if (error) throw error;
@@ -228,7 +247,7 @@ export const usePublicDoctorProfile = (slug: string) => {
         .single();
       
       if (error) throw error;
-      return data as DoctorProfile;
+      return data as unknown as DoctorProfile;
     },
     enabled: !!slug,
   });
