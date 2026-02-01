@@ -59,7 +59,7 @@ export const useQueueStatus = () => {
           `)
           .in('patient_id', patientIds)
           .eq('queue_date', today)
-          .in('status', ['waiting', 'called'])
+          .in('status', ['waiting', 'current']) // Fixed: use 'current' instead of 'called'
           .order('created_at', { ascending: false })
           .limit(1);
 

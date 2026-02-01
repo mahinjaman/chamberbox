@@ -87,8 +87,12 @@ const Queue = () => {
   
   const { patients, addPatientAsync } = usePatients();
 
-  // Get patient IDs already in today's queue
-  const patientsInQueue = new Set(queue.map((t) => t.patient_id));
+  // Get patient IDs already in today's queue for the selected session (or all if no session)
+  const patientsInQueue = new Set(
+    selectedSession 
+      ? queue.filter(t => t.session_id === selectedSession.id).map(t => t.patient_id)
+      : queue.map(t => t.patient_id)
+  );
   
   // Filter patients not in queue and by search
   const availablePatients = patients.filter((p) => {
