@@ -5,7 +5,7 @@ import { QueueStatusTranslations } from './types';
 
 interface CurrentSerialCardProps {
   currentSerial: number;
-  queueStatus: 'running' | 'break' | 'closed';
+  queueStatus: 'running' | 'break' | 'closed' | 'waiting';
   t: QueueStatusTranslations;
 }
 
@@ -32,6 +32,12 @@ export const CurrentSerialCard: React.FC<CurrentSerialCardProps> = ({
       ringColor: 'ring-red-500/30',
       text: t.queueClosed,
       textColor: 'text-red-600 dark:text-red-400',
+    },
+    waiting: {
+      color: 'bg-blue-500',
+      ringColor: 'ring-blue-500/30',
+      text: t.queueWaiting,
+      textColor: 'text-blue-600 dark:text-blue-400',
     },
   };
 

@@ -1,126 +1,220 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { QueueData } from './types';
+import { format } from 'date-fns';
 
-const MOCK_DOCTOR = {
-  doctorName: 'Dr. Rafiqul Islam',
-  chamberName: 'City Health Care',
-  chamberAddress: 'House 45, Road 12, Dhanmondi, Dhaka',
-  scheduleStart: '7:00 PM',
-  scheduleEnd: '9:00 PM',
-  avgConsultationTime: 5,
-};
+interface CheckStatusParams {
+  phoneNumber: string;
+  serialNumber?: number;
+}
 
 export const useQueueStatus = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [queueData, setQueueData] = useState<QueueData | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [currentSerial, setCurrentSerial] = useState(7);
-
-  // Simulate real-time updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Randomly increment current serial (simulating queue progress)
-      setCurrentSerial((prev) => {
-        const shouldIncrement = Math.random() > 0.7;
-        return shouldIncrement ? prev + 1 : prev;
-      });
-      setLastUpdated(new Date());
-    }, 60000); // Update every 60 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Update queue data when current serial changes
-  useEffect(() => {
-    if (queueData) {
-      const patientsAhead = Math.max(0, queueData.patientSerial - currentSerial);
-      const estimatedWaitMinutes = patientsAhead * MOCK_DOCTOR.avgConsultationTime;
-      const expectedCallTime = new Date();
-      expectedCallTime.setMinutes(expectedCallTime.getMinutes() + estimatedWaitMinutes);
-
-      setQueueData((prev) =>
-        prev
-          ? {
-              ...prev,
-              currentSerial,
-              patientsAhead,
-              estimatedWaitMinutes,
-              expectedCallTime,
-              lastUpdated: new Date(),
-              queueStatus: currentSerial >= prev.patientSerial ? 'closed' : 'running',
-            }
-          : null
-      );
-    }
-  }, [currentSerial]);
+  const [searchParams, setSearchParams] = useState<CheckStatusParams | null>(null);
 
   const checkStatus = useCallback(
-    async (serialNumber: number, patientName?: string): Promise<void> => {
+    async (phoneNumber: string, serialNumber?: number): Promise<void> => {
       setIsLoading(true);
       setError(null);
+      setSearchParams({ phoneNumber, serialNumber });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      try {
+        const today = format(new Date(), 'yyyy-MM-dd');
 
-      // Validation
-      if (serialNumber <= 0 || serialNumber > 100) {
-        setError('invalid');
+        // First, find the patient by phone number
+        const { data: patients, error: patientError } = await supabase
+          .from('patients')
+          .select('id, name')
+          .eq('phone', phoneNumber);
+
+        if (patientError) {
+          console.error('Patient lookup error:', patientError);
+          setError('network');
+          setIsLoading(false);
+          return;
+        }
+
+        if (!patients || patients.length === 0) {
+          setError('notFound');
+          setIsLoading(false);
+          return;
+        }
+
+        const patientIds = patients.map(p => p.id);
+
+        // Find queue token for today with this patient
+        let tokenQuery = supabase
+          .from('queue_tokens')
+          .select(`
+            id,
+            token_number,
+            status,
+            session_id,
+            doctor_id,
+            patient_id,
+            queue_date
+          `)
+          .in('patient_id', patientIds)
+          .eq('queue_date', today)
+          .in('status', ['waiting', 'called'])
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        // If serial number provided, add filter
+        if (serialNumber) {
+          tokenQuery = tokenQuery.eq('token_number', serialNumber);
+        }
+
+        const { data: tokens, error: tokenError } = await tokenQuery;
+
+        if (tokenError) {
+          console.error('Token lookup error:', tokenError);
+          setError('network');
+          setIsLoading(false);
+          return;
+        }
+
+        if (!tokens || tokens.length === 0) {
+          // Check if token exists but is completed
+          const { data: completedTokens } = await supabase
+            .from('queue_tokens')
+            .select('status')
+            .in('patient_id', patientIds)
+            .eq('queue_date', today)
+            .eq('status', 'completed')
+            .limit(1);
+
+          if (completedTokens && completedTokens.length > 0) {
+            setError('already_seen');
+          } else {
+            setError('notFound');
+          }
+          setIsLoading(false);
+          return;
+        }
+
+        const token = tokens[0];
+        const patient = patients.find(p => p.id === token.patient_id);
+
+        // Get session details
+        const { data: session, error: sessionError } = await supabase
+          .from('queue_sessions')
+          .select(`
+            id,
+            status,
+            current_token,
+            avg_consultation_minutes,
+            start_time,
+            end_time,
+            chamber_id
+          `)
+          .eq('id', token.session_id)
+          .single();
+
+        if (sessionError || !session) {
+          console.error('Session lookup error:', sessionError);
+          setError('network');
+          setIsLoading(false);
+          return;
+        }
+
+        // Get chamber details
+        const { data: chamber, error: chamberError } = await supabase
+          .from('chambers')
+          .select('id, name, address, doctor_id')
+          .eq('id', session.chamber_id)
+          .single();
+
+        if (chamberError || !chamber) {
+          console.error('Chamber lookup error:', chamberError);
+          setError('network');
+          setIsLoading(false);
+          return;
+        }
+
+        // Get doctor details
+        const { data: doctor, error: doctorError } = await supabase
+          .from('profiles')
+          .select('id, full_name, specialization')
+          .eq('id', chamber.doctor_id)
+          .single();
+
+        if (doctorError || !doctor) {
+          console.error('Doctor lookup error:', doctorError);
+          setError('network');
+          setIsLoading(false);
+          return;
+        }
+
+        // Count patients ahead
+        const { count: patientsAhead } = await supabase
+          .from('queue_tokens')
+          .select('id', { count: 'exact', head: true })
+          .eq('session_id', token.session_id)
+          .in('status', ['waiting', 'called'])
+          .lt('token_number', token.token_number);
+
+        const ahead = patientsAhead || 0;
+        const avgTime = session.avg_consultation_minutes || 5;
+        const estimatedWaitMinutes = ahead * avgTime;
+        const expectedCallTime = new Date();
+        expectedCallTime.setMinutes(expectedCallTime.getMinutes() + estimatedWaitMinutes);
+
+        // Determine queue status
+        let queueStatus: 'running' | 'break' | 'closed' | 'waiting' = 'waiting';
+        if (session.status === 'running') {
+          queueStatus = 'running';
+        } else if (session.status === 'closed' || session.status === 'completed') {
+          queueStatus = 'closed';
+        } else if (session.status === 'open') {
+          queueStatus = 'waiting';
+        }
+
+        setQueueData({
+          currentSerial: session.current_token || 0,
+          patientSerial: token.token_number,
+          patientName: patient?.name,
+          patientPhone: phoneNumber,
+          patientsAhead: ahead,
+          estimatedWaitMinutes,
+          avgConsultationTime: avgTime,
+          queueStatus,
+          doctorName: doctor.full_name,
+          chamberName: chamber.name,
+          chamberAddress: chamber.address,
+          scheduleStart: session.start_time,
+          scheduleEnd: session.end_time,
+          lastUpdated: new Date(),
+          expectedCallTime,
+          sessionId: session.id,
+          tokenStatus: token.status || 'waiting',
+        });
+
+        // Save to localStorage
+        localStorage.setItem('queue_phone', phoneNumber);
+        if (serialNumber) {
+          localStorage.setItem('queue_serial', serialNumber.toString());
+        }
+
+        setLastUpdated(new Date());
         setIsLoading(false);
-        return;
-      }
-
-      if (serialNumber < currentSerial) {
-        setError('already_seen');
-        setIsLoading(false);
-        return;
-      }
-
-      // Simulate random network error (5% chance)
-      if (Math.random() < 0.05) {
+      } catch (err) {
+        console.error('Queue status error:', err);
         setError('network');
         setIsLoading(false);
-        return;
       }
-
-      const patientsAhead = Math.max(0, serialNumber - currentSerial);
-      const estimatedWaitMinutes = patientsAhead * MOCK_DOCTOR.avgConsultationTime;
-      const expectedCallTime = new Date();
-      expectedCallTime.setMinutes(expectedCallTime.getMinutes() + estimatedWaitMinutes);
-
-      // Randomly set queue status for demo
-      const statuses: Array<'running' | 'break' | 'closed'> = ['running', 'running', 'running', 'break'];
-      const queueStatus = statuses[Math.floor(Math.random() * statuses.length)];
-
-      setQueueData({
-        currentSerial,
-        patientSerial: serialNumber,
-        patientName,
-        patientsAhead,
-        estimatedWaitMinutes,
-        avgConsultationTime: MOCK_DOCTOR.avgConsultationTime,
-        queueStatus,
-        ...MOCK_DOCTOR,
-        lastUpdated: new Date(),
-        expectedCallTime,
-      });
-
-      // Save to localStorage
-      localStorage.setItem('queue_serial', serialNumber.toString());
-      if (patientName) {
-        localStorage.setItem('queue_patient_name', patientName);
-      }
-
-      setIsLoading(false);
     },
-    [currentSerial]
+    []
   );
 
   const refresh = useCallback(async () => {
-    if (queueData) {
-      await checkStatus(queueData.patientSerial, queueData.patientName);
+    if (searchParams) {
+      await checkStatus(searchParams.phoneNumber, searchParams.serialNumber);
     }
-  }, [queueData, checkStatus]);
+  }, [searchParams, checkStatus]);
 
   return {
     isLoading,

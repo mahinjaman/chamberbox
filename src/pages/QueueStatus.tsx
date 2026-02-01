@@ -48,10 +48,10 @@ const QueueStatus: React.FC = () => {
     setLanguage((prev) => (prev === 'en' ? 'bn' : 'en'));
   };
 
-  // Handle status check
-  const handleCheckStatus = async (serialNumber: number, patientName?: string) => {
+  // Handle status check - now uses phone number as primary identifier
+  const handleCheckStatus = async (phoneNumber: string, serialNumber?: number) => {
     setShowStatus(true);
-    await checkStatus(serialNumber, patientName);
+    await checkStatus(phoneNumber, serialNumber);
   };
 
   // Handle notification toggle
@@ -80,13 +80,23 @@ const QueueStatus: React.FC = () => {
     }
   }, [notificationsEnabled, queueData?.patientsAhead]);
 
+  // Auto-refresh every 30 seconds when status is shown
+  useEffect(() => {
+    if (showStatus && queueData && !error) {
+      const interval = setInterval(() => {
+        refresh();
+      }, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [showStatus, queueData, error, refresh]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-sky-500/10 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-emerald-500/10 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-violet-500/5 blur-3xl" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-success/10 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-accent/5 blur-3xl" />
       </div>
 
       {/* Header */}
@@ -95,8 +105,8 @@ const QueueStatus: React.FC = () => {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-emerald-500 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">Q</span>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-success flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-lg">Q</span>
               </div>
               <div>
                 <h1 className="text-lg font-bold text-foreground">ChamberBox</h1>
@@ -158,7 +168,7 @@ const QueueStatus: React.FC = () => {
               {/* Error State */}
               {error && (
                 <ErrorState
-                  errorType={error as 'invalid' | 'already_seen' | 'network'}
+                  errorType={error as 'invalid' | 'already_seen' | 'network' | 'notFound'}
                   onRetry={() => {
                     setError(null);
                     refresh();
