@@ -19,9 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { usePrescriptions, PrescriptionMedicine } from "@/hooks/usePrescriptions";
+import { usePrescriptions, PrescriptionMedicine, PrescriptionInvestigation } from "@/hooks/usePrescriptions";
 import { useMedicines } from "@/hooks/useMedicines";
 import { useProfile } from "@/hooks/useProfile";
+import { InvestigationSelector } from "@/components/prescription/InvestigationSelector";
 import {
   Search,
   Trash2,
@@ -60,6 +61,7 @@ interface Patient {
   phone: string;
   age?: number | null;
   gender?: string | null;
+  blood_group?: string | null;
 }
 
 interface PrescriptionModalProps {
@@ -81,6 +83,7 @@ export const PrescriptionModal = ({
 
   const [medicineSearch, setMedicineSearch] = useState("");
   const [selectedMedicines, setSelectedMedicines] = useState<PrescriptionMedicine[]>([]);
+  const [selectedInvestigations, setSelectedInvestigations] = useState<PrescriptionInvestigation[]>([]);
   const [advice, setAdvice] = useState("");
   const [nextVisit, setNextVisit] = useState("");
   const [language, setLanguage] = useState<"english" | "bangla">("english");
@@ -133,6 +136,7 @@ export const PrescriptionModal = ({
       {
         patient_id: patient.id,
         medicines: selectedMedicines,
+        investigations: selectedInvestigations,
         advice: advice || undefined,
         next_visit_date: nextVisit || undefined,
         language,
@@ -149,6 +153,7 @@ export const PrescriptionModal = ({
 
   const resetForm = () => {
     setSelectedMedicines([]);
+    setSelectedInvestigations([]);
     setAdvice("");
     setNextVisit("");
     setSymptoms("");
@@ -185,6 +190,7 @@ export const PrescriptionModal = ({
                     {patient.phone}
                     {patient.age && ` • ${patient.age} yrs`}
                     {patient.gender && ` • ${patient.gender}`}
+                    {patient.blood_group && ` • ${patient.blood_group}`}
                   </p>
                 </div>
               </CardContent>
@@ -328,6 +334,13 @@ export const PrescriptionModal = ({
               )}
             </div>
 
+            {/* Investigations */}
+            <InvestigationSelector
+              selected={selectedInvestigations}
+              onSelect={setSelectedInvestigations}
+              language={language}
+            />
+
             {/* Advice */}
             <div className="space-y-2">
               <Label>Advice</Label>
@@ -434,16 +447,33 @@ export const PrescriptionModal = ({
               <div className="mb-4 pb-4 border-b text-sm">
                 {symptoms && (
                   <div>
-                    <span className="text-gray-500">C/C: </span>
+                    <span className="text-muted-foreground">C/C: </span>
                     {symptoms}
                   </div>
                 )}
                 {diagnosis && (
                   <div>
-                    <span className="text-gray-500">Diagnosis: </span>
+                    <span className="text-muted-foreground">Diagnosis: </span>
                     {diagnosis}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Investigations Preview */}
+            {selectedInvestigations.length > 0 && (
+              <div className="mb-4 pb-4 border-b">
+                <h3 className="font-bold mb-2">🔬 Investigations</h3>
+                <div className="flex flex-wrap gap-1">
+                  {selectedInvestigations.map((inv, i) => (
+                    <span
+                      key={i}
+                      className="bg-muted px-2 py-1 rounded text-xs"
+                    >
+                      {language === "bangla" && inv.name_bn ? inv.name_bn : inv.name}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -460,7 +490,7 @@ export const PrescriptionModal = ({
                           ? med.name_bn
                           : med.name}
                       </span>
-                      <div className="ml-5 text-gray-600">
+                      <div className="ml-5 text-muted-foreground">
                         {med.dosage} — {med.duration}
                         {med.instructions && ` (${med.instructions})`}
                       </div>
@@ -468,7 +498,7 @@ export const PrescriptionModal = ({
                   ))}
                 </ol>
               ) : (
-                <p className="text-sm text-gray-400 italic">
+                <p className="text-sm text-muted-foreground italic">
                   No medicines added yet
                 </p>
               )}

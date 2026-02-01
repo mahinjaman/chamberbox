@@ -16,6 +16,7 @@ export interface Profile {
   subscription_tier: "basic" | "pro" | "premium";
   subscription_expires_at: string | null;
   avatar_url: string | null;
+  degrees: string[] | null;
   created_at: string;
   updated_at: string;
 }

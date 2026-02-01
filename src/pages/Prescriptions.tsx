@@ -9,10 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { usePrescriptions, PrescriptionMedicine } from "@/hooks/usePrescriptions";
+import { usePrescriptions, PrescriptionMedicine, Prescription, PrescriptionInvestigation } from "@/hooks/usePrescriptions";
 import { useMedicines } from "@/hooks/useMedicines";
 import { usePatients } from "@/hooks/usePatients";
 import { useProfile } from "@/hooks/useProfile";
+import { PrescriptionView } from "@/components/prescription/PrescriptionView";
+import { InvestigationSelector } from "@/components/prescription/InvestigationSelector";
 import { 
   FileText, 
   Plus, 
@@ -25,7 +27,8 @@ import {
   X,
   Loader2,
   Pill,
-  Calendar
+  Calendar,
+  Eye
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -68,6 +71,7 @@ const Prescriptions = () => {
   const [patientSearch, setPatientSearch] = useState("");
   const [medicineSearch, setMedicineSearch] = useState("");
   const [selectedMedicines, setSelectedMedicines] = useState<PrescriptionMedicine[]>([]);
+  const [selectedInvestigations, setSelectedInvestigations] = useState<PrescriptionInvestigation[]>([]);
   const [advice, setAdvice] = useState("");
   const [nextVisit, setNextVisit] = useState("");
   const [language, setLanguage] = useState<"english" | "bangla">("english");
@@ -76,6 +80,7 @@ const Prescriptions = () => {
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [previewMode, setPreviewMode] = useState(false);
+  const [viewPrescription, setViewPrescription] = useState<Prescription | null>(null);
 
   const filteredPatients = patients.filter(
     (p) =>
@@ -132,6 +137,7 @@ const Prescriptions = () => {
     createPrescription({
       patient_id: selectedPatientId,
       medicines: selectedMedicines,
+      investigations: selectedInvestigations,
       advice: advice || undefined,
       next_visit_date: nextVisit || undefined,
       language,
@@ -140,6 +146,7 @@ const Prescriptions = () => {
     // Reset form
     setSelectedPatientId("");
     setSelectedMedicines([]);
+    setSelectedInvestigations([]);
     setAdvice("");
     setNextVisit("");
     setSymptoms("");
@@ -346,6 +353,13 @@ const Prescriptions = () => {
                   )}
                 </div>
 
+                {/* Investigations */}
+                <InvestigationSelector
+                  selected={selectedInvestigations}
+                  onSelect={setSelectedInvestigations}
+                  language={language}
+                />
+
                 {/* Advice */}
                 <div className="space-y-2">
                   <Label>Advice</Label>
@@ -403,29 +417,30 @@ const Prescriptions = () => {
               </div>
 
               {/* Right Side - Preview */}
-              <div className="border rounded-lg p-6 bg-white text-black print:border-0">
+              <div className="border rounded-lg p-6 bg-card text-card-foreground print:border-0 print:bg-white print:text-black">
                 <div className="text-center mb-6 border-b pb-4">
                   <h2 className="text-xl font-bold">{profile?.full_name || "Doctor Name"}</h2>
-                  <p className="text-sm text-gray-600">{profile?.specialization}</p>
-                  <p className="text-sm text-gray-600">BMDC Reg: {profile?.bmdc_number}</p>
-                  <p className="text-xs text-gray-500 mt-1">{profile?.chamber_address}</p>
+                  <p className="text-sm text-muted-foreground">{profile?.specialization}</p>
+                  <p className="text-sm text-muted-foreground">BMDC Reg: {profile?.bmdc_number}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{profile?.chamber_address}</p>
                 </div>
 
                 {selectedPatient && (
                   <div className="mb-4 pb-4 border-b">
                     <div className="flex justify-between text-sm">
                       <div>
-                        <span className="text-gray-500">Patient: </span>
+                        <span className="text-muted-foreground">Patient: </span>
                         <span className="font-medium">{selectedPatient.name}</span>
                       </div>
                       <div>
-                        <span className="text-gray-500">Date: </span>
+                        <span className="text-muted-foreground">Date: </span>
                         {format(new Date(), "dd/MM/yyyy")}
                       </div>
                     </div>
-                    <div className="flex gap-4 text-sm text-gray-600">
+                    <div className="flex gap-4 text-sm text-muted-foreground">
                       {selectedPatient.age && <span>Age: {selectedPatient.age} yrs</span>}
-                      {selectedPatient.gender && <span>Gender: {selectedPatient.gender}</span>}
+                      {selectedPatient.gender && <span>Sex: {selectedPatient.gender}</span>}
+                      {selectedPatient.blood_group && <span>BG: {selectedPatient.blood_group}</span>}
                     </div>
                   </div>
                 )}
@@ -434,6 +449,20 @@ const Prescriptions = () => {
                   <div className="mb-4 text-sm">
                     {symptoms && <p><span className="font-medium">C/C:</span> {symptoms}</p>}
                     {diagnosis && <p><span className="font-medium">Diagnosis:</span> {diagnosis}</p>}
+                  </div>
+                )}
+
+                {/* Investigations Preview */}
+                {selectedInvestigations.length > 0 && (
+                  <div className="mb-4 pb-3 border-b">
+                    <h4 className="font-medium text-sm mb-2">🔬 Investigations:</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedInvestigations.map((inv, i) => (
+                        <span key={i} className="bg-muted px-2 py-0.5 rounded text-xs">
+                          {language === "bangla" && inv.name_bn ? inv.name_bn : inv.name}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -448,10 +477,10 @@ const Prescriptions = () => {
                           <span className="font-medium">{i + 1}. </span>
                           {language === "bangla" && med.name_bn ? med.name_bn : med.name}
                           {med.instructions && (
-                            <span className="text-gray-500 italic ml-2">({med.instructions})</span>
+                            <span className="text-muted-foreground italic ml-2">({med.instructions})</span>
                           )}
                         </div>
-                        <div className="text-right text-gray-600">
+                        <div className="text-right text-muted-foreground">
                           <div>{med.dosage}</div>
                           <div className="text-xs">{getDurationLabel(med.duration, language)}</div>
                         </div>
@@ -463,21 +492,21 @@ const Prescriptions = () => {
                 {advice && (
                   <div className="mb-4 pt-4 border-t">
                     <h4 className="font-medium text-sm mb-1">Advice:</h4>
-                    <p className="text-sm text-gray-600 whitespace-pre-line">{advice}</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-line">{advice}</p>
                   </div>
                 )}
 
                 {nextVisit && (
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-muted-foreground">
                     <Calendar className="inline h-4 w-4 mr-1" />
                     Next visit: {format(new Date(nextVisit), "dd/MM/yyyy")}
                   </div>
                 )}
 
                 <div className="mt-8 pt-4 border-t text-right">
-                  <div className="inline-block border-t border-gray-400 pt-1">
+                  <div className="inline-block border-t border-border pt-1">
                     <p className="font-medium">{profile?.full_name}</p>
-                    <p className="text-xs text-gray-500">Signature</p>
+                    <p className="text-xs text-muted-foreground">Signature</p>
                   </div>
                 </div>
               </div>
@@ -569,12 +598,21 @@ const Prescriptions = () => {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {prescriptions.map((p) => (
-                <Card key={p.id} className="hover:shadow-md transition-shadow">
+                <Card 
+                  key={p.id} 
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => setViewPrescription(p)}
+                >
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-base">{p.patient?.name || "Unknown"}</CardTitle>
-                        <CardDescription>{p.patient?.phone}</CardDescription>
+                        <CardDescription>
+                          {p.patient?.phone}
+                          {p.patient?.age && ` • ${p.patient.age} yrs`}
+                          {p.patient?.gender && ` • ${p.patient.gender}`}
+                          {p.patient?.blood_group && ` • ${p.patient.blood_group}`}
+                        </CardDescription>
                       </div>
                       <Badge variant="outline">
                         {format(new Date(p.created_at), "dd MMM")}
@@ -582,7 +620,7 @@ const Prescriptions = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-1">
+                    <div className="space-y-1 mb-3">
                       {(p.medicines || []).slice(0, 3).map((m, i) => (
                         <p key={i} className="text-sm text-muted-foreground truncate">
                           • {m.name}
@@ -594,6 +632,32 @@ const Prescriptions = () => {
                         </p>
                       )}
                     </div>
+                    {(p.investigations || []).length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {(p.investigations || []).slice(0, 2).map((inv, i) => (
+                          <Badge key={i} variant="secondary" className="text-xs">
+                            {inv.name.length > 15 ? inv.name.slice(0, 15) + "..." : inv.name}
+                          </Badge>
+                        ))}
+                        {(p.investigations || []).length > 2 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{(p.investigations || []).length - 2}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full mt-3"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setViewPrescription(p);
+                      }}
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      View Details
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
@@ -648,6 +712,13 @@ const Prescriptions = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Prescription View Modal */}
+      <PrescriptionView
+        prescription={viewPrescription}
+        isOpen={!!viewPrescription}
+        onClose={() => setViewPrescription(null)}
+      />
     </DashboardLayout>
   );
 };
