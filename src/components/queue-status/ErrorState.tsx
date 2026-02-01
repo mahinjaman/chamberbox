@@ -1,11 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { AlertCircle, WifiOff, CheckCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, WifiOff, CheckCircle, RefreshCw, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { QueueStatusTranslations } from './types';
 
 interface ErrorStateProps {
-  errorType: 'invalid' | 'already_seen' | 'network';
+  errorType: 'invalid' | 'already_seen' | 'network' | 'notFound';
   onRetry?: () => void;
   t: QueueStatusTranslations;
 }
@@ -15,23 +15,30 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ errorType, onRetry, t })
     invalid: {
       icon: AlertCircle,
       message: t.invalidSerial,
-      color: 'text-red-500',
-      bgColor: 'bg-red-500/10',
-      borderColor: 'border-red-500/30',
+      color: 'text-destructive',
+      bgColor: 'bg-destructive/10',
+      borderColor: 'border-destructive/30',
     },
     already_seen: {
       icon: CheckCircle,
       message: t.alreadySeen,
-      color: 'text-emerald-500',
-      bgColor: 'bg-emerald-500/10',
-      borderColor: 'border-emerald-500/30',
+      color: 'text-success',
+      bgColor: 'bg-success/10',
+      borderColor: 'border-success/30',
     },
     network: {
       icon: WifiOff,
       message: t.networkError,
-      color: 'text-amber-500',
-      bgColor: 'bg-amber-500/10',
-      borderColor: 'border-amber-500/30',
+      color: 'text-warning',
+      bgColor: 'bg-warning/10',
+      borderColor: 'border-warning/30',
+    },
+    notFound: {
+      icon: Search,
+      message: t.notFound,
+      color: 'text-primary',
+      bgColor: 'bg-primary/10',
+      borderColor: 'border-primary/30',
     },
   };
 
@@ -50,6 +57,15 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ errorType, onRetry, t })
         </div>
 
         <p className={`text-base font-medium ${config.color}`}>{config.message}</p>
+
+        {errorType === 'notFound' && (
+          <p className="text-sm text-muted-foreground">
+            {t.phoneNumber === 'মোবাইল নম্বর' 
+              ? 'সঠিক মোবাইল নম্বর দিয়ে আবার চেষ্টা করুন' 
+              : 'Please check your phone number and try again'
+            }
+          </p>
+        )}
 
         {errorType === 'network' && onRetry && (
           <Button onClick={onRetry} variant="outline" className="mt-4">

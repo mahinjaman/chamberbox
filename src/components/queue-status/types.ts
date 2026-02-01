@@ -2,10 +2,11 @@ export interface QueueData {
   currentSerial: number;
   patientSerial: number;
   patientName?: string;
+  patientPhone: string;
   patientsAhead: number;
   estimatedWaitMinutes: number;
   avgConsultationTime: number;
-  queueStatus: 'running' | 'break' | 'closed';
+  queueStatus: 'running' | 'break' | 'closed' | 'waiting';
   doctorName: string;
   chamberName: string;
   chamberAddress: string;
@@ -13,6 +14,8 @@ export interface QueueData {
   scheduleEnd: string;
   lastUpdated: Date;
   expectedCallTime: Date;
+  sessionId: string;
+  tokenStatus: string;
 }
 
 export interface QueueStatusTranslations {
@@ -20,6 +23,7 @@ export interface QueueStatusTranslations {
   subtitle: string;
   serialNumber: string;
   patientName: string;
+  phoneNumber: string;
   checkStatus: string;
   checking: string;
   currentRunning: string;
@@ -44,9 +48,12 @@ export interface QueueStatusTranslations {
   queueRunning: string;
   queueBreak: string;
   queueClosed: string;
+  queueWaiting: string;
   invalidSerial: string;
+  invalidPhone: string;
   alreadySeen: string;
   networkError: string;
+  notFound: string;
   retry: string;
   patientsRemaining: string;
   darkMode: string;
@@ -58,8 +65,9 @@ export const translations: Record<'en' | 'bn', QueueStatusTranslations> = {
   en: {
     title: 'Queue Status Tracker',
     subtitle: 'Check your position in the queue',
-    serialNumber: 'Serial Number',
+    serialNumber: 'Serial Number (Optional)',
     patientName: 'Patient Name (Optional)',
+    phoneNumber: 'Mobile Number',
     checkStatus: 'Check Status',
     checking: 'Checking...',
     currentRunning: 'Current Running Serial',
@@ -84,9 +92,12 @@ export const translations: Record<'en' | 'bn', QueueStatusTranslations> = {
     queueRunning: 'Queue Running',
     queueBreak: 'Doctor on Break',
     queueClosed: 'Queue Closed',
+    queueWaiting: 'Session Not Started',
     invalidSerial: 'Please enter a valid serial number',
-    alreadySeen: 'This serial has already been seen',
+    invalidPhone: 'Please enter a valid mobile number',
+    alreadySeen: 'Your appointment has been completed',
     networkError: 'Unable to fetch queue status. Please try again.',
+    notFound: 'No queue entry found for this mobile number today',
     retry: 'Retry',
     patientsRemaining: 'patients remaining',
     darkMode: 'Dark Mode',
@@ -96,8 +107,9 @@ export const translations: Record<'en' | 'bn', QueueStatusTranslations> = {
   bn: {
     title: 'কিউ স্ট্যাটাস ট্র্যাকার',
     subtitle: 'কিউতে আপনার অবস্থান দেখুন',
-    serialNumber: 'সিরিয়াল নম্বর',
+    serialNumber: 'সিরিয়াল নম্বর (ঐচ্ছিক)',
     patientName: 'রোগীর নাম (ঐচ্ছিক)',
+    phoneNumber: 'মোবাইল নম্বর',
     checkStatus: 'স্ট্যাটাস দেখুন',
     checking: 'চেক করা হচ্ছে...',
     currentRunning: 'বর্তমান সিরিয়াল',
@@ -122,9 +134,12 @@ export const translations: Record<'en' | 'bn', QueueStatusTranslations> = {
     queueRunning: 'কিউ চলছে',
     queueBreak: 'ডাক্তার বিরতিতে',
     queueClosed: 'কিউ বন্ধ',
+    queueWaiting: 'সেশন শুরু হয়নি',
     invalidSerial: 'সঠিক সিরিয়াল নম্বর দিন',
-    alreadySeen: 'এই সিরিয়াল ইতিমধ্যে দেখা হয়েছে',
+    invalidPhone: 'সঠিক মোবাইল নম্বর দিন',
+    alreadySeen: 'আপনার অ্যাপয়েন্টমেন্ট সম্পন্ন হয়েছে',
     networkError: 'স্ট্যাটাস লোড করতে সমস্যা। আবার চেষ্টা করুন।',
+    notFound: 'এই মোবাইল নম্বরে আজকের জন্য কোনো কিউ এন্ট্রি পাওয়া যায়নি',
     retry: 'আবার চেষ্টা',
     patientsRemaining: 'জন বাকি',
     darkMode: 'ডার্ক মোড',
