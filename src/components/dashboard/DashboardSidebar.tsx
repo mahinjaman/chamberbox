@@ -32,6 +32,7 @@ import { useAuth } from "@/lib/auth";
 import { useProfile } from "@/hooks/useProfile";
 import { useAdmin } from "@/hooks/useAdmin";
 import { cn } from "@/lib/utils";
+import { SupportMenuItem } from "./SupportMenuItem";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -123,6 +124,7 @@ export const DashboardSidebar = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SupportMenuItem />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
