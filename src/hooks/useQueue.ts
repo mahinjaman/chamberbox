@@ -18,6 +18,8 @@ export interface QueueToken {
   patient?: {
     name: string;
     phone: string;
+    age: number | null;
+    gender: string | null;
   };
 }
 
@@ -35,7 +37,7 @@ export const useQueue = (date?: string) => {
         .from("queue_tokens")
         .select(`
           *,
-          patient:patients(name, phone)
+          patient:patients(name, phone, age, gender)
         `)
         .eq("doctor_id", profile.id)
         .eq("queue_date", queueDate)
