@@ -562,9 +562,77 @@ export type Database = {
         }
         Relationships: []
       }
+      queue_sessions: {
+        Row: {
+          avg_consultation_minutes: number | null
+          chamber_id: string
+          created_at: string
+          current_token: number | null
+          doctor_id: string
+          end_time: string
+          id: string
+          is_custom: boolean | null
+          max_patients: number | null
+          notes: string | null
+          session_date: string
+          start_time: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          avg_consultation_minutes?: number | null
+          chamber_id: string
+          created_at?: string
+          current_token?: number | null
+          doctor_id: string
+          end_time: string
+          id?: string
+          is_custom?: boolean | null
+          max_patients?: number | null
+          notes?: string | null
+          session_date: string
+          start_time: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avg_consultation_minutes?: number | null
+          chamber_id?: string
+          created_at?: string
+          current_token?: number | null
+          doctor_id?: string
+          end_time?: string
+          id?: string
+          is_custom?: boolean | null
+          max_patients?: number | null
+          notes?: string | null
+          session_date?: string
+          start_time?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "queue_sessions_chamber_id_fkey"
+            columns: ["chamber_id"]
+            isOneToOne: false
+            referencedRelation: "chambers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_sessions_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       queue_tokens: {
         Row: {
+          booked_by: string | null
           called_at: string | null
+          chamber_id: string | null
           completed_at: string | null
           created_at: string
           doctor_id: string
@@ -572,11 +640,14 @@ export type Database = {
           id: string
           patient_id: string
           queue_date: string
+          session_id: string | null
           status: string | null
           token_number: number
         }
         Insert: {
+          booked_by?: string | null
           called_at?: string | null
+          chamber_id?: string | null
           completed_at?: string | null
           created_at?: string
           doctor_id: string
@@ -584,11 +655,14 @@ export type Database = {
           id?: string
           patient_id: string
           queue_date?: string
+          session_id?: string | null
           status?: string | null
           token_number: number
         }
         Update: {
+          booked_by?: string | null
           called_at?: string | null
+          chamber_id?: string | null
           completed_at?: string | null
           created_at?: string
           doctor_id?: string
@@ -596,10 +670,18 @@ export type Database = {
           id?: string
           patient_id?: string
           queue_date?: string
+          session_id?: string | null
           status?: string | null
           token_number?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "queue_tokens_chamber_id_fkey"
+            columns: ["chamber_id"]
+            isOneToOne: false
+            referencedRelation: "chambers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "queue_tokens_doctor_id_fkey"
             columns: ["doctor_id"]
@@ -612,6 +694,13 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_tokens_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "queue_sessions"
             referencedColumns: ["id"]
           },
         ]
