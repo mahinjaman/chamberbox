@@ -165,19 +165,25 @@ const DoctorPublicProfile = () => {
                     </Badge>
                   )}
                 </div>
-                {profile.specialization && (
-                  <Badge variant="secondary" className="mt-2">{profile.specialization}</Badge>
-                )}
-                {profile.degrees && profile.degrees.length > 0 && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {profile.degrees.join(" | ")}
-                  </p>
-                )}
                 
-                {/* Social Links */}
-                <div className="mt-3">
-                  <ProfileSocialLinksSection socialLinks={socialLinks} youtubeUrl={profile.youtube_url} />
+                {/* Specialization & Degrees Row */}
+                <div className="flex items-center gap-3 mt-2 flex-wrap">
+                  {profile.specialization && (
+                    <Badge variant="default" className="text-sm px-3 py-1">{profile.specialization}</Badge>
+                  )}
+                  {profile.degrees && profile.degrees.length > 0 && (
+                    <span className="text-sm text-muted-foreground">
+                      {profile.degrees.join(" • ")}
+                    </span>
+                  )}
                 </div>
+                
+                {/* Social Links - Better positioned */}
+                {socialLinks && Object.values(socialLinks).some(v => v) && (
+                  <div className="mt-4 pt-3 border-t border-border/50">
+                    <ProfileSocialLinksSection socialLinks={socialLinks} youtubeUrl={profile.youtube_url} />
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
