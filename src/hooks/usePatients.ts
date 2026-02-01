@@ -10,7 +10,7 @@ export interface Patient {
   name: string;
   phone: string;
   age: number | null;
-  gender: "male" | "female" | "other" | null;
+  gender: "male" | "female" | null;
   blood_group: string | null;
   address: string | null;
   allergies: string[] | null;

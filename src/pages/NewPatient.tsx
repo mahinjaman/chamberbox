@@ -27,20 +27,38 @@ const NewPatient = () => {
     name: "",
     phone: "",
     age: "",
-    gender: "" as "male" | "female" | "other" | "",
+    gender: "" as "male" | "female" | "",
     blood_group: "",
     address: "",
   });
+  
+  const [errors, setErrors] = useState<{ age?: string; gender?: string }>({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate mandatory fields
+    const newErrors: { age?: string; gender?: string } = {};
+    if (!formData.age || parseInt(formData.age) <= 0) {
+      newErrors.age = "Age is required";
+    }
+    if (!formData.gender) {
+      newErrors.gender = "Gender is required";
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    
+    setErrors({});
     
     addPatient(
       {
         name: formData.name.trim(),
         phone: formData.phone.trim(),
-        age: formData.age ? parseInt(formData.age) : null,
-        gender: formData.gender || null,
+        age: parseInt(formData.age),
+        gender: formData.gender as "male" | "female",
         blood_group: formData.blood_group || null,
         address: formData.address.trim() || null,
         allergies: null,
@@ -71,7 +89,7 @@ const NewPatient = () => {
           <CardHeader>
             <CardTitle>Patient Information</CardTitle>
             <CardDescription>
-              Enter the patient's details. Only name and phone are required.
+              Enter the patient's details. Name, phone, age and gender are required.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -101,35 +119,42 @@ const NewPatient = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="age">Age</Label>
+                  <Label htmlFor="age">Age *</Label>
                   <Input
                     id="age"
                     type="number"
                     placeholder="Age in years"
-                    min="0"
+                    min="1"
                     max="150"
                     value={formData.age}
-                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, age: e.target.value });
+                      if (errors.age) setErrors({ ...errors, age: undefined });
+                    }}
+                    required
+                    className={errors.age ? "border-destructive" : ""}
                   />
+                  {errors.age && <p className="text-sm text-destructive">{errors.age}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="gender">Gender</Label>
+                  <Label htmlFor="gender">Gender *</Label>
                   <Select
                     value={formData.gender}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, gender: value as "male" | "female" | "other" })
-                    }
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, gender: value as "male" | "female" });
+                      if (errors.gender) setErrors({ ...errors, gender: undefined });
+                    }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className={errors.gender ? "border-destructive" : ""}>
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="male">Male</SelectItem>
                       <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.gender && <p className="text-sm text-destructive">{errors.gender}</p>}
                 </div>
 
                 <div className="space-y-2">
