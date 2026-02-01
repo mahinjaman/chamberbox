@@ -15,6 +15,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { BookingWidget } from "@/components/public-profile/BookingWidget";
 import { CalendlyWidget } from "@/components/public-profile/CalendlyWidget";
+import { QueueBookingWidget } from "@/components/public-profile/QueueBookingWidget";
 
 const DoctorPublicProfile = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -335,9 +336,15 @@ const DoctorPublicProfile = () => {
             )}
           </div>
 
-          {/* Right Column - Booking Widget (Desktop) */}
+          {/* Right Column - Booking Widgets (Desktop) */}
           <div className="hidden md:block">
             <div className="sticky top-4 space-y-4">
+              {/* Queue Booking Widget - Take Serial */}
+              <QueueBookingWidget 
+                profile={profile} 
+                chamber={primaryChamber || null}
+              />
+              
               {/* Calendly Widget if enabled */}
               {integrationSettings?.calendly_enabled && !useBuiltInBooking ? (
                 <CalendlyWidget
