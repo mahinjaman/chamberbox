@@ -647,9 +647,9 @@ const Prescriptions = () => {
                       </div>
                     )}
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="w-full mt-3"
+                      className="w-full mt-3 border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
                       onClick={(e) => {
                         e.stopPropagation();
                         setViewPrescription(p);
