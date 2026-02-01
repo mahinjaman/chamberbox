@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useDoctorProfile } from "@/hooks/useDoctorProfile";
@@ -9,7 +8,9 @@ import { ProfileBasicInfo } from "@/components/profile-editor/ProfileBasicInfo";
 import { ProfileChambers } from "@/components/profile-editor/ProfileChambers";
 import { ProfilePublicSettings } from "@/components/profile-editor/ProfilePublicSettings";
 import { ProfilePreview } from "@/components/profile-editor/ProfilePreview";
-import { Loader2, User, Building2, Globe, Eye, Plug, ArrowRight } from "lucide-react";
+import { ProfileSocialLinks } from "@/components/profile-editor/ProfileSocialLinks";
+import { ProfileEducation } from "@/components/profile-editor/ProfileEducation";
+import { Loader2, User, Building2, Globe, Eye, Plug, ArrowRight, Share2, GraduationCap } from "lucide-react";
 
 const ProfileEditor = () => {
   const { profile, chambers, availabilitySlots, isLoading } = useDoctorProfile();
@@ -42,10 +43,18 @@ const ProfileEditor = () => {
       <div className="space-y-6">
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-flex">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 lg:w-auto lg:inline-flex">
             <TabsTrigger value="basic" className="gap-2">
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Basic Info</span>
+            </TabsTrigger>
+            <TabsTrigger value="education" className="gap-2">
+              <GraduationCap className="w-4 h-4" />
+              <span className="hidden sm:inline">Education</span>
+            </TabsTrigger>
+            <TabsTrigger value="social" className="gap-2">
+              <Share2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Social</span>
             </TabsTrigger>
             <TabsTrigger value="chambers" className="gap-2">
               <Building2 className="w-4 h-4" />
@@ -63,6 +72,14 @@ const ProfileEditor = () => {
 
           <TabsContent value="basic">
             <ProfileBasicInfo profile={profile} />
+          </TabsContent>
+
+          <TabsContent value="education">
+            <ProfileEducation profile={profile} />
+          </TabsContent>
+
+          <TabsContent value="social">
+            <ProfileSocialLinks profile={profile} />
           </TabsContent>
 
           <TabsContent value="chambers">
