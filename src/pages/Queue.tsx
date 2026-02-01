@@ -14,8 +14,11 @@ import {
   Loader2,
   UserPlus,
   Search,
-  Plus
+  Plus,
+  FileText,
+  SkipForward
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
@@ -39,8 +42,10 @@ import {
 import { toast } from "sonner";
 
 const Queue = () => {
+  const navigate = useNavigate();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isNewPatientDialogOpen, setIsNewPatientDialogOpen] = useState(false);
+  const [isPrescriptionPromptOpen, setIsPrescriptionPromptOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [newPatientName, setNewPatientName] = useState("");
   const [newPatientPhone, setNewPatientPhone] = useState("");
@@ -134,8 +139,32 @@ const Queue = () => {
     }
   };
 
-  const handleCallNext = async () => {
+  const handleCallNextClick = () => {
+    // If there's a current patient, show prescription prompt
+    if (currentToken) {
+      setIsPrescriptionPromptOpen(true);
+    } else {
+      // No current patient, just call next
+      callNext();
+    }
+  };
+
+  const handleMakePrescription = () => {
+    if (currentToken) {
+      navigate(`/prescriptions?patientId=${currentToken.patient_id}`);
+    }
+  };
+
+  const handleSkipPrescription = async () => {
+    setIsPrescriptionPromptOpen(false);
     await callNext();
+  };
+
+  const handleMakePrescriptionAndCallNext = () => {
+    setIsPrescriptionPromptOpen(false);
+    if (currentToken) {
+      navigate(`/prescriptions?patientId=${currentToken.patient_id}`);
+    }
   };
 
   const handleComplete = (id: string) => {
@@ -319,8 +348,8 @@ const Queue = () => {
             </DialogContent>
           </Dialog>
           <Button 
-            onClick={handleCallNext} 
-            disabled={waitingCount === 0}
+            onClick={handleCallNextClick} 
+            disabled={waitingCount === 0 && !currentToken}
             size="lg"
           >
             <Play className="mr-2 h-4 w-4" />
@@ -422,6 +451,12 @@ const Queue = () => {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    <Button
+                      onClick={handleMakePrescription}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Make Prescription
+                    </Button>
                     <Button
                       variant="outline"
                       onClick={() => handleComplete(currentToken.id)}
@@ -544,6 +579,28 @@ const Queue = () => {
           </Card>
         </div>
       )}
+
+      {/* Prescription Prompt Dialog */}
+      <Dialog open={isPrescriptionPromptOpen} onOpenChange={setIsPrescriptionPromptOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create Prescription?</DialogTitle>
+            <DialogDescription>
+              {currentToken?.patient?.name} is currently being served. Would you like to create a prescription before calling the next patient?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 pt-4">
+            <Button onClick={handleMakePrescriptionAndCallNext} className="w-full">
+              <FileText className="mr-2 h-4 w-4" />
+              Make Prescription
+            </Button>
+            <Button variant="outline" onClick={handleSkipPrescription} className="w-full">
+              <SkipForward className="mr-2 h-4 w-4" />
+              Skip & Call Next
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
