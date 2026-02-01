@@ -49,7 +49,7 @@ export const DoctorInfoCard: React.FC<DoctorInfoCardProps> = ({
       className="relative overflow-hidden rounded-2xl bg-card/80 backdrop-blur-xl border border-border/50 shadow-xl p-6"
     >
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-emerald-500/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-success/5 pointer-events-none" />
 
       <div className="relative space-y-5">
         {/* Header */}
@@ -78,19 +78,17 @@ export const DoctorInfoCard: React.FC<DoctorInfoCardProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-2">
           <Button
-            variant="outline"
             onClick={handleGetDirections}
-            className="h-11 border-primary/30 hover:bg-primary/5"
+            className="w-full h-10 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-medium shadow-md shadow-primary/20 transition-all duration-300"
           >
             <Navigation className="mr-2 h-4 w-4" />
             {t.directions}
           </Button>
           <Button
-            variant="outline"
             onClick={handleShareWhatsApp}
-            className="h-11 border-emerald-500/30 hover:bg-emerald-500/5 text-emerald-600 dark:text-emerald-400"
+            className="w-full h-10 bg-gradient-to-r from-success to-success/80 hover:from-success/90 hover:to-success/70 text-success-foreground font-medium shadow-md shadow-success/20 transition-all duration-300"
           >
             <Share2 className="mr-2 h-4 w-4" />
             {t.shareWhatsApp}
