@@ -465,7 +465,9 @@ export type Database = {
           chamber_address: string | null
           cover_photo_url: string | null
           created_at: string
+          custom_info: Json | null
           degrees: string[] | null
+          education: Json | null
           email: string | null
           experience_years: number | null
           full_name: string
@@ -479,6 +481,7 @@ export type Database = {
           seo_title: string | null
           services: string[] | null
           slug: string | null
+          social_links: Json | null
           specialization: string | null
           subscription_expires_at: string | null
           subscription_tier:
@@ -487,6 +490,7 @@ export type Database = {
           updated_at: string
           user_id: string
           verified: boolean | null
+          youtube_url: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -495,7 +499,9 @@ export type Database = {
           chamber_address?: string | null
           cover_photo_url?: string | null
           created_at?: string
+          custom_info?: Json | null
           degrees?: string[] | null
+          education?: Json | null
           email?: string | null
           experience_years?: number | null
           full_name: string
@@ -509,6 +515,7 @@ export type Database = {
           seo_title?: string | null
           services?: string[] | null
           slug?: string | null
+          social_links?: Json | null
           specialization?: string | null
           subscription_expires_at?: string | null
           subscription_tier?:
@@ -517,6 +524,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           verified?: boolean | null
+          youtube_url?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -525,7 +533,9 @@ export type Database = {
           chamber_address?: string | null
           cover_photo_url?: string | null
           created_at?: string
+          custom_info?: Json | null
           degrees?: string[] | null
+          education?: Json | null
           email?: string | null
           experience_years?: number | null
           full_name?: string
@@ -539,6 +549,7 @@ export type Database = {
           seo_title?: string | null
           services?: string[] | null
           slug?: string | null
+          social_links?: Json | null
           specialization?: string | null
           subscription_expires_at?: string | null
           subscription_tier?:
@@ -547,6 +558,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           verified?: boolean | null
+          youtube_url?: string | null
         }
         Relationships: []
       }
