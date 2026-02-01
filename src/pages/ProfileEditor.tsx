@@ -26,23 +26,20 @@ const ProfileEditor = () => {
   }
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      title="Public Profile"
+      description="Manage your public presence and appointment booking page"
+      actions={
+        <Button variant="outline" asChild>
+          <Link to="/dashboard/integrations">
+            <Plug className="w-4 h-4 mr-2" />
+            Integrations
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Link>
+        </Button>
+      }
+    >
       <div className="space-y-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Public Profile</h1>
-            <p className="text-muted-foreground">
-              Manage your public presence and appointment booking page
-            </p>
-          </div>
-          <Button variant="outline" asChild>
-            <Link to="/dashboard/integrations">
-              <Plug className="w-4 h-4 mr-2" />
-              Integrations
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Link>
-          </Button>
-        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-flex">
