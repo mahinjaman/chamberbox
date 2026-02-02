@@ -233,24 +233,14 @@ const StaffLogin = () => {
               </div>
             </div>
 
-            <div className="flex gap-2 w-full">
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="flex-1"
-                onClick={() => navigate("/login")}
-              >
-                {language === "bn" ? "ডাক্তার" : "Doctor"}
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="flex-1"
-                onClick={() => navigate("/admin/login")}
-              >
-                {language === "bn" ? "অ্যাডমিন" : "Admin"}
-              </Button>
-            </div>
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full"
+              onClick={() => navigate("/login")}
+            >
+              {language === "bn" ? "ডাক্তার লগইন" : "Doctor Login"}
+            </Button>
           </CardFooter>
         </form>
       </Card>
