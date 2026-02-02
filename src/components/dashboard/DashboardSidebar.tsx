@@ -33,23 +33,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { useAdmin } from "@/hooks/useAdmin";
 import { cn } from "@/lib/utils";
 import { SupportMenuItem } from "./SupportMenuItem";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
-const mainNavItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Patients", url: "/dashboard/patients", icon: Users },
-  { title: "Queue", url: "/dashboard/queue", icon: Clock },
-  { title: "Queue Status", url: "/queue-status", icon: ListOrdered, external: true },
-  { title: "Prescriptions", url: "/dashboard/prescriptions", icon: FileText },
-  { title: "Finances", url: "/dashboard/finances", icon: CreditCard },
-  { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
-];
-
-const settingsNavItems = [
-  { title: "Public Profile", url: "/dashboard/profile", icon: Globe },
-  { title: "Integrations", url: "/dashboard/integrations", icon: Plug },
-  { title: "My Tickets", url: "/dashboard/tickets", icon: MessageSquare },
-  { title: "Settings", url: "/dashboard/settings", icon: Settings },
-];
 
 export const DashboardSidebar = () => {
   const location = useLocation();
@@ -58,6 +43,25 @@ export const DashboardSidebar = () => {
   const { isAdmin } = useAdmin();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const { t } = useLanguage();
+
+  // Navigation items with translated titles
+  const mainNavItems = [
+    { title: t.nav.dashboard, url: "/dashboard", icon: LayoutDashboard },
+    { title: t.nav.patients, url: "/dashboard/patients", icon: Users },
+    { title: t.nav.queue, url: "/dashboard/queue", icon: Clock },
+    { title: t.nav.queueStatus, url: "/queue-status", icon: ListOrdered, external: true },
+    { title: t.nav.prescriptions, url: "/dashboard/prescriptions", icon: FileText },
+    { title: t.nav.finances, url: "/dashboard/finances", icon: CreditCard },
+    { title: t.nav.analytics, url: "/dashboard/analytics", icon: BarChart3 },
+  ];
+
+  const settingsNavItems = [
+    { title: t.nav.myProfile, url: "/dashboard/profile", icon: Globe },
+    { title: t.nav.integrations, url: "/dashboard/integrations", icon: Plug },
+    { title: t.nav.myTickets, url: "/dashboard/tickets", icon: MessageSquare },
+    { title: t.nav.settings, url: "/dashboard/settings", icon: Settings },
+  ];
 
   const isActive = (path: string) => {
     if (path === "/dashboard") {
@@ -172,7 +176,7 @@ export const DashboardSidebar = () => {
           onClick={signOut}
         >
           <LogOut className="w-5 h-5" />
-          {!collapsed && <span className="ml-2">Sign out</span>}
+          {!collapsed && <span className="ml-2">{t.nav.logout}</span>}
         </Button>
       </SidebarFooter>
     </Sidebar>

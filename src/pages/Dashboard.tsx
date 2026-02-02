@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PrescriptionModal } from "@/components/queue/PrescriptionModal";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const Dashboard = () => {
   const { profile } = useProfile();
@@ -34,6 +35,7 @@ const Dashboard = () => {
   const { queue, currentToken, waitingCount, completedCount, callNext } = useQueue();
   const [isPrescriptionPromptOpen, setIsPrescriptionPromptOpen] = useState(false);
   const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false);
+  const { t } = useLanguage();
 
   const todaysPatients = completedCount + (currentToken ? 1 : 0);
   const estimatedEarnings = todaysPatients * 500; // Placeholder: ৳500 per visit
@@ -65,36 +67,36 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout
-      title={`Welcome back, ${profile?.full_name?.split(" ")[0] || "Doctor"}!`}
-      description="Here's what's happening in your chamber today"
+      title={`${t.dashboard.welcome}, ${profile?.full_name?.split(" ")[0] || "Doctor"}!`}
+      description={t.landing.heroSubtitle.split('.')[0]}
     >
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <StatsCard
-          title="Patients Today"
+          title={t.dashboard.todayAppointments}
           value={todaysPatients}
-          description={`${waitingCount} waiting in queue`}
+          description={`${waitingCount} ${t.queue.patientsWaiting.toLowerCase()}`}
           icon={<Users className="w-6 h-6" />}
           variant="primary"
         />
         <StatsCard
-          title="Current Token"
+          title={t.queue.currentToken}
           value={currentToken ? `#${currentToken.token_number}` : "—"}
-          description={currentToken?.patient?.name || "No one in queue"}
+          description={currentToken?.patient?.name || t.queue.queueEmpty}
           icon={<Clock className="w-6 h-6" />}
           variant="success"
         />
         <StatsCard
-          title="Total Patients"
+          title={t.dashboard.totalPatients}
           value={patients.length}
-          description="Registered patients"
+          description={t.patients.title}
           icon={<Users className="w-6 h-6" />}
           variant="default"
         />
         <StatsCard
-          title="Today's Earnings"
+          title={t.dashboard.totalRevenue}
           value={`৳${estimatedEarnings.toLocaleString()}`}
-          description="Estimated collection"
+          description={t.finances.income}
           icon={<CreditCard className="w-6 h-6" />}
           variant="accent"
         />
@@ -104,16 +106,16 @@ const Dashboard = () => {
         {/* Quick Actions */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Quick Actions</CardTitle>
-            <CardDescription>Common tasks at your fingertips</CardDescription>
+            <CardTitle className="text-lg">{t.dashboard.quickActions}</CardTitle>
+            <CardDescription>{t.common.actions}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2">
             <Button asChild size="lg" className="justify-start h-auto py-4">
               <Link to="/dashboard/patients/new">
                 <UserPlus className="mr-3 h-5 w-5" />
                 <div className="text-left">
-                  <div className="font-medium">New Patient</div>
-                  <div className="text-xs opacity-80">Register a patient</div>
+                  <div className="font-medium">{t.dashboard.newPatient}</div>
+                  <div className="text-xs opacity-80">{t.patients.addPatient}</div>
                 </div>
               </Link>
             </Button>
@@ -126,16 +128,16 @@ const Dashboard = () => {
             >
               <Play className="mr-3 h-5 w-5" />
               <div className="text-left">
-                <div className="font-medium">Call Next</div>
-                <div className="text-xs opacity-80">{waitingCount} waiting</div>
+                <div className="font-medium">{t.queue.callNext}</div>
+                <div className="text-xs opacity-80">{waitingCount} {t.queue.patientsWaiting.toLowerCase()}</div>
               </div>
             </Button>
             <Button asChild size="lg" variant="outline" className="justify-start h-auto py-4">
               <Link to="/dashboard/patients">
                 <Users className="mr-3 h-5 w-5" />
                 <div className="text-left">
-                  <div className="font-medium">View Patients</div>
-                  <div className="text-xs opacity-80">Search & manage</div>
+                  <div className="font-medium">{t.patients.title}</div>
+                  <div className="text-xs opacity-80">{t.common.search}</div>
                 </div>
               </Link>
             </Button>
@@ -143,8 +145,8 @@ const Dashboard = () => {
               <Link to="/dashboard/queue">
                 <Clock className="mr-3 h-5 w-5" />
                 <div className="text-left">
-                  <div className="font-medium">Manage Queue</div>
-                  <div className="text-xs opacity-80">Today's appointments</div>
+                  <div className="font-medium">{t.queue.queueManagement}</div>
+                  <div className="text-xs opacity-80">{t.common.today}</div>
                 </div>
               </Link>
             </Button>
@@ -155,12 +157,12 @@ const Dashboard = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg">Today's Queue</CardTitle>
-              <CardDescription>{queue.length} patients total</CardDescription>
+              <CardTitle className="text-lg">{t.queue.currentQueue}</CardTitle>
+              <CardDescription>{queue.length} {t.patients.title.toLowerCase()}</CardDescription>
             </div>
             <Button variant="ghost" size="sm" asChild>
               <Link to="/dashboard/queue">
-                View all <ArrowRight className="ml-1 h-4 w-4" />
+                {t.common.view} <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
           </CardHeader>
@@ -168,9 +170,9 @@ const Dashboard = () => {
             {queue.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>No patients in queue today</p>
+                <p>{t.queue.queueEmpty}</p>
                 <Button variant="link" asChild className="mt-2">
-                  <Link to="/dashboard/patients">Add patients to queue</Link>
+                  <Link to="/dashboard/patients">{t.queue.addToQueue}</Link>
                 </Button>
               </div>
             ) : (

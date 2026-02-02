@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/lib/auth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { FloatingWidgets } from "@/components/common/FloatingWidgets";
 
 // Pages
@@ -41,10 +42,11 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
+    <LanguageProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
         <BrowserRouter>
           <Routes>
             {/* Public Routes */}
@@ -209,8 +211,9 @@ const App = () => (
           </Routes>
           <FloatingWidgets />
         </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+        </TooltipProvider>
+      </AuthProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 
