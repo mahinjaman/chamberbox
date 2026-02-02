@@ -239,7 +239,7 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                 </span>
               </div>
               
-              <ScrollArea className="h-[180px]">
+              <ScrollArea className="max-h-[180px]">
                 <div className="space-y-2 pr-4">
                   {slotsForDate.map((slot, idx) => {
                     const isSelected = selectedSlot?.chamber_id === slot.chamber_id && 
