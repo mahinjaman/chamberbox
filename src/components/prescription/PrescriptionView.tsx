@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Prescription, PrescriptionMedicine } from "@/hooks/usePrescriptions";
 import { useProfile } from "@/hooks/useProfile";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { Printer, Download, Share2, X } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -31,7 +32,9 @@ export const PrescriptionView = ({
   onClose,
 }: PrescriptionViewProps) => {
   const { profile } = useProfile();
+  const { canUseBranding } = useFeatureAccess();
   const printRef = useRef<HTMLDivElement>(null);
+  const hasBranding = canUseBranding();
 
   if (!prescription) return null;
 
@@ -46,6 +49,22 @@ export const PrescriptionView = ({
       toast.error("Please allow popups for printing");
       return;
     }
+
+    // Custom branding footer - only show ChamberBox branding if user doesn't have branding feature
+    const footerContent = hasBranding 
+      ? `
+        <div class="print-footer">
+          <p>Printed on: ${format(new Date(), "dd MMM yyyy, hh:mm a")}</p>
+          ${profile?.phone ? `<p>Contact: ${profile.phone}</p>` : ""}
+        </div>
+      `
+      : `
+        <div class="print-footer">
+          <p>Printed on: ${format(new Date(), "dd MMM yyyy, hh:mm a")}</p>
+          <p class="software-name">Powered by ChamberBox</p>
+          <p>Contact: +880 1234-567890 | support@chamberbox.com</p>
+        </div>
+      `;
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -63,6 +82,7 @@ export const PrescriptionView = ({
             .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
             .header h1 { margin: 0; font-size: 24px; }
             .header p { margin: 5px 0; color: #555; font-size: 14px; }
+            .header-logo { max-height: 60px; margin-bottom: 10px; }
             .patient-info { display: flex; justify-content: space-between; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px; }
             .patient-info div { font-size: 14px; }
             .section { margin-bottom: 20px; }
@@ -89,11 +109,7 @@ export const PrescriptionView = ({
               <span style="font-size: 12px; color: #555;">${profile?.specialization || ""}</span>
             </div>
           </div>
-          <div class="print-footer">
-            <p>Printed on: ${format(new Date(), "dd MMM yyyy, hh:mm a")}</p>
-            <p class="software-name">Powered by ChamberBox</p>
-            <p>Contact: +880 1234-567890 | support@chamberbox.com</p>
-          </div>
+          ${footerContent}
         </body>
       </html>
     `);
@@ -123,6 +139,11 @@ export const PrescriptionView = ({
       ? `\n\n🔬 *Investigations:*\n${investigations.map(inv => `• ${inv.name}`).join("\n")}`
       : "";
 
+    // Only show ChamberBox branding if user doesn't have branding feature
+    const brandingFooter = hasBranding 
+      ? "_Digital Prescription_"
+      : "_This is a digital prescription from ChamberBox_";
+
     const message = `
 🏥 *Prescription*
 Dr. ${profile?.full_name || "Doctor"}
@@ -139,7 +160,7 @@ ${investigationsText}
 ${prescription.advice ? `\n📝 *Advice:*\n${prescription.advice}` : ""}
 ${prescription.next_visit_date ? `\n📆 *Next Visit:* ${format(new Date(prescription.next_visit_date), "dd/MM/yyyy")}` : ""}
 
-_This is a digital prescription from ChamberBox_
+${brandingFooter}
     `.trim();
 
     const phone = prescription.patient.phone.startsWith("0")
@@ -276,11 +297,18 @@ _This is a digital prescription from ChamberBox_
             </div>
           )}
 
-          {/* Print Footer */}
+          {/* Print Footer - Only show ChamberBox branding if user doesn't have branding feature */}
           <div className="mt-8 pt-4 border-t border-dashed text-center text-xs text-muted-foreground">
             <p>Printed on: {format(new Date(), "dd MMM yyyy, hh:mm a")}</p>
-            <p className="font-semibold text-foreground/70 mt-1">Powered by ChamberBox</p>
-            <p>Contact: +880 1234-567890 | support@chamberbox.com</p>
+            {!hasBranding && (
+              <>
+                <p className="font-semibold text-foreground/70 mt-1">Powered by ChamberBox</p>
+                <p>Contact: +880 1234-567890 | support@chamberbox.com</p>
+              </>
+            )}
+            {hasBranding && profile?.phone && (
+              <p className="mt-1">Contact: {profile.phone}</p>
+            )}
           </div>
         </div>
       </DialogContent>

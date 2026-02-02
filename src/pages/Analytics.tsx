@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useFilteredAnalytics } from "@/hooks/useFilteredAnalytics";
 import { useProfile } from "@/hooks/useProfile";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { FeatureGate } from "@/components/common/FeatureGate";
 import { AnalyticsFilters } from "@/components/analytics/AnalyticsFilters";
 import { AnalyticsExport } from "@/components/analytics/AnalyticsExport";
 import { subDays } from "date-fns";
@@ -59,6 +61,7 @@ const TRANSACTION_CATEGORIES = [
 
 const Analytics = () => {
   const { profile } = useProfile();
+  const { canUseAnalytics } = useFeatureAccess();
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [category, setCategory] = useState<string>("all");
@@ -74,6 +77,20 @@ const Analytics = () => {
     setEndDate(new Date());
     setCategory("all");
   };
+
+  // Check if user has access to analytics
+  if (!canUseAnalytics()) {
+    return (
+      <DashboardLayout
+        title="Analytics & Insights"
+        description="Track your practice performance and patient trends"
+      >
+        <FeatureGate feature="analytics">
+          <div />
+        </FeatureGate>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout

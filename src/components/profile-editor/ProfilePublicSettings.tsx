@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useDoctorProfile, DoctorProfile } from "@/hooks/useDoctorProfile";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { FeatureGate } from "@/components/common/FeatureGate";
 import { generateSlug } from "@/lib/doctor-profile-utils";
-import { Loader2, Globe, ExternalLink, Copy, Check, Eye, EyeOff } from "lucide-react";
+import { Loader2, Globe, ExternalLink, Copy, Check, Eye, EyeOff, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
@@ -18,6 +20,7 @@ interface ProfilePublicSettingsProps {
 
 export const ProfilePublicSettings = ({ profile }: ProfilePublicSettingsProps) => {
   const { updateProfile } = useDoctorProfile();
+  const { canUsePublicProfile } = useFeatureAccess();
   const [copied, setCopied] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -53,6 +56,20 @@ export const ProfilePublicSettings = ({ profile }: ProfilePublicSettingsProps) =
       setFormData(prev => ({ ...prev, slug: newSlug }));
     }
   };
+
+  // Check if user has access to public profile feature
+  if (!canUsePublicProfile()) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <FeatureGate feature="public_profile">
+          <div />
+        </FeatureGate>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
