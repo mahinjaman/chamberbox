@@ -298,7 +298,7 @@ export const useCreateQueueBooking = () => {
   });
 };
 
-// Hook for public profile to get slots for a specific doctor
+// Hook for public profile to get slots for a specific doctor (16 days booking window)
 export const usePublicBookingSlots = (doctorId: string) => {
-  return useAvailableSlots(doctorId, new Date(), 14);
+  return useAvailableSlots(doctorId, new Date(), 16);
 };
