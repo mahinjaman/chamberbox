@@ -14,8 +14,7 @@ import {
   Shield, ArrowLeft, Building2, Video, User
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookingWidget } from "@/components/public-profile/BookingWidget";
-import { QueueBookingWidget } from "@/components/public-profile/QueueBookingWidget";
+import { UnifiedBookingWidget } from "@/components/public-profile/UnifiedBookingWidget";
 import { ProfileEducationSection } from "@/components/public-profile/ProfileEducationSection";
 import { ProfileSocialLinksSection } from "@/components/public-profile/ProfileSocialLinksSection";
 import { ProfileChambersSection } from "@/components/public-profile/ProfileChambersSection";
@@ -460,20 +459,13 @@ const DoctorPublicProfile = () => {
             </Tabs>
           </div>
 
-          {/* Right Column - Booking Widgets (Desktop) */}
+          {/* Right Column - Booking Widget (Desktop) */}
           <div className="hidden md:block">
-            <div className="sticky top-4 space-y-4">
-              {/* Queue Booking Widget - Take Serial */}
-              <QueueBookingWidget 
+            <div className="sticky top-4">
+              {/* Unified Booking Widget - supports both today's queue and future dates */}
+              <UnifiedBookingWidget 
                 profile={profile} 
                 chamber={primaryChamber || null}
-              />
-              
-              {/* Booking Widget */}
-              <BookingWidget 
-                profile={profile} 
-                chamber={primaryChamber || null} 
-                availabilitySlots={primarySlots}
               />
             </div>
           </div>
@@ -520,10 +512,9 @@ const DoctorPublicProfile = () => {
                 </Button>
               </div>
               <div className="p-4">
-                <BookingWidget 
+                <UnifiedBookingWidget 
                   profile={profile} 
-                  chamber={primaryChamber || null} 
-                  availabilitySlots={primarySlots}
+                  chamber={primaryChamber || null}
                   onClose={() => setShowBooking(false)}
                 />
               </div>
