@@ -2,10 +2,12 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { LanguageToggle } from "@/components/common/LanguageToggle";
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const { t } = useLanguage();
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
       <nav className="container flex items-center justify-between h-16 px-4 md:px-6">
@@ -20,26 +22,27 @@ export const Navbar = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
           <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-            Features
+            {t.nav.features}
           </a>
           <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
-            Pricing
+            {t.nav.pricing}
           </a>
           <a href="#about" className="text-muted-foreground hover:text-foreground transition-colors">
-            About
+            {t.nav.about}
           </a>
           <Link to="/queue-status" className="text-muted-foreground hover:text-foreground transition-colors">
-            Queue Status
+            {t.nav.queueStatus}
           </Link>
         </div>
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
+          <LanguageToggle />
           <Button variant="ghost" asChild>
-            <Link to="/login">Log in</Link>
+            <Link to="/login">{t.nav.login}</Link>
           </Button>
           <Button asChild>
-            <Link to="/signup">Start Free Trial</Link>
+            <Link to="/signup">{t.nav.startFreeTrial}</Link>
           </Button>
         </div>
 
@@ -62,35 +65,39 @@ export const Navbar = () => {
               className="text-foreground py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Features
+              {t.nav.features}
             </a>
             <a
               href="#pricing"
               className="text-foreground py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Pricing
+              {t.nav.pricing}
             </a>
             <a
               href="#about"
               className="text-foreground py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              About
+              {t.nav.about}
             </a>
             <Link
               to="/queue-status"
               className="text-foreground py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Queue Status
+              {t.nav.queueStatus}
             </Link>
             <hr className="border-border" />
+            <div className="flex items-center justify-between py-2">
+              <span className="text-foreground">{t.common.language}</span>
+              <LanguageToggle showLabel />
+            </div>
             <Button variant="ghost" asChild className="justify-start">
-              <Link to="/login">Log in</Link>
+              <Link to="/login">{t.nav.login}</Link>
             </Button>
             <Button asChild>
-              <Link to="/signup">Start Free Trial</Link>
+              <Link to="/signup">{t.nav.startFreeTrial}</Link>
             </Button>
           </div>
         </div>

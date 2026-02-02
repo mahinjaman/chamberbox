@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { mapAuthError } from "@/lib/errors";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { LanguageToggle } from "@/components/common/LanguageToggle";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,6 +17,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { t } = useLanguage();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +51,11 @@ const Login = () => {
       <div className="absolute top-1/4 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
 
+      {/* Language Toggle */}
+      <div className="absolute top-4 right-4 z-20">
+        <LanguageToggle showLabel />
+      </div>
+
       <Card className="w-full max-w-md relative z-10 shadow-2xl">
         <CardHeader className="text-center">
           <Link to="/" className="flex items-center justify-center gap-2 mb-4">
@@ -55,16 +63,16 @@ const Login = () => {
               <span className="text-primary-foreground font-bold text-xl">C</span>
             </div>
           </Link>
-          <CardTitle className="text-2xl">Welcome back</CardTitle>
+          <CardTitle className="text-2xl">{t.auth.welcomeBack}</CardTitle>
           <CardDescription>
-            Sign in to your ChamberBox account
+            {t.auth.signInToAccount}
           </CardDescription>
         </CardHeader>
 
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t.auth.emailAddress}</Label>
               <Input
                 id="email"
                 type="email"
@@ -78,12 +86,12 @@ const Login = () => {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t.auth.password}</Label>
                 <Link 
                   to="/forgot-password" 
                   className="text-sm text-primary hover:underline"
                 >
-                  Forgot password?
+                  {t.auth.forgotPassword}
                 </Link>
               </div>
               <div className="relative">
@@ -112,17 +120,17 @@ const Login = () => {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  {t.auth.signingIn}
                 </>
               ) : (
-                "Sign in"
+                t.auth.signIn
               )}
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
+              {t.auth.dontHaveAccount}{" "}
               <Link to="/signup" className="text-primary hover:underline font-medium">
-                Sign up
+                {t.auth.signUp}
               </Link>
             </p>
           </CardFooter>
