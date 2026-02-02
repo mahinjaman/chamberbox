@@ -116,7 +116,8 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
     if (!bookingResult || !selectedSlot) return null;
     const [hours, mins] = selectedSlot.start_time.split(":").map(Number);
     const avgMinutes = selectedSlot.slot_duration_minutes || 5; // Use slot duration or default 5 mins
-    const patientsAhead = bookingResult.token_number - 1;
+    // Use the actual waiting_ahead count from the API response (excludes completed/cancelled)
+    const patientsAhead = bookingResult.waiting_ahead ?? (bookingResult.token_number - 1);
     const waitMinutes = patientsAhead * avgMinutes;
     const totalMinutes = hours * 60 + mins + waitMinutes;
     const arrivalHours = Math.floor(totalMinutes / 60) % 24;
