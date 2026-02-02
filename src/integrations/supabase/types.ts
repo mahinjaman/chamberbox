@@ -737,6 +737,7 @@ export type Database = {
           session_id: string | null
           status: string | null
           token_number: number
+          visiting_reason: string | null
         }
         Insert: {
           booked_by?: string | null
@@ -757,6 +758,7 @@ export type Database = {
           session_id?: string | null
           status?: string | null
           token_number: number
+          visiting_reason?: string | null
         }
         Update: {
           booked_by?: string | null
@@ -777,6 +779,7 @@ export type Database = {
           session_id?: string | null
           status?: string | null
           token_number?: number
+          visiting_reason?: string | null
         }
         Relationships: [
           {

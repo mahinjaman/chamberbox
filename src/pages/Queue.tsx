@@ -8,6 +8,7 @@ import { useQueueSessions, QueueSession } from "@/hooks/useQueueSessions";
 import { usePatients } from "@/hooks/usePatients";
 import { SessionManager } from "@/components/queue/SessionManager";
 import { NowServingCard } from "@/components/queue/NowServingCard";
+import { PatientDetailDialog } from "@/components/queue/PatientDetailDialog";
 import { 
   Play, 
   CheckCircle2, 
@@ -73,6 +74,8 @@ const Queue = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [formErrors, setFormErrors] = useState<{ age?: string; gender?: string }>({});
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [selectedPatientToken, setSelectedPatientToken] = useState<QueueToken | null>(null);
+  const [isPatientDetailOpen, setIsPatientDetailOpen] = useState(false);
   
   const sessionDate = format(selectedDate, "yyyy-MM-dd");
   
@@ -508,7 +511,17 @@ const Queue = () => {
                         ) : (
                           <div className="space-y-2">
                             {waitingTokens.map((token, index) => (
-                              <div key={token.id} className={cn("flex items-center justify-between p-3 rounded-lg border transition-all", index === 0 && "bg-warning/5 border-warning/30 shadow-sm")}>
+                              <button
+                                key={token.id}
+                                onClick={() => {
+                                  setSelectedPatientToken(token);
+                                  setIsPatientDetailOpen(true);
+                                }}
+                                className={cn(
+                                  "w-full flex items-center justify-between p-3 rounded-lg border transition-all text-left hover:bg-accent",
+                                  index === 0 && "bg-warning/5 border-warning/30 shadow-sm"
+                                )}
+                              >
                                 <div className="flex items-center gap-3">
                                   <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm", index === 0 ? "bg-warning text-warning-foreground" : "bg-muted text-muted-foreground")}>#{token.token_number}</div>
                                   <div>
@@ -519,8 +532,15 @@ const Queue = () => {
                                     )}
                                   </div>
                                 </div>
-                                {index === 0 && <Badge className="bg-warning/20 text-warning border-0 text-xs">Next</Badge>}
-                              </div>
+                                <div className="flex items-center gap-2">
+                                  {token.visiting_reason && (
+                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30">
+                                      Has Reason
+                                    </Badge>
+                                  )}
+                                  {index === 0 && <Badge className="bg-warning/20 text-warning border-0 text-xs">Next</Badge>}
+                                </div>
+                              </button>
                             ))}
                           </div>
                         )}
@@ -539,7 +559,14 @@ const Queue = () => {
                         ) : (
                           <div className="space-y-2">
                             {completedTokens.map((token) => (
-                              <div key={token.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
+                              <button
+                                key={token.id}
+                                onClick={() => {
+                                  setSelectedPatientToken(token);
+                                  setIsPatientDetailOpen(true);
+                                }}
+                                className="w-full flex items-center justify-between p-3 rounded-lg border bg-muted/20 transition-all text-left hover:bg-accent"
+                              >
                                 <div className="flex items-center gap-3">
                                   <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center font-bold text-sm text-muted-foreground">#{token.token_number}</div>
                                   <div>
@@ -551,7 +578,7 @@ const Queue = () => {
                                   </div>
                                 </div>
                                 <Badge variant={token.status === "completed" ? "secondary" : "destructive"} className="text-xs">{token.status === "completed" ? "Done" : "Cancelled"}</Badge>
-                              </div>
+                              </button>
                             ))}
                           </div>
                         )}
@@ -578,6 +605,12 @@ const Queue = () => {
         patient={currentToken?.patient ? { id: currentToken.patient_id, name: currentToken.patient.name, phone: currentToken.patient.phone } : null}
         tokenNumber={currentToken?.token_number}
         onSuccess={handlePaymentSuccess}
+      />
+
+      <PatientDetailDialog
+        token={selectedPatientToken}
+        open={isPatientDetailOpen}
+        onOpenChange={setIsPatientDetailOpen}
       />
     </DashboardLayout>
   );
