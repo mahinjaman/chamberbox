@@ -237,8 +237,17 @@ export const ProfileBasicInfo = ({ profile }: ProfileBasicInfoProps) => {
       {/* Basic Info */}
       <Card>
         <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-          <CardDescription>Your professional details</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Basic Information</CardTitle>
+              <CardDescription>Your professional details</CardDescription>
+            </div>
+            {profile?.doctor_code && (
+              <Badge variant="outline" className="text-sm font-mono">
+                Doctor Code: {profile.doctor_code}
+              </Badge>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">

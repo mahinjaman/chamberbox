@@ -78,6 +78,7 @@ export interface DoctorProfile {
   youtube_url: string | null;
   education: Education[] | null;
   custom_info: CustomInfoItem[] | null;
+  doctor_code: string | null;
   created_at: string;
   updated_at: string;
 }
