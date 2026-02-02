@@ -125,40 +125,37 @@ const DoctorPublicProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Hero Section - Facebook Cover Style */}
+    <div className="min-h-screen bg-background">
+      {/* Hero Section - Shorter Cover */}
       <div className="relative">
-        {/* Cover Photo - Facebook aspect ratio (820:312) */}
+        {/* Cover Photo - Reduced height (3:1 ratio for shorter look) */}
         <div 
-          className="w-full bg-gradient-to-br from-primary via-primary/90 to-primary/70 relative"
-          style={{
-            aspectRatio: "820/312",
-            ...(profile.cover_photo_url ? {
-              backgroundImage: `url(${profile.cover_photo_url})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center"
-            } : {})
-          }}
+          className="w-full bg-gradient-to-br from-primary via-primary/90 to-primary/70 relative h-[180px] md:h-[240px]"
+          style={profile.cover_photo_url ? {
+            backgroundImage: `url(${profile.cover_photo_url})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center"
+          } : {}}
         >
-          {/* Subtle overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
+          {/* Subtle overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         </div>
 
-        {/* Expertise Banner - Overlaps cover bottom */}
-        <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm py-3">
-          <div className="container max-w-4xl mx-auto px-4 flex flex-wrap items-center justify-center gap-3 text-white">
+        {/* Expertise Banner - At cover bottom */}
+        <div className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-sm py-2.5">
+          <div className="container max-w-4xl mx-auto px-4 flex flex-wrap items-center justify-center gap-2 md:gap-4 text-white">
             {profile.specialization && (
-              <span className="px-4 py-1.5 bg-white/20 rounded-md text-sm font-medium">
+              <span className="px-3 py-1 bg-primary rounded text-xs md:text-sm font-medium">
                 {profile.specialization}
               </span>
             )}
             {profile.degrees && profile.degrees.length > 0 && (
-              <span className="px-4 py-1.5 bg-white/20 rounded-md text-sm font-medium">
+              <span className="px-3 py-1 bg-primary/80 rounded text-xs md:text-sm font-medium">
                 {profile.degrees.join(", ")}
               </span>
             )}
             {profile.email && (
-              <span className="text-sm opacity-90">{profile.email}</span>
+              <span className="text-xs md:text-sm opacity-90">{profile.email}</span>
             )}
           </div>
         </div>
@@ -170,75 +167,67 @@ const DoctorPublicProfile = () => {
             animate={{ opacity: 1, scale: 1 }}
             className="relative"
           >
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-background border-4 border-background shadow-2xl flex items-center justify-center overflow-hidden">
+            <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-background border-4 border-background shadow-2xl flex items-center justify-center overflow-hidden">
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-4xl md:text-5xl font-bold text-primary">
+                <span className="text-3xl md:text-4xl font-bold text-primary">
                   {profile.full_name?.charAt(0) || "D"}
                 </span>
               )}
             </div>
             {profile.verified && (
-              <div className="absolute bottom-2 right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center border-2 border-background shadow-lg">
-                <Shield className="w-4 h-4 text-white" />
+              <div className="absolute bottom-1 right-1 w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center border-2 border-background shadow-lg">
+                <Shield className="w-3.5 h-3.5 text-white" />
               </div>
             )}
           </motion.div>
         </div>
       </div>
 
-      {/* Social Buttons Section - Below cover */}
-      <div className="bg-background pt-20 md:pt-24 pb-4">
-        <div className="container max-w-4xl mx-auto px-4 text-center">
-          {/* Social Links */}
-          {socialLinks && Object.values(socialLinks).some(v => v) && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="flex justify-center"
-            >
-              <ProfileSocialLinksSection socialLinks={socialLinks} youtubeUrl={profile.youtube_url} />
-            </motion.div>
-          )}
-        </div>
-      </div>
+      {/* Content Below Cover */}
+      <div className="bg-background pt-16 md:pt-20">
+        {/* Social Links - Centered */}
+        {socialLinks && Object.values(socialLinks).some(v => v) && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex justify-center pb-4"
+          >
+            <ProfileSocialLinksSection socialLinks={socialLinks} youtubeUrl={profile.youtube_url} />
+          </motion.div>
+        )}
 
-      {/* Profile Info Card */}
-      <div className="container max-w-4xl mx-auto px-4 -mt-1">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card className="shadow-xl border-0 overflow-hidden">
-            <CardContent className="p-0">
-              {/* Main Profile Row */}
-              <div className="flex flex-col sm:flex-row gap-4 p-5 pb-4">
-                {/* Small Avatar */}
-                <div className="relative flex-shrink-0 self-center sm:self-start">
-                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-muted border-2 border-border shadow-md flex items-center justify-center overflow-hidden">
+        {/* Profile Card with Avatar + Video */}
+        <div className="container max-w-4xl mx-auto px-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="shadow-lg border overflow-hidden">
+              <CardContent className="p-4 md:p-5">
+                {/* Avatar + Video Row */}
+                <div className="flex items-center justify-center gap-4">
+                  {/* Small Avatar */}
+                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-muted border-2 border-border shadow-md flex items-center justify-center overflow-hidden flex-shrink-0">
                     {profile.avatar_url ? (
                       <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-2xl font-bold text-primary">
+                      <span className="text-xl font-bold text-primary">
                         {profile.full_name?.charAt(0) || "D"}
                       </span>
                     )}
                   </div>
-                </div>
-
-                {/* Info + Video Side */}
-                <div className="flex-1 flex flex-col sm:flex-row gap-4">
 
                   {/* Intro Video Thumbnail */}
                   {introVideo && (
                     <div 
-                      className="w-full sm:w-32 md:w-40 flex-shrink-0 cursor-pointer group"
+                      className="cursor-pointer group"
                       onClick={() => setActiveTab("videos")}
                     >
-                      <div className="relative aspect-video rounded-lg overflow-hidden bg-muted shadow-md">
+                      <div className="relative w-28 md:w-36 aspect-video rounded-lg overflow-hidden bg-muted shadow-md">
                         {getYoutubeThumbnail(introVideo.youtube_url) ? (
                           <img 
                             src={getYoutubeThumbnail(introVideo.youtube_url)!}
@@ -247,13 +236,13 @@ const DoctorPublicProfile = () => {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-muted">
-                            <Video className="w-6 h-6 text-muted-foreground" />
+                            <Video className="w-5 h-5 text-muted-foreground" />
                           </div>
                         )}
                         {/* Play overlay */}
                         <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
-                          <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                            <Video className="w-4 h-4 text-primary" />
+                          <div className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                            <Video className="w-3.5 h-3.5 text-primary" />
                           </div>
                         </div>
                       </div>
@@ -261,37 +250,37 @@ const DoctorPublicProfile = () => {
                     </div>
                   )}
                 </div>
-              </div>
+              </CardContent>
 
-              {/* Stats Row - Inside Card */}
-              <div className="border-t bg-muted/30">
+              {/* Stats Row */}
+              <div className="border-t bg-muted/20">
                 <div className="grid grid-cols-3 divide-x divide-border">
-                  <div className="p-3 text-center">
+                  <div className="py-3 text-center">
                     <div className="flex items-center justify-center gap-1.5">
                       <Clock className="w-4 h-4 text-primary" />
-                      <span className="text-lg font-bold">{profile.experience_years || 0}+</span>
+                      <span className="text-base md:text-lg font-bold">{profile.experience_years || 0}+</span>
                     </div>
                     <p className="text-[10px] text-muted-foreground">Years Exp.</p>
                   </div>
-                  <div className="p-3 text-center">
+                  <div className="py-3 text-center">
                     <div className="flex items-center justify-center gap-1.5">
                       <Users className="w-4 h-4 text-primary" />
-                      <span className="text-lg font-bold">{profile.patient_count?.toLocaleString() || 0}</span>
+                      <span className="text-base md:text-lg font-bold">{profile.patient_count?.toLocaleString() || 0}</span>
                     </div>
                     <p className="text-[10px] text-muted-foreground">Patients</p>
                   </div>
-                  <div className="p-3 text-center">
+                  <div className="py-3 text-center">
                     <div className="flex items-center justify-center gap-1.5">
                       <Star className="w-4 h-4 text-amber-500" />
-                      <span className="text-lg font-bold">{profile.rating || "N/A"}</span>
+                      <span className="text-base md:text-lg font-bold">{profile.rating || "N/A"}</span>
                     </div>
                     <p className="text-[10px] text-muted-foreground">Rating</p>
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+            </Card>
+          </motion.div>
+        </div>
       </div>
 
       {/* Main Content */}
