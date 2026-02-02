@@ -16,10 +16,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useStaff, StaffRole } from "@/hooks/useStaff";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { permissionDescriptions } from "@/lib/staff-permissions";
-import { Building2, Info, Copy, Check, ExternalLink, Mail } from "lucide-react";
+import { Building2, Info, Copy, Check, ExternalLink, Mail, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 interface Chamber {
@@ -36,8 +38,13 @@ interface AddStaffDialogProps {
 
 export function AddStaffDialog({ open, onOpenChange, chambers }: AddStaffDialogProps) {
   const { language } = useLanguage();
-  const { addStaff, isAddingStaff } = useStaff();
+  const { addStaff, isAddingStaff, staffMembers } = useStaff();
+  const { currentPlan, canAddMore } = useSubscription();
   
+  const staffCount = staffMembers?.length || 0;
+  const maxStaff = currentPlan?.max_staff || 0;
+  const canAdd = canAddMore('staff', staffCount);
+  const isLimitReached = !canAdd && maxStaff !== -1;
   const [formData, setFormData] = useState({
     email: "",
     full_name: "",
@@ -52,6 +59,14 @@ export function AddStaffDialog({ open, onOpenChange, chambers }: AddStaffDialogP
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Double-check limit before submitting
+    if (isLimitReached) {
+      toast.error(language === "bn" 
+        ? "স্টাফ সীমা পূর্ণ হয়েছে। আপগ্রেড করুন।"
+        : "Staff limit reached. Please upgrade your plan.");
+      return;
+    }
     
     addStaff({
       email: formData.email,
@@ -181,6 +196,18 @@ export function AddStaffDialog({ open, onOpenChange, chambers }: AddStaffDialogP
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Limit Warning */}
+          {isLimitReached && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                {language === "bn" 
+                  ? `আপনার প্ল্যানে সর্বাধিক ${maxStaff} জন স্টাফ যোগ করা যায়। আপগ্রেড করুন।`
+                  : `Your plan allows maximum ${maxStaff} staff members. Upgrade to add more.`}
+              </AlertDescription>
+            </Alert>
+          )}
+          
           {/* Two column grid for desktop */}
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -294,7 +321,7 @@ export function AddStaffDialog({ open, onOpenChange, chambers }: AddStaffDialogP
             <Button 
               type="submit" 
               size="sm"
-              disabled={isAddingStaff || !formData.email || !formData.full_name || formData.chamber_ids.length === 0}
+              disabled={isAddingStaff || !formData.email || !formData.full_name || formData.chamber_ids.length === 0 || isLimitReached}
             >
               {isAddingStaff 
                 ? (language === "bn" ? "যোগ হচ্ছে..." : "Adding...")

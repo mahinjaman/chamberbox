@@ -101,14 +101,17 @@ export const useSubscription = () => {
     return { percentage, isUnlimited: false, remaining };
   };
 
-  const limits = {
+  // These will be populated by the components that need them
+  const createLimits = (staffCount = 0, chamberCount = 0) => ({
     patients: getLimitStatus(usage?.total_patients || 0, currentPlan?.max_patients || 0),
     patientsMonthly: getLimitStatus(usage?.patients_added_this_month || 0, currentPlan?.max_patients || 0),
     prescriptions: getLimitStatus(usage?.prescriptions_this_month || 0, currentPlan?.max_prescriptions_per_month || 0),
     sms: getLimitStatus(usage?.sms_sent_this_month || 0, currentPlan?.sms_credits || 0),
-    staff: getLimitStatus(0, currentPlan?.max_staff || 0), // TODO: count actual staff
-    chambers: getLimitStatus(0, currentPlan?.max_chambers || 0), // TODO: count actual chambers
-  };
+    staff: getLimitStatus(staffCount, currentPlan?.max_staff || 0),
+    chambers: getLimitStatus(chamberCount, currentPlan?.max_chambers || 0),
+  });
+
+  const limits = createLimits(0, 0);
 
   // Subscription expiry info
   const expiresAt = profile?.subscription_expires_at 
@@ -131,11 +134,20 @@ export const useSubscription = () => {
     return limit.remaining > 0;
   };
 
+  // Check if can add more of a resource
+  const canAddMore = (resourceType: 'staff' | 'chambers', currentCount: number) => {
+    if (!currentPlan) return false;
+    const maxLimit = resourceType === 'staff' ? currentPlan.max_staff : currentPlan.max_chambers;
+    if (maxLimit === -1) return true; // Unlimited
+    return currentCount < maxLimit;
+  };
+
   return {
     currentPlan,
     allPlans,
     usage,
     limits,
+    createLimits,
     expiresAt,
     isExpired,
     daysRemaining,
@@ -143,6 +155,7 @@ export const useSubscription = () => {
     allPlansLoading,
     canUseFeature,
     isWithinLimit,
+    canAddMore,
   };
 };
 
