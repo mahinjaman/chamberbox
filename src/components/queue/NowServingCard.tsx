@@ -212,9 +212,14 @@ export const NowServingCard = ({
           <div className="pt-2 border-t space-y-2">
             <div className="grid grid-cols-2 gap-2">
               <Button
+                type="button"
                 variant="outline"
                 className="border-success text-success hover:bg-success/10"
-                onClick={onCompleteOnly}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onCompleteOnly();
+                }}
               >
                 <CheckCircle2 className="w-4 h-4 mr-2" />
                 Complete Only
