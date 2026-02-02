@@ -1,12 +1,9 @@
-import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { 
-  Calendar, Clock, Users, MapPin, Download, Share2, 
-  CheckCircle2, FileImage, FileText, Info
+  Calendar, Clock, Users, MapPin, 
+  CheckCircle2, FileText, Info
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { WhatsAppConfirmation } from "./WhatsAppConfirmation";
 import { formatTime12Hour, formatCurrency } from "@/lib/doctor-profile-utils";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
@@ -42,8 +39,6 @@ export const BookingSuccessCard = ({
   timeDetails,
   onClose,
 }: BookingSuccessCardProps) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-
   const downloadAsPDF = () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -106,28 +101,6 @@ export const BookingSuccessCard = ({
     toast.success("PDF downloaded successfully!");
   };
 
-  const downloadAsImage = async () => {
-    if (!cardRef.current) return;
-    
-    try {
-      // Dynamic import for html2canvas
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: "#ffffff",
-        scale: 2,
-      });
-      
-      const link = document.createElement("a");
-      link.download = `serial-${timeDetails?.serialNumber}-${format(parseISO(selectedDate), "yyyy-MM-dd")}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-      toast.success("Image downloaded successfully!");
-    } catch (error) {
-      console.error("Failed to generate image:", error);
-      toast.error("Failed to download image. Try PDF instead.");
-    }
-  };
-
   return (
     <motion.div
       key="success"
@@ -136,7 +109,7 @@ export const BookingSuccessCard = ({
       className="space-y-4"
     >
       {/* Downloadable Card */}
-      <div ref={cardRef} className="bg-card rounded-xl overflow-hidden">
+      <div className="bg-card rounded-xl overflow-hidden">
         {/* Success Header */}
         <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-4 text-center text-white">
           <CheckCircle2 className="w-10 h-10 mx-auto mb-2" />
@@ -206,37 +179,15 @@ export const BookingSuccessCard = ({
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-2">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={downloadAsPDF}
-          className="text-xs"
-        >
-          <FileText className="w-4 h-4 mr-1.5" />
-          Save as PDF
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={downloadAsImage}
-          className="text-xs"
-        >
-          <FileImage className="w-4 h-4 mr-1.5" />
-          Save as Image
-        </Button>
-      </div>
-      
-      {/* Share via WhatsApp */}
-      <WhatsAppConfirmation
-        doctorName={profile.full_name}
-        patientName={formData.patient_name}
-        tokenNumber={bookingResult.token_number}
-        date={format(parseISO(selectedDate), "MMMM d, yyyy")}
-        time={timeDetails?.estimatedTime || ""}
-        chamberAddress={selectedSlot.chamber_address || ""}
-      />
+      {/* Action Button */}
+      <Button 
+        variant="outline" 
+        onClick={downloadAsPDF}
+        className="w-full"
+      >
+        <FileText className="w-4 h-4 mr-2" />
+        Save as PDF
+      </Button>
       
       {/* Arrival Notice */}
       <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800">
