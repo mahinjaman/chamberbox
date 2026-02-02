@@ -17,6 +17,8 @@ export interface Profile {
   subscription_expires_at: string | null;
   avatar_url: string | null;
   degrees: string[] | null;
+  slug: string | null;
+  is_public: boolean | null;
   created_at: string;
   updated_at: string;
 }

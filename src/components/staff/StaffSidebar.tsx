@@ -28,6 +28,7 @@ import { useAuth } from "@/lib/auth";
 import { useStaff } from "@/hooks/useStaff";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { CopyBookingLink } from "@/components/common/CopyBookingLink";
 
 export const StaffSidebar = () => {
   const location = useLocation();
@@ -38,7 +39,7 @@ export const StaffSidebar = () => {
   const collapsed = state === "collapsed";
   const { language } = useLanguage();
 
-  const doctor = staffInfo?.doctor as { full_name: string; specialization: string } | null;
+  const doctor = staffInfo?.doctor as { full_name: string; specialization: string; slug?: string } | null;
 
   // Build navigation items based on staff permissions
   const navItems = [
@@ -110,7 +111,7 @@ export const StaffSidebar = () => {
         {/* Doctor Info */}
         {doctor && !collapsed && (
           <div className="px-4 py-3 border-b border-sidebar-border">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <Stethoscope className="w-4 h-4 text-primary" />
               </div>
@@ -123,6 +124,14 @@ export const StaffSidebar = () => {
                 </p>
               </div>
             </div>
+            {doctor.slug && (
+              <CopyBookingLink slug={doctor.slug} variant="compact" className="w-full" />
+            )}
+          </div>
+        )}
+        {doctor?.slug && collapsed && (
+          <div className="px-4 py-2 border-b border-sidebar-border flex justify-center">
+            <CopyBookingLink slug={doctor.slug} variant="icon" />
           </div>
         )}
 

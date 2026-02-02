@@ -13,7 +13,8 @@ import {
   Plug,
   Shield,
   MessageSquare,
-  UserCog
+  UserCog,
+  Link2
 } from "lucide-react";
 import {
   Sidebar,
@@ -35,6 +36,7 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { cn } from "@/lib/utils";
 import { SupportMenuItem } from "./SupportMenuItem";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { CopyBookingLink } from "@/components/common/CopyBookingLink";
 
 
 export const DashboardSidebar = () => {
@@ -83,6 +85,18 @@ export const DashboardSidebar = () => {
             <span className="font-bold text-lg text-sidebar-foreground">ChamberBox</span>
           )}
         </Link>
+        
+        {/* Booking Link Button */}
+        {profile?.slug && !collapsed && (
+          <div className="mt-3">
+            <CopyBookingLink slug={profile.slug} variant="compact" className="w-full" />
+          </div>
+        )}
+        {profile?.slug && collapsed && (
+          <div className="mt-3 flex justify-center">
+            <CopyBookingLink slug={profile.slug} variant="icon" />
+          </div>
+        )}
       </SidebarHeader>
 
       <SidebarContent>
