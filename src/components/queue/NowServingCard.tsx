@@ -28,7 +28,7 @@ interface NowServingCardProps {
   onCollectPayment: () => void;
   onCancel: () => void;
   onCallNext: (skipIncomplete?: boolean) => Promise<{ incomplete: boolean; hasPrescription?: boolean; hasPayment?: boolean }>;
-  onCompleteOnly: () => void;
+  onCompleteOnly: (skipIncomplete?: boolean) => Promise<{ incomplete: boolean; hasPrescription?: boolean; hasPayment?: boolean }>;
 }
 
 export const NowServingCard = ({
@@ -41,6 +41,7 @@ export const NowServingCard = ({
   onCompleteOnly,
 }: NowServingCardProps) => {
   const [showIncompleteDialog, setShowIncompleteDialog] = useState(false);
+  const [incompleteDialogMode, setIncompleteDialogMode] = useState<"callNext" | "completeOnly">("callNext");
   const [incompleteState, setIncompleteState] = useState<{
     hasPrescription: boolean;
     hasPayment: boolean;
@@ -57,13 +58,30 @@ export const NowServingCard = ({
         hasPrescription: result.hasPrescription ?? false,
         hasPayment: result.hasPayment ?? false,
       });
+      setIncompleteDialogMode("callNext");
       setShowIncompleteDialog(true);
     }
   };
 
-  const handleForceCallNext = async () => {
+  const handleCompleteOnlyClick = async () => {
+    const result = await onCompleteOnly(false);
+    if (result.incomplete) {
+      setIncompleteState({
+        hasPrescription: result.hasPrescription ?? false,
+        hasPayment: result.hasPayment ?? false,
+      });
+      setIncompleteDialogMode("completeOnly");
+      setShowIncompleteDialog(true);
+    }
+  };
+
+  const handleForceAction = async () => {
     setShowIncompleteDialog(false);
-    await onCallNext(true);
+    if (incompleteDialogMode === "callNext") {
+      await onCallNext(true);
+    } else {
+      await onCompleteOnly(true);
+    }
   };
 
   return (
@@ -214,14 +232,17 @@ export const NowServingCard = ({
               <Button
                 type="button"
                 variant="outline"
-                className="border-success text-success hover:bg-success/10"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onCompleteOnly();
-                }}
+                className={isFullyComplete 
+                  ? "border-success text-success hover:bg-success/10" 
+                  : "border-warning text-warning hover:bg-warning/10"
+                }
+                onClick={handleCompleteOnlyClick}
               >
-                <CheckCircle2 className="w-4 h-4 mr-2" />
+                {isFullyComplete ? (
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                ) : (
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                )}
                 Complete Only
               </Button>
               <Button
@@ -288,10 +309,10 @@ export const NowServingCard = ({
             <Button
               variant="destructive"
               className="flex-1"
-              onClick={handleForceCallNext}
+              onClick={handleForceAction}
             >
               <SkipForward className="w-4 h-4 mr-2" />
-              Skip & Call Next
+              {incompleteDialogMode === "callNext" ? "Skip & Call Next" : "Skip & Complete"}
             </Button>
           </div>
         </DialogContent>
