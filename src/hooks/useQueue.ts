@@ -18,6 +18,11 @@ export interface QueueToken {
   completed_at: string | null;
   booked_by: "internal" | "public";
   created_at: string;
+  // New fields for workflow tracking
+  prescription_id: string | null;
+  payment_collected: boolean;
+  payment_amount: number | null;
+  payment_method: string | null;
   patient?: {
     name: string;
     phone: string;
@@ -69,8 +74,6 @@ export const useQueue = (sessionId?: string, date?: string) => {
       if (!profile?.id) throw new Error("Profile not loaded");
       
       // Get max token number for this doctor/date combination (across ALL sessions)
-      // The unique constraint is on (doctor_id, queue_date, token_number), so we must
-      // calculate token numbers globally, not per-session
       const { data: existingTokens } = await supabase
         .from("queue_tokens")
         .select("token_number")
@@ -132,14 +135,82 @@ export const useQueue = (sessionId?: string, date?: string) => {
     },
   });
 
-  const callNext = async () => {
-    // First, complete the current patient
+  // Update prescription link on token
+  const linkPrescription = useMutation({
+    mutationFn: async ({ tokenId, prescriptionId }: { tokenId: string; prescriptionId: string }) => {
+      const { error } = await supabase
+        .from("queue_tokens")
+        .update({ prescription_id: prescriptionId })
+        .eq("id", tokenId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["queue", profile?.id] });
+      toast.success("Prescription linked");
+    },
+    onError: (error) => {
+      toast.error(mapDatabaseError(error));
+    },
+  });
+
+  // Update payment status on token
+  const updatePaymentStatus = useMutation({
+    mutationFn: async ({ 
+      tokenId, 
+      amount, 
+      method 
+    }: { 
+      tokenId: string; 
+      amount: number; 
+      method: string;
+    }) => {
+      const { error } = await supabase
+        .from("queue_tokens")
+        .update({ 
+          payment_collected: true,
+          payment_amount: amount,
+          payment_method: method,
+        })
+        .eq("id", tokenId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["queue", profile?.id] });
+      toast.success("Payment recorded");
+    },
+    onError: (error) => {
+      toast.error(mapDatabaseError(error));
+    },
+  });
+
+  // Complete current patient and call next
+  const callNext = async (skipIncomplete = false) => {
     const currentPatient = queue.find((t) => t.status === "current");
+    
+    // Check if current patient has incomplete tasks
+    if (currentPatient && !skipIncomplete) {
+      const hasPrescription = !!currentPatient.prescription_id;
+      const hasPayment = currentPatient.payment_collected;
+      
+      if (!hasPrescription || !hasPayment) {
+        // Return info about incomplete tasks - caller should handle this
+        return { 
+          incomplete: true, 
+          hasPrescription, 
+          hasPayment,
+          currentPatient 
+        };
+      }
+    }
+    
+    // Complete current patient
     if (currentPatient) {
       await updateTokenStatus.mutateAsync({ id: currentPatient.id, status: "completed" });
     }
 
-    // Then call the next waiting patient
+    // Call next waiting patient
     const nextPatient = queue.find((t) => t.status === "waiting");
     if (nextPatient) {
       await updateTokenStatus.mutateAsync({ id: nextPatient.id, status: "current" });
@@ -147,6 +218,13 @@ export const useQueue = (sessionId?: string, date?: string) => {
     } else {
       toast.info("No more patients in queue");
     }
+    
+    return { incomplete: false };
+  };
+
+  // Force complete - skip prescription/payment checks
+  const forceCompleteAndCallNext = async () => {
+    return callNext(true);
   };
 
   const currentToken = queue.find((t) => t.status === "current");
@@ -161,6 +239,9 @@ export const useQueue = (sessionId?: string, date?: string) => {
       addToQueue.mutate({ patientId, sessionId, chamberId }),
     updateTokenStatus: updateTokenStatus.mutate,
     callNext,
+    forceCompleteAndCallNext,
+    linkPrescription: linkPrescription.mutate,
+    updatePaymentStatus: updatePaymentStatus.mutate,
     currentToken,
     waitingCount,
     completedCount,
