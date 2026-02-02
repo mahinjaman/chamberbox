@@ -24,6 +24,7 @@ export interface QueueToken {
   payment_collected: boolean;
   payment_amount: number | null;
   payment_method: string | null;
+  visiting_reason: string | null;
   patient?: {
     name: string;
     phone: string;

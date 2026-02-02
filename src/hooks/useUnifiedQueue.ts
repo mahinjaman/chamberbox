@@ -279,6 +279,7 @@ export const useCreateQueueBooking = () => {
           token_number: tokenNumber,
           status: "waiting",
           booked_by: is_public ? "public" : "internal",
+          visiting_reason: input.visiting_reason || null,
         })
         .select(`
           *,

@@ -93,7 +93,7 @@ export const NowServingCard = ({
             <div className="w-16 h-16 rounded-2xl bg-success flex items-center justify-center text-success-foreground shadow-lg">
               <span className="text-2xl font-bold">#{token.token_number}</span>
             </div>
-            <div>
+            <div className="flex-1">
               <p className="text-xl font-bold text-foreground">
                 {token.patient?.name}
               </p>
@@ -110,6 +110,17 @@ export const NowServingCard = ({
               )}
             </div>
           </div>
+
+          {/* Visiting Reason */}
+          {token.visiting_reason && (
+            <div className="p-3 rounded-lg border bg-amber-500/5 border-amber-500/20">
+              <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400 mb-1">
+                <FileText className="w-4 h-4" />
+                <span className="font-medium">Visiting Reason</span>
+              </div>
+              <p className="text-foreground text-sm">{token.visiting_reason}</p>
+            </div>
+          )}
 
           {/* Workflow Steps */}
           <div className="grid gap-3 sm:grid-cols-2">
