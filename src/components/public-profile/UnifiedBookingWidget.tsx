@@ -54,11 +54,11 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
     return grouped;
   }, [slots]);
 
-  // Get available dates
+  // Get available dates (16 days booking window)
   const availableDates = useMemo(() => {
     return Object.keys(slotsByDate).filter(date => 
       slotsByDate[date].some(slot => slot.is_available)
-    ).slice(0, 14);
+    ).slice(0, 16);
   }, [slotsByDate]);
 
   // Get slots for selected date
@@ -192,18 +192,23 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                       onClick={() => setSelectedDate(date)}
                       className={`p-3 rounded-lg border text-left transition-all ${
                         isSelected 
-                          ? "border-primary bg-primary/5 ring-2 ring-primary" 
-                          : "hover:border-primary/50 hover:bg-accent"
+                          ? "border-primary bg-primary text-primary-foreground shadow-md" 
+                          : "border-border hover:border-primary/50 hover:bg-accent"
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-sm">{formatDateLabel(date)}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className={`font-medium text-sm ${isSelected ? "text-primary-foreground" : ""}`}>
+                            {formatDateLabel(date)}
+                          </p>
+                          <p className={`text-xs ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
                             {format(parseISO(date), "MMM d, yyyy")}
                           </p>
                         </div>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge 
+                          variant={isSelected ? "secondary" : "outline"} 
+                          className={`text-xs ${isSelected ? "bg-primary-foreground text-primary" : ""}`}
+                        >
                           {totalAvailable} slot{totalAvailable !== 1 ? "s" : ""}
                         </Badge>
                       </div>
