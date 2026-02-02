@@ -96,11 +96,21 @@ export default function PaymentVerification() {
 
       if (paymentError) throw paymentError;
 
-      // Calculate expiry date
-      const expiresAt =
-        payment.billing_period === "yearly"
-          ? addYears(new Date(), 1)
-          : addMonths(new Date(), 1);
+      // Calculate expiry date based on billing period
+      const getExpiryDate = () => {
+        switch (payment.billing_period) {
+          case "yearly":
+            return addYears(new Date(), 1);
+          case "biannual":
+            return addMonths(new Date(), 6);
+          case "quarterly":
+            return addMonths(new Date(), 3);
+          case "monthly":
+          default:
+            return addMonths(new Date(), 1);
+        }
+      };
+      const expiresAt = getExpiryDate();
 
       // Update doctor subscription
       const { error: profileError } = await supabase
