@@ -18,7 +18,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useStaff, StaffRole } from "@/hooks/useStaff";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { Building2 } from "lucide-react";
+import { permissionDescriptions } from "@/lib/staff-permissions";
+import { Building2, Info } from "lucide-react";
 
 interface Chamber {
   id: string;
@@ -153,6 +154,18 @@ export function AddStaffDialog({ open, onOpenChange, chambers }: AddStaffDialogP
                 </SelectItem>
               </SelectContent>
             </Select>
+            {/* Show permissions for selected role */}
+            <div className="bg-muted/50 rounded-md p-3 mt-2">
+              <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-2">
+                <Info className="w-3 h-3" />
+                {language === "bn" ? "এই ভূমিকার অনুমতি:" : "Permissions for this role:"}
+              </div>
+              <ul className="text-xs space-y-1 text-muted-foreground">
+                {permissionDescriptions[language][formData.role].map((perm, idx) => (
+                  <li key={idx}>• {perm}</li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           <div className="space-y-2">
