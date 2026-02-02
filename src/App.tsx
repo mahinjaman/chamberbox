@@ -32,6 +32,7 @@ import Settings from "./pages/Settings";
 import QueueStatus from "./pages/QueueStatus";
 import ProfileEditor from "./pages/ProfileEditor";
 import DoctorPublicProfile from "./pages/DoctorPublicProfile";
+import DirectBooking from "./pages/DirectBooking";
 import IntegrationSettings from "./pages/IntegrationSettings";
 import MyTickets from "./pages/MyTickets";
 import NotFound from "./pages/NotFound";
@@ -71,6 +72,7 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/queue-status" element={<QueueStatus />} />
             <Route path="/doctor/:slug" element={<DoctorPublicProfile />} />
+            <Route path="/book/:slug" element={<DirectBooking />} />
             
             {/* Auth Routes - Separate portals for each role */}
             <Route path="/login" element={<DoctorLogin />} />

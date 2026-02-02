@@ -89,7 +89,7 @@ export const useStaff = () => {
             chamber:chambers(id, name, address)
           ),
           doctor:profiles!staff_members_doctor_id_fkey(
-            id, full_name, specialization, avatar_url
+            id, full_name, specialization, avatar_url, slug
           )
         `)
         .eq("user_id", user.id)
