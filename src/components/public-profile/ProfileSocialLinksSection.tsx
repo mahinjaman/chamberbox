@@ -47,10 +47,10 @@ export const ProfileSocialLinksSection = ({ socialLinks, youtubeUrl }: ProfileSo
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
-      className="flex flex-wrap gap-2"
+      transition={{ delay: 0.2 }}
+      className="flex flex-wrap gap-2 justify-center sm:justify-start"
     >
       {activeLinks.map(([platform, url], index) => {
         const Icon = SOCIAL_ICONS[platform as keyof typeof SOCIAL_ICONS];
@@ -63,15 +63,15 @@ export const ProfileSocialLinksSection = ({ socialLinks, youtubeUrl }: ProfileSo
             key={platform}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 * index }}
+            transition={{ delay: 0.05 * index }}
           >
             <Button
               variant="outline"
               size="icon"
               asChild
-              className={`transition-all duration-300 ${colorClass}`}
+              className={`h-10 w-10 rounded-full transition-all duration-300 shadow-sm hover:shadow-md ${colorClass}`}
             >
-              <a href={url} target="_blank" rel="noopener noreferrer">
+              <a href={url} target="_blank" rel="noopener noreferrer" aria-label={platform}>
                 <Icon className="w-5 h-5" />
               </a>
             </Button>
