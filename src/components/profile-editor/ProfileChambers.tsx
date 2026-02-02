@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { TimeSelect } from "@/components/ui/time-select";
 import { useDoctorProfile, DoctorProfile, Chamber, AvailabilitySlot } from "@/hooks/useDoctorProfile";
 import { useSubscription } from "@/hooks/useSubscription";
 import { DAYS_OF_WEEK, formatPhoneNumber, formatTime12Hour } from "@/lib/doctor-profile-utils";
@@ -386,18 +387,16 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Start Time</Label>
-                <Input
-                  type="time"
+                <TimeSelect
                   value={chamberForm.start_time}
-                  onChange={(e) => setChamberForm(prev => ({ ...prev, start_time: e.target.value }))}
+                  onChange={(value) => setChamberForm(prev => ({ ...prev, start_time: value }))}
                 />
               </div>
               <div className="space-y-2">
                 <Label>End Time</Label>
-                <Input
-                  type="time"
+                <TimeSelect
                   value={chamberForm.end_time}
-                  onChange={(e) => setChamberForm(prev => ({ ...prev, end_time: e.target.value }))}
+                  onChange={(value) => setChamberForm(prev => ({ ...prev, end_time: value }))}
                 />
               </div>
             </div>

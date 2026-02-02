@@ -77,7 +77,8 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
     formData.patient_name.trim().length >= 2 &&
     validatePhone(formData.patient_phone) &&
     formData.patient_age &&
-    formData.patient_gender;
+    formData.patient_gender &&
+    formData.visiting_reason.trim().length >= 3;
 
   const handleSubmit = async () => {
     if (!selectedSlot || !canSubmit) return;
@@ -458,7 +459,7 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
 
                 {/* Visiting Reason */}
                 <div className="space-y-1">
-                  <Label htmlFor="reason">Visiting Reason (Optional)</Label>
+                  <Label htmlFor="reason">Visiting Reason *</Label>
                   <Textarea
                     id="reason"
                     value={formData.visiting_reason}
