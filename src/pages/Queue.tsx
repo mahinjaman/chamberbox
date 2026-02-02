@@ -83,6 +83,7 @@ const Queue = () => {
     sessions,
     createSession,
     updateSessionStatus,
+    toggleBookingOpen,
     deleteSession,
     isCreating: isCreatingSession,
   } = useQueueSessions(sessionDate);
@@ -430,7 +431,7 @@ const Queue = () => {
     >
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="lg:col-span-3">
-          <SessionManager sessions={sessions} selectedSession={selectedSession} onSelectSession={setSelectedSession} onCreateSession={createSession} onUpdateStatus={(id, status) => updateSessionStatus({ id, status })} onDeleteSession={deleteSession} isCreating={isCreatingSession} sessionDate={sessionDate} />
+          <SessionManager sessions={sessions} selectedSession={selectedSession} onSelectSession={setSelectedSession} onCreateSession={createSession} onUpdateStatus={(id, status) => updateSessionStatus({ id, status })} onToggleBooking={(id, booking_open) => toggleBookingOpen({ id, booking_open })} onDeleteSession={deleteSession} isCreating={isCreatingSession} sessionDate={sessionDate} />
         </div>
 
         <div className="lg:col-span-9 space-y-6">

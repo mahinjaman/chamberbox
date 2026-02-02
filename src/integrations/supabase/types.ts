@@ -654,6 +654,7 @@ export type Database = {
       queue_sessions: {
         Row: {
           avg_consultation_minutes: number | null
+          booking_open: boolean | null
           chamber_id: string
           created_at: string
           current_token: number | null
@@ -670,6 +671,7 @@ export type Database = {
         }
         Insert: {
           avg_consultation_minutes?: number | null
+          booking_open?: boolean | null
           chamber_id: string
           created_at?: string
           current_token?: number | null
@@ -686,6 +688,7 @@ export type Database = {
         }
         Update: {
           avg_consultation_minutes?: number | null
+          booking_open?: boolean | null
           chamber_id?: string
           created_at?: string
           current_token?: number | null

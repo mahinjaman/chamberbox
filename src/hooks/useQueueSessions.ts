@@ -17,6 +17,7 @@ export interface QueueSession {
   avg_consultation_minutes: number;
   is_custom: boolean;
   notes: string | null;
+  booking_open: boolean;
   created_at: string;
   updated_at: string;
   chamber?: {
@@ -147,7 +148,24 @@ export const useQueueSessions = (date?: string) => {
     },
   });
 
-  // Delete a session
+  // Toggle booking open/close
+  const toggleBookingOpen = useMutation({
+    mutationFn: async ({ id, booking_open }: { id: string; booking_open: boolean }) => {
+      const { error } = await supabase
+        .from("queue_sessions")
+        .update({ booking_open, updated_at: new Date().toISOString() })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["queue_sessions", profile?.id, sessionDate] });
+      toast.success(variables.booking_open ? "Booking enabled" : "Booking closed");
+    },
+    onError: (error) => {
+      toast.error(mapDatabaseError(error));
+    },
+  });
   const deleteSession = useMutation({
     mutationFn: async (id: string) => {
       // First delete all tokens in this session
@@ -185,6 +203,7 @@ export const useQueueSessions = (date?: string) => {
     createSessionAsync: createSession.mutateAsync,
     updateSessionStatus: updateSessionStatus.mutate,
     updateCurrentToken: updateCurrentToken.mutate,
+    toggleBookingOpen: toggleBookingOpen.mutate,
     deleteSession: deleteSession.mutate,
     isCreating: createSession.isPending,
   };
@@ -201,6 +220,7 @@ export interface PublicQueueSession {
   current_token: number;
   max_patients: number;
   avg_consultation_minutes: number;
+  booking_open: boolean;
   chamber?: {
     name: string;
     address: string;
@@ -229,6 +249,7 @@ export const usePublicQueueSessions = (doctorId: string, date?: string) => {
           current_token,
           max_patients,
           avg_consultation_minutes,
+          booking_open,
           chamber:chambers(name, address)
         `)
         .eq("doctor_id", doctorId)
