@@ -87,7 +87,7 @@ export function EditStaffDialog({ open, onOpenChange, staff, chambers }: EditSta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {language === "bn" ? "স্টাফ সম্পাদনা" : "Edit Staff"}
@@ -95,122 +95,115 @@ export function EditStaffDialog({ open, onOpenChange, staff, chambers }: EditSta
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="edit_full_name">
-              {language === "bn" ? "পুরো নাম" : "Full Name"} *
-            </Label>
-            <Input
-              id="edit_full_name"
-              value={formData.full_name}
-              onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-              required
-            />
+          {/* Two column grid for desktop */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="edit_full_name" className="text-sm">
+                {language === "bn" ? "পুরো নাম" : "Full Name"} *
+              </Label>
+              <Input
+                id="edit_full_name"
+                value={formData.full_name}
+                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                required
+                className="h-9"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm">{language === "bn" ? "ইমেইল" : "Email"}</Label>
+              <Input value={staff.email} disabled className="bg-muted h-9 text-sm" />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="edit_phone" className="text-sm">
+                {language === "bn" ? "ফোন" : "Phone"}
+              </Label>
+              <Input
+                id="edit_phone"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="01XXXXXXXXX"
+                className="h-9"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="edit_role" className="text-sm">
+                {language === "bn" ? "ভূমিকা" : "Role"} *
+              </Label>
+              <Select
+                value={formData.role}
+                onValueChange={(value: StaffRole) => setFormData({ ...formData, role: value })}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="receptionist">
+                    {language === "bn" ? "রিসেপশনিস্ট" : "Receptionist"}
+                  </SelectItem>
+                  <SelectItem value="assistant">
+                    {language === "bn" ? "সহকারী" : "Assistant"}
+                  </SelectItem>
+                  <SelectItem value="manager">
+                    {language === "bn" ? "ম্যানেজার" : "Manager"}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>{language === "bn" ? "ইমেইল" : "Email"}</Label>
-            <Input value={staff.email} disabled className="bg-muted" />
-            <p className="text-xs text-muted-foreground">
-              {language === "bn" ? "ইমেইল পরিবর্তন করা যাবে না" : "Email cannot be changed"}
-            </p>
+          {/* Permissions inline */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+            <Info className="w-3 h-3 flex-shrink-0" />
+            <span>{permissionDescriptions[language][formData.role].join(" • ")}</span>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="edit_phone">
-              {language === "bn" ? "ফোন" : "Phone"}
-            </Label>
-            <Input
-              id="edit_phone"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="01XXXXXXXXX"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit_role">
-              {language === "bn" ? "ভূমিকা" : "Role"} *
-            </Label>
-            <Select
-              value={formData.role}
-              onValueChange={(value: StaffRole) => setFormData({ ...formData, role: value })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="receptionist">
-                  {language === "bn" ? "রিসেপশনিস্ট" : "Receptionist"}
-                </SelectItem>
-                <SelectItem value="assistant">
-                  {language === "bn" ? "সহকারী" : "Assistant"}
-                </SelectItem>
-                <SelectItem value="manager">
-                  {language === "bn" ? "ম্যানেজার" : "Manager"}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            {/* Show permissions for selected role */}
-            <div className="bg-muted/50 rounded-md p-3 mt-2">
-              <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-2">
-                <Info className="w-3 h-3" />
-                {language === "bn" ? "এই ভূমিকার অনুমতি:" : "Permissions for this role:"}
+          {/* Active status and Chamber access side by side */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex items-center justify-between p-3 border rounded-md">
+              <div>
+                <Label className="text-sm">{language === "bn" ? "সক্রিয়" : "Active"}</Label>
+                <p className="text-xs text-muted-foreground">
+                  {language === "bn" ? "লগইন অনুমতি" : "Login access"}
+                </p>
               </div>
-              <ul className="text-xs space-y-1 text-muted-foreground">
-                {permissionDescriptions[language][formData.role].map((perm, idx) => (
-                  <li key={idx}>• {perm}</li>
+              <Switch
+                checked={formData.is_active}
+                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm">
+                {language === "bn" ? "চেম্বার" : "Chambers"} *
+              </Label>
+              <div className="space-y-1 max-h-24 overflow-y-auto border rounded-md p-2">
+                {chambers.map((chamber) => (
+                  <label
+                    key={chamber.id}
+                    className="flex items-center gap-2 p-1.5 rounded hover:bg-muted cursor-pointer text-sm"
+                  >
+                    <Checkbox
+                      checked={formData.chamber_ids.includes(chamber.id)}
+                      onCheckedChange={() => toggleChamber(chamber.id)}
+                    />
+                    <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="truncate">{chamber.name}</span>
+                  </label>
                 ))}
-              </ul>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>{language === "bn" ? "সক্রিয় স্ট্যাটাস" : "Active Status"}</Label>
-              <p className="text-xs text-muted-foreground">
-                {language === "bn" 
-                  ? "নিষ্ক্রিয় স্টাফ লগইন করতে পারবে না"
-                  : "Inactive staff cannot login"}
-              </p>
-            </div>
-            <Switch
-              checked={formData.is_active}
-              onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>
-              {language === "bn" ? "চেম্বার অ্যাক্সেস" : "Chamber Access"} *
-            </Label>
-            <div className="space-y-2 max-h-40 overflow-y-auto border rounded-md p-2">
-              {chambers.map((chamber) => (
-                <label
-                  key={chamber.id}
-                  className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted cursor-pointer"
-                >
-                  <Checkbox
-                    checked={formData.chamber_ids.includes(chamber.id)}
-                    onCheckedChange={() => toggleChamber(chamber.id)}
-                  />
-                  <div className="flex items-center gap-2 flex-1">
-                    <Building2 className="w-4 h-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">{chamber.name}</p>
-                      <p className="text-xs text-muted-foreground">{chamber.address}</p>
-                    </div>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <div className="flex justify-end gap-2 pt-2 border-t">
+            <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)}>
               {language === "bn" ? "বাতিল" : "Cancel"}
             </Button>
             <Button 
               type="submit" 
+              size="sm"
               disabled={isUpdatingStaff || !formData.full_name || formData.chamber_ids.length === 0}
             >
               {isUpdatingStaff 
