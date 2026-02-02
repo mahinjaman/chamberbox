@@ -227,12 +227,6 @@ const DoctorPublicProfile = () => {
                       </span>
                     )}
                   </div>
-                  {isAvailableToday && (
-                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-medium rounded-full shadow whitespace-nowrap">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                      Available
-                    </div>
-                  )}
                 </div>
 
                 {/* Info + Video Side */}
