@@ -190,10 +190,10 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                     <button
                       key={date}
                       onClick={() => setSelectedDate(date)}
-                      className={`p-3 rounded-lg border text-left transition-all ${
+                      className={`p-3 rounded-lg border-2 text-left transition-all ${
                         isSelected 
-                          ? "border-primary bg-primary text-primary-foreground shadow-lg ring-2 ring-primary/20" 
-                          : "border-border hover:border-primary/50 hover:bg-accent"
+                          ? "border-primary bg-primary text-primary-foreground shadow-lg" 
+                          : "border-border hover:border-primary/30 hover:bg-muted/50"
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -256,18 +256,18 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                         key={`${slot.chamber_id}-${slot.start_time}-${idx}`}
                         disabled={isFull}
                         onClick={() => setSelectedSlot(slot)}
-                        className={`w-full p-4 rounded-lg border text-left transition-all ${
+                        className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
                           isSelected 
-                            ? "border-primary bg-primary/5 ring-2 ring-primary" 
+                            ? "border-primary bg-primary text-primary-foreground shadow-lg" 
                             : isFull 
                               ? "opacity-50 cursor-not-allowed bg-muted" 
-                              : "hover:border-primary/50 hover:bg-accent"
+                              : "hover:border-primary/30 hover:bg-muted/50"
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4 text-muted-foreground" />
+                              <Clock className={`w-4 h-4 ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`} />
                               <span className="font-medium">
                                 {formatTime12Hour(slot.start_time)} - {formatTime12Hour(slot.end_time)}
                               </span>
@@ -277,7 +277,7 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                                 </Badge>
                               )}
                             </div>
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <div className={`flex items-center gap-4 text-xs ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
                               <span className="flex items-center gap-1">
                                 <MapPin className="w-3 h-3" />
                                 {slot.chamber_name}
@@ -291,7 +291,10 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                           {isFull ? (
                             <Badge variant="destructive" className="text-xs">Full</Badge>
                           ) : (
-                            <Badge variant="outline" className="text-xs font-bold">
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs font-bold ${isSelected ? "bg-primary-foreground/90 text-primary border-primary-foreground/50" : ""}`}
+                            >
                               #{slot.current_bookings + 1}
                             </Badge>
                           )}
