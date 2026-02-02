@@ -106,15 +106,24 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
     }
   };
 
-  const getEstimatedTime = () => {
-    if (!bookingResult || !selectedSlot) return "";
+  const getEstimatedTimeDetails = () => {
+    if (!bookingResult || !selectedSlot) return null;
     const [hours, mins] = selectedSlot.start_time.split(":").map(Number);
-    const avgMinutes = 5; // Default 5 mins per patient
-    const waitMinutes = (bookingResult.token_number - 1) * avgMinutes;
+    const avgMinutes = selectedSlot.slot_duration_minutes || 5; // Use slot duration or default 5 mins
+    const patientsAhead = bookingResult.token_number - 1;
+    const waitMinutes = patientsAhead * avgMinutes;
     const totalMinutes = hours * 60 + mins + waitMinutes;
-    const arrivalHours = Math.floor(totalMinutes / 60);
+    const arrivalHours = Math.floor(totalMinutes / 60) % 24;
     const arrivalMins = totalMinutes % 60;
-    return formatTime12Hour(`${arrivalHours.toString().padStart(2, "0")}:${arrivalMins.toString().padStart(2, "0")}`);
+    const estimatedTime = formatTime12Hour(`${arrivalHours.toString().padStart(2, "0")}:${arrivalMins.toString().padStart(2, "0")}`);
+    
+    return {
+      serialNumber: bookingResult.token_number,
+      patientsAhead,
+      waitMinutes,
+      estimatedTime,
+      avgMinutes,
+    };
   };
 
   const formatDateLabel = (dateStr: string) => {
@@ -422,70 +431,116 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
           )}
 
           {/* Step 4: Success */}
-          {step === "success" && bookingResult && (
-            <motion.div
-              key="success"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center space-y-4"
-            >
-              <div className="w-20 h-20 mx-auto rounded-full bg-success/10 flex items-center justify-center">
-                <CheckCircle2 className="w-10 h-10 text-success" />
-              </div>
-              
-              <div>
-                <h3 className="text-xl font-bold text-success">Booking Confirmed!</h3>
-                <p className="text-muted-foreground">
-                  Your appointment has been scheduled
-                </p>
-              </div>
-              
-              <div className="p-6 rounded-xl bg-primary/5 border border-primary/20">
-                <p className="text-sm text-muted-foreground mb-1">Your Token Number</p>
-                <p className="text-5xl font-bold text-primary">#{bookingResult.token_number}</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Estimated Time: {getEstimatedTime()}
-                </p>
-              </div>
-              
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span>{selectedDate && format(parseISO(selectedDate), "EEEE, MMMM d, yyyy")}</span>
+          {step === "success" && bookingResult && (() => {
+            const timeDetails = getEstimatedTimeDetails();
+            return (
+              <motion.div
+                key="success"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center space-y-4"
+              >
+                <div className="w-16 h-16 mx-auto rounded-full bg-success/10 flex items-center justify-center">
+                  <CheckCircle2 className="w-8 h-8 text-success" />
                 </div>
-                <div className="flex items-center justify-center gap-2">
-                  <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <span>{selectedSlot?.chamber_name}</span>
+                
+                <div>
+                  <h3 className="text-xl font-bold text-success">Booking Confirmed!</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Your appointment has been scheduled successfully
+                  </p>
                 </div>
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-muted-foreground">Fee:</span>
-                  <span className="font-medium">{formatCurrency(selectedSlot?.new_patient_fee || 500)} (Pay at chamber)</span>
+                
+                {/* Serial Number Card */}
+                <div className="p-5 rounded-xl bg-primary/5 border border-primary/20">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Your Serial Number</p>
+                  <p className="text-5xl font-black text-primary">#{timeDetails?.serialNumber}</p>
                 </div>
-              </div>
-              
-              {/* WhatsApp Confirmation */}
-              <WhatsAppConfirmation
-                doctorName={profile.full_name}
-                patientName={formData.patient_name}
-                tokenNumber={bookingResult.token_number}
-                date={selectedDate ? format(parseISO(selectedDate), "MMMM d, yyyy") : ""}
-                time={selectedSlot ? formatTime12Hour(selectedSlot.start_time) : ""}
-                chamberAddress={selectedSlot?.chamber_address || ""}
-              />
-              
-              <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-sm">
-                <p className="text-warning-foreground">
-                  Please arrive 15 minutes before your expected time
-                </p>
-              </div>
-              
-              {onClose && (
-                <Button onClick={onClose} variant="outline" className="w-full">
-                  Done
-                </Button>
-              )}
-            </motion.div>
-          )}
+
+                {/* Queue & Time Info */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-muted/50 border">
+                    <div className="flex items-center justify-center gap-1.5 mb-1">
+                      <Users className="w-4 h-4 text-amber-600" />
+                      <p className="text-xs text-muted-foreground">Patients Ahead</p>
+                    </div>
+                    <p className="text-2xl font-bold text-amber-600">
+                      {timeDetails?.patientsAhead || 0}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-muted/50 border">
+                    <div className="flex items-center justify-center gap-1.5 mb-1">
+                      <Clock className="w-4 h-4 text-blue-600" />
+                      <p className="text-xs text-muted-foreground">Est. Wait</p>
+                    </div>
+                    <p className="text-2xl font-bold text-blue-600">
+                      ~{timeDetails?.waitMinutes || 0}<span className="text-sm font-normal">min</span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Expected Time */}
+                <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-sky-500/10 border border-emerald-500/20">
+                  <p className="text-xs text-muted-foreground mb-1">Expected Call Time</p>
+                  <p className="text-2xl font-bold text-emerald-600">{timeDetails?.estimatedTime}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Based on ~{timeDetails?.avgMinutes} min per patient
+                  </p>
+                </div>
+                
+                {/* Appointment Details */}
+                <div className="space-y-2 text-sm p-3 rounded-lg border bg-card">
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <Calendar className="w-4 h-4" />
+                      Date
+                    </span>
+                    <span className="font-medium">{selectedDate && format(parseISO(selectedDate), "EEE, MMM d, yyyy")}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <Clock className="w-4 h-4" />
+                      Session
+                    </span>
+                    <span className="font-medium">{selectedSlot && formatTime12Hour(selectedSlot.start_time)} - {selectedSlot && formatTime12Hour(selectedSlot.end_time)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <MapPin className="w-4 h-4" />
+                      Chamber
+                    </span>
+                    <span className="font-medium">{selectedSlot?.chamber_name}</span>
+                  </div>
+                  <div className="flex items-center justify-between border-t pt-2 mt-2">
+                    <span className="text-muted-foreground">Consultation Fee</span>
+                    <span className="font-bold text-primary">{formatCurrency(selectedSlot?.new_patient_fee || 500)}</span>
+                  </div>
+                </div>
+                
+                {/* WhatsApp Confirmation */}
+                <WhatsAppConfirmation
+                  doctorName={profile.full_name}
+                  patientName={formData.patient_name}
+                  tokenNumber={bookingResult.token_number}
+                  date={selectedDate ? format(parseISO(selectedDate), "MMMM d, yyyy") : ""}
+                  time={timeDetails?.estimatedTime || ""}
+                  chamberAddress={selectedSlot?.chamber_address || ""}
+                />
+                
+                <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-sm">
+                  <p className="text-warning-foreground">
+                    ⏰ Please arrive 15 minutes before your expected time
+                  </p>
+                </div>
+                
+                {onClose && (
+                  <Button onClick={onClose} variant="outline" className="w-full">
+                    Done
+                  </Button>
+                )}
+              </motion.div>
+            );
+          })()}
         </AnimatePresence>
       </div>
   );
