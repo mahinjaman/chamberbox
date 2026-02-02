@@ -69,6 +69,8 @@ export interface CreateBookingInput {
   queue_date: string;
   session_id?: string;
   is_public?: boolean;
+  visiting_reason?: string;
+  is_follow_up?: boolean;
 }
 
 // Hook to get available booking slots for a doctor
