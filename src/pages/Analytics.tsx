@@ -398,43 +398,6 @@ const Analytics = () => {
               </CardContent>
             </Card>
           </div>
-
-          {/* Top Diagnoses */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-primary" />
-                Common Diagnoses
-              </CardTitle>
-              <CardDescription>Most frequently recorded diagnoses in selected period</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {data.topDiagnoses.length > 0 ? (
-                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                  {data.topDiagnoses.map((d, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border">
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="w-2 h-8 rounded-full"
-                          style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
-                        />
-                        <span className="font-medium text-foreground">{d.name}</span>
-                      </div>
-                      <Badge variant="secondary">{d.count} cases</Badge>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="h-[150px] flex items-center justify-center text-muted-foreground">
-                  <div className="text-center">
-                    <Activity className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>No diagnosis data for selected period</p>
-                    <p className="text-sm">Record visits with diagnoses to see trends</p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </>
       )}
     </DashboardLayout>
