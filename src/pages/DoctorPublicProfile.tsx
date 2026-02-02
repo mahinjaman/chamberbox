@@ -110,94 +110,163 @@ const DoctorPublicProfile = () => {
   const hasVideos = introVideo || feedVideos.length > 0;
   const hasMultipleChambers = chambers && chambers.length > 1;
 
+  // Helper to get YouTube thumbnail
+  const getYoutubeThumbnail = (url: string) => {
+    if (!url) return null;
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+      /youtube\.com\/shorts\/([^&\s?]+)/,
+    ];
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+    }
+    return null;
+  };
+
   return (
     <div className="min-h-screen bg-muted/30">
-      {/* Hero Section */}
+      {/* Hero Section - Facebook Cover Ratio (820:312 ≈ 2.63:1) */}
       <div className="relative">
-        {/* Cover Photo - Taller with better gradient */}
+        {/* Cover Photo - Facebook aspect ratio */}
         <div 
-          className="h-48 md:h-64 bg-gradient-to-br from-primary via-primary/90 to-primary/70"
-          style={profile.cover_photo_url ? {
-            backgroundImage: `url(${profile.cover_photo_url})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center"
-          } : undefined}
+          className="w-full bg-gradient-to-br from-primary via-primary/90 to-primary/70"
+          style={{
+            aspectRatio: "820/312",
+            ...(profile.cover_photo_url ? {
+              backgroundImage: `url(${profile.cover_photo_url})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center"
+            } : {})
+          }}
         >
-          {/* Overlay gradient for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          {/* Subtle overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         </div>
 
-        {/* Profile Card - Clean centered card design */}
+        {/* Profile Card - Overlapping cover */}
         <div className="container max-w-4xl mx-auto px-4">
-          <div className="relative -mt-24 md:-mt-28">
+          <div className="relative -mt-16 md:-mt-20">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
               <Card className="shadow-xl border-0 overflow-hidden">
                 <CardContent className="p-0">
-                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-6">
-                    {/* Avatar - Larger and more prominent */}
-                    <div className="relative flex-shrink-0">
-                      <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-4 border-background shadow-2xl flex items-center justify-center overflow-hidden ring-4 ring-primary/10">
+                  {/* Main Profile Row */}
+                  <div className="flex flex-col sm:flex-row gap-4 p-5 pb-4">
+                    {/* Avatar */}
+                    <div className="relative flex-shrink-0 self-center sm:self-start">
+                      <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-background border-4 border-background shadow-xl flex items-center justify-center overflow-hidden">
                         {profile.avatar_url ? (
                           <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-5xl font-bold text-primary">
+                          <span className="text-4xl font-bold text-primary">
                             {profile.full_name?.charAt(0) || "D"}
                           </span>
                         )}
                       </div>
-                      {/* Availability Badge */}
                       {isAvailableToday && (
-                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white text-xs font-medium rounded-full shadow-lg whitespace-nowrap">
-                          <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                          Available Today
+                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-medium rounded-full shadow whitespace-nowrap">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                          Available
                         </div>
                       )}
                     </div>
 
-                    {/* Info Section */}
-                    <div className="flex-1 text-center sm:text-left space-y-3 pt-2">
-                      {/* Name Row */}
-                      <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                        <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-                          {profile.full_name}
-                        </h1>
-                        {profile.verified && (
-                          <Badge className="bg-blue-500 hover:bg-blue-600 gap-1 text-white">
-                            <Shield className="w-3.5 h-3.5" />
-                            Verified
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      {/* Specialization & Degrees */}
-                      <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                        {profile.specialization && (
-                          <Badge 
-                            variant="default" 
-                            className="text-sm px-4 py-1.5 bg-primary hover:bg-primary/90 font-medium"
-                          >
-                            {profile.specialization}
-                          </Badge>
-                        )}
-                        {profile.degrees && profile.degrees.length > 0 && (
-                          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border">
-                            <Award className="w-4 h-4 text-primary" />
-                            <span className="text-sm font-medium text-foreground">
-                              {profile.degrees.join(", ")}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Social Links - Better spaced */}
-                      {socialLinks && Object.values(socialLinks).some(v => v) && (
-                        <div className="pt-1">
+                    {/* Info + Video Side */}
+                    <div className="flex-1 flex flex-col sm:flex-row gap-4">
+                      {/* Text Info */}
+                      <div className="flex-1 text-center sm:text-left space-y-2">
+                        {/* Name */}
+                        <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                          <h1 className="text-xl md:text-2xl font-bold text-foreground">
+                            {profile.full_name}
+                          </h1>
+                          {profile.verified && (
+                            <Badge className="bg-blue-500 hover:bg-blue-600 gap-1 text-white text-xs">
+                              <Shield className="w-3 h-3" />
+                              Verified
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        {/* Specialization & Degrees */}
+                        <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                          {profile.specialization && (
+                            <Badge variant="default" className="text-xs px-3 py-1">
+                              {profile.specialization}
+                            </Badge>
+                          )}
+                          {profile.degrees && profile.degrees.length > 0 && (
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Award className="w-3.5 h-3.5" />
+                              <span>{profile.degrees.join(", ")}</span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Social Links */}
+                        {socialLinks && Object.values(socialLinks).some(v => v) && (
                           <ProfileSocialLinksSection socialLinks={socialLinks} youtubeUrl={profile.youtube_url} />
+                        )}
+                      </div>
+
+                      {/* Intro Video Thumbnail */}
+                      {introVideo && (
+                        <div 
+                          className="w-full sm:w-36 md:w-44 flex-shrink-0 cursor-pointer group"
+                          onClick={() => setActiveTab("videos")}
+                        >
+                          <div className="relative aspect-video rounded-lg overflow-hidden bg-muted shadow-md">
+                            {getYoutubeThumbnail(introVideo.youtube_url) ? (
+                              <img 
+                                src={getYoutubeThumbnail(introVideo.youtube_url)!}
+                                alt="Intro Video"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-muted">
+                                <Video className="w-8 h-8 text-muted-foreground" />
+                              </div>
+                            )}
+                            {/* Play overlay */}
+                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
+                              <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                                <Video className="w-5 h-5 text-primary" />
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-xs text-center text-muted-foreground mt-1">Watch Intro</p>
                         </div>
                       )}
+                    </div>
+                  </div>
+
+                  {/* Stats Row - Inside Card */}
+                  <div className="border-t bg-muted/30">
+                    <div className="grid grid-cols-3 divide-x divide-border">
+                      <div className="p-3 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Clock className="w-4 h-4 text-primary" />
+                          <span className="text-lg font-bold">{profile.experience_years || 0}+</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">Years Exp.</p>
+                      </div>
+                      <div className="p-3 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Users className="w-4 h-4 text-primary" />
+                          <span className="text-lg font-bold">{profile.patient_count?.toLocaleString() || 0}</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">Patients</p>
+                      </div>
+                      <div className="p-3 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Star className="w-4 h-4 text-amber-500" />
+                          <span className="text-lg font-bold">{profile.rating || "N/A"}</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">Rating</p>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -212,38 +281,6 @@ const DoctorPublicProfile = () => {
         <div className="grid gap-6 md:grid-cols-3">
           {/* Left Column - Info */}
           <div className="md:col-span-2 space-y-6">
-            {/* Quick Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <div className="grid grid-cols-3 gap-3">
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <Clock className="w-6 h-6 mx-auto text-primary mb-2" />
-                    <p className="text-2xl font-bold">{profile.experience_years || 0}+</p>
-                    <p className="text-xs text-muted-foreground">Years Experience</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <Users className="w-6 h-6 mx-auto text-primary mb-2" />
-                    <p className="text-2xl font-bold">{profile.patient_count?.toLocaleString() || 0}</p>
-                    <p className="text-xs text-muted-foreground">Patients Served</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <Star className="w-6 h-6 mx-auto text-yellow-500 mb-2" />
-                    <p className="text-2xl font-bold">{profile.rating || "N/A"}</p>
-                    <p className="text-xs text-muted-foreground">Rating</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </motion.div>
-
-            {/* Tabbed Content */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="overview" className="gap-2">
