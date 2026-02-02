@@ -12,9 +12,9 @@ import {
   CreditCard, 
   UserPlus,
   ArrowRight,
-  Play,
   FileText,
-  SkipForward
+  SkipForward,
+  Banknote
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -119,18 +119,14 @@ const Dashboard = () => {
                 </div>
               </Link>
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="justify-start h-auto py-4"
-              onClick={handleCallNextClick}
-              disabled={waitingCount === 0 && !currentToken}
-            >
-              <Play className="mr-3 h-5 w-5" />
-              <div className="text-left">
-                <div className="font-medium">{t.queue.callNext}</div>
-                <div className="text-xs opacity-80">{waitingCount} {t.queue.patientsWaiting.toLowerCase()}</div>
-              </div>
+            <Button asChild size="lg" variant="outline" className="justify-start h-auto py-4">
+              <Link to="/dashboard/finances">
+                <Banknote className="mr-3 h-5 w-5" />
+                <div className="text-left">
+                  <div className="font-medium">{t.finances.addTransaction}</div>
+                  <div className="text-xs opacity-80">{t.finances.income} / {t.finances.expense}</div>
+                </div>
+              </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="justify-start h-auto py-4">
               <Link to="/dashboard/patients">
