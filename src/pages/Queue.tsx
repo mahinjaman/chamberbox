@@ -481,6 +481,7 @@ const Queue = () => {
                   onCollectPayment={handleCollectPayment}
                   onCancel={() => handleCancel(currentToken.id)}
                   onCallNext={callNext}
+                  onCompleteOnly={() => updateTokenStatus({ id: currentToken.id, status: "completed" })}
                 />
               )}
 
