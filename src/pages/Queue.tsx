@@ -481,7 +481,25 @@ const Queue = () => {
                   onCollectPayment={handleCollectPayment}
                   onCancel={() => handleCancel(currentToken.id)}
                   onCallNext={callNext}
-                  onCompleteOnly={() => updateTokenStatus({ id: currentToken.id, status: "completed" })}
+                  onCompleteOnly={async (skipIncomplete = false) => {
+                    // Check if current patient has incomplete tasks
+                    if (!skipIncomplete) {
+                      const hasPrescription = !!currentToken.prescription_id;
+                      const hasPayment = currentToken.payment_collected;
+                      
+                      if (!hasPrescription || !hasPayment) {
+                        return { 
+                          incomplete: true, 
+                          hasPrescription, 
+                          hasPayment 
+                        };
+                      }
+                    }
+                    
+                    // Complete the current patient (without calling next)
+                    updateTokenStatus({ id: currentToken.id, status: "completed" });
+                    return { incomplete: false };
+                  }}
                 />
               )}
 
