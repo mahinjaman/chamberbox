@@ -105,12 +105,14 @@ export const useAvailableSlots = (doctorId: string, startDate?: Date, days: numb
       const dateFrom = format(start, "yyyy-MM-dd");
       const dateTo = format(addDays(start, days - 1), "yyyy-MM-dd");
 
+      // Include open, running, and paused sessions (paused sessions still accept bookings)
       const { data: sessions } = await supabase
         .from("queue_sessions")
         .select("id, chamber_id, session_date, start_time, end_time, status, max_patients, current_token")
         .eq("doctor_id", doctorId)
         .gte("session_date", dateFrom)
-        .lte("session_date", dateTo);
+        .lte("session_date", dateTo)
+        .in("status", ["open", "running", "paused"]);
 
       // Get token counts for sessions
       const sessionIds = sessions?.map(s => s.id) || [];
@@ -239,14 +241,14 @@ export const useCreateQueueBooking = () => {
       let activeSessionId = session_id;
 
       if (!activeSessionId) {
-        // Check if session exists
+        // Check if session exists (include paused sessions - they still accept bookings)
         const { data: existingSession } = await supabase
           .from("queue_sessions")
           .select("id")
           .eq("doctor_id", doctor_id)
           .eq("chamber_id", chamber_id)
           .eq("session_date", queue_date)
-          .in("status", ["open", "running"])
+          .in("status", ["open", "running", "paused"])
           .maybeSingle();
 
         if (existingSession) {
