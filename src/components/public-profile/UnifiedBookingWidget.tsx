@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import { usePublicBookingSlots, useCreateQueueBooking, BookingSlot } from "@/hooks/useUnifiedQueue";
 import { DoctorProfile, Chamber } from "@/hooks/useDoctorProfile";
 import { formatTime12Hour, formatCurrency } from "@/lib/doctor-profile-utils";
@@ -37,6 +39,8 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
     patient_phone: "",
     patient_age: "",
     patient_gender: "",
+    visiting_reason: "",
+    is_follow_up: false,
   });
 
   const { slots, isLoading } = usePublicBookingSlots(profile.id);
@@ -89,6 +93,8 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
         queue_date: selectedSlot.date,
         session_id: selectedSlot.session_id,
         is_public: true,
+        visiting_reason: formData.visiting_reason.trim() || undefined,
+        is_follow_up: formData.is_follow_up,
       });
       
       setBookingResult(result);
@@ -436,13 +442,50 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                     </Select>
                   </div>
                 </div>
+
+                {/* Visit Type Toggle */}
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div>
+                    <Label htmlFor="follow-up" className="text-sm font-medium">Follow-up Visit</Label>
+                    <p className="text-xs text-muted-foreground">Toggle if this is a return visit</p>
+                  </div>
+                  <Switch
+                    id="follow-up"
+                    checked={formData.is_follow_up}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_follow_up: checked }))}
+                  />
+                </div>
+
+                {/* Visiting Reason */}
+                <div className="space-y-1">
+                  <Label htmlFor="reason">Visiting Reason (Optional)</Label>
+                  <Textarea
+                    id="reason"
+                    value={formData.visiting_reason}
+                    onChange={(e) => setFormData(prev => ({ ...prev, visiting_reason: e.target.value.slice(0, 200) }))}
+                    placeholder="Briefly describe your symptoms or reason for visit"
+                    className="resize-none h-16"
+                  />
+                  <p className="text-xs text-muted-foreground text-right">{formData.visiting_reason.length}/200</p>
+                </div>
               </div>
               
               {/* Fee Info */}
               <div className="p-3 rounded-lg border flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Consultation Fee</span>
+                <div>
+                  <span className="text-sm text-muted-foreground">
+                    {formData.is_follow_up ? "Follow-up Fee" : "New Patient Fee"}
+                  </span>
+                  {formData.is_follow_up && (
+                    <p className="text-xs text-muted-foreground">Return patient discount applied</p>
+                  )}
+                </div>
                 <span className="font-bold text-primary">
-                  {formatCurrency(selectedSlot?.new_patient_fee || 500)}
+                  {formatCurrency(
+                    formData.is_follow_up 
+                      ? (selectedSlot?.return_patient_fee || selectedSlot?.new_patient_fee || 500)
+                      : (selectedSlot?.new_patient_fee || 500)
+                  )}
                 </span>
               </div>
               
