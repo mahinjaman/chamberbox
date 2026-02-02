@@ -11,8 +11,8 @@ interface ProfileVideoSectionProps {
 const getYoutubeEmbedUrl = (url: string) => {
   if (!url) return null;
   const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/,
-    /youtube\.com\/shorts\/([^&\s]+)/,
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+    /youtube\.com\/shorts\/([^&\s?]+)/,
   ];
   for (const pattern of patterns) {
     const match = url.match(pattern);
@@ -26,13 +26,13 @@ const getYoutubeEmbedUrl = (url: string) => {
 const getYoutubeThumbnail = (url: string) => {
   if (!url) return null;
   const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/,
-    /youtube\.com\/shorts\/([^&\s]+)/,
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+    /youtube\.com\/shorts\/([^&\s?]+)/,
   ];
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match) {
-      return `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg`;
+      return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
     }
   }
   return null;
