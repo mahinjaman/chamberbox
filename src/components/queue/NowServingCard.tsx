@@ -234,7 +234,7 @@ export const NowServingCard = ({
                 variant="outline"
                 className={isFullyComplete 
                   ? "border-success text-success hover:bg-success/10" 
-                  : "border-warning text-warning hover:bg-warning/10"
+                  : "border-destructive/70 text-destructive hover:bg-destructive/10"
                 }
                 onClick={handleCompleteOnlyClick}
               >
