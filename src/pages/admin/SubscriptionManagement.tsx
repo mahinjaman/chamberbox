@@ -27,9 +27,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAdmin, DoctorProfile } from "@/hooks/useAdmin";
-import { Search, Loader2, Edit } from "lucide-react";
-import { format, addMonths } from "date-fns";
+import { Search, Loader2, Edit, CalendarIcon } from "lucide-react";
+import { format, addMonths, addDays } from "date-fns";
+import { cn } from "@/lib/utils";
 
 const SUBSCRIPTION_TIERS = [
   { value: "trial", label: "Trial", color: "outline" },
@@ -38,6 +41,15 @@ const SUBSCRIPTION_TIERS = [
   { value: "premium", label: "Premium", color: "default" },
   { value: "enterprise", label: "Enterprise", color: "default" },
 ] as const;
+
+const TRIAL_DAYS_OPTIONS = [
+  { value: "7", label: "7 days" },
+  { value: "14", label: "14 days" },
+  { value: "30", label: "30 days" },
+  { value: "60", label: "60 days" },
+  { value: "90", label: "90 days" },
+  { value: "custom", label: "Custom date" },
+];
 
 export default function SubscriptionManagement() {
   const { 
@@ -50,6 +62,8 @@ export default function SubscriptionManagement() {
   const [editingDoctor, setEditingDoctor] = useState<DoctorProfile | null>(null);
   const [selectedTier, setSelectedTier] = useState<string>("");
   const [expiryMonths, setExpiryMonths] = useState<string>("1");
+  const [trialDays, setTrialDays] = useState<string>("14");
+  const [customTrialDate, setCustomTrialDate] = useState<Date | undefined>(undefined);
 
   const filteredDoctors = doctors?.filter((doctor) => {
     return (
@@ -62,14 +76,32 @@ export default function SubscriptionManagement() {
     setEditingDoctor(doctor);
     setSelectedTier(doctor.subscription_tier || "trial");
     setExpiryMonths("1");
+    setTrialDays("14");
+    // If doctor has an existing expiry, set it as custom date
+    if (doctor.subscription_expires_at) {
+      setCustomTrialDate(new Date(doctor.subscription_expires_at));
+      if (doctor.subscription_tier === "trial") {
+        setTrialDays("custom");
+      }
+    } else {
+      setCustomTrialDate(undefined);
+    }
   };
 
   const handleSaveSubscription = () => {
     if (!editingDoctor) return;
 
-    const expiresAt = selectedTier === "trial" 
-      ? null 
-      : addMonths(new Date(), parseInt(expiryMonths)).toISOString();
+    let expiresAt: string | null = null;
+
+    if (selectedTier === "trial") {
+      if (trialDays === "custom" && customTrialDate) {
+        expiresAt = customTrialDate.toISOString();
+      } else if (trialDays !== "custom") {
+        expiresAt = addDays(new Date(), parseInt(trialDays)).toISOString();
+      }
+    } else {
+      expiresAt = addMonths(new Date(), parseInt(expiryMonths)).toISOString();
+    }
 
     updateSubscription({
       doctorId: editingDoctor.id,
@@ -82,6 +114,13 @@ export default function SubscriptionManagement() {
 
   const getSubscriptionStatus = (doctor: DoctorProfile) => {
     if (!doctor.subscription_tier || doctor.subscription_tier === "trial") {
+      if (doctor.subscription_expires_at) {
+        const expiryDate = new Date(doctor.subscription_expires_at);
+        if (expiryDate < new Date()) {
+          return { status: "Trial Expired", isActive: false };
+        }
+        return { status: "Trial", isActive: true };
+      }
       return { status: "Trial", isActive: true };
     }
     
@@ -186,7 +225,7 @@ export default function SubscriptionManagement() {
 
       {/* Edit Subscription Dialog */}
       <Dialog open={!!editingDoctor} onOpenChange={() => setEditingDoctor(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Subscription</DialogTitle>
           </DialogHeader>
@@ -212,6 +251,62 @@ export default function SubscriptionManagement() {
               </Select>
             </div>
 
+            {selectedTier === "trial" && (
+              <div className="space-y-3">
+                <Label>Trial Period</Label>
+                <Select value={trialDays} onValueChange={setTrialDays}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select trial duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TRIAL_DAYS_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {trialDays === "custom" && (
+                  <div className="space-y-2">
+                    <Label className="text-sm text-muted-foreground">Select expiry date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !customTrialDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {customTrialDate ? format(customTrialDate, "PPP") : "Pick a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={customTrialDate}
+                          onSelect={setCustomTrialDate}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                )}
+
+                {trialDays !== "custom" && (
+                  <p className="text-sm text-muted-foreground">
+                    Trial will expire on:{" "}
+                    <span className="font-medium text-foreground">
+                      {format(addDays(new Date(), parseInt(trialDays)), "PPP")}
+                    </span>
+                  </p>
+                )}
+              </div>
+            )}
+
             {selectedTier !== "trial" && (
               <div className="space-y-2">
                 <Label>Duration (months)</Label>
@@ -227,6 +322,12 @@ export default function SubscriptionManagement() {
                     <SelectItem value="24">24 months</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-sm text-muted-foreground">
+                  Subscription will expire on:{" "}
+                  <span className="font-medium text-foreground">
+                    {format(addMonths(new Date(), parseInt(expiryMonths)), "PPP")}
+                  </span>
+                </p>
               </div>
             )}
           </div>
@@ -236,7 +337,7 @@ export default function SubscriptionManagement() {
             </Button>
             <Button 
               onClick={handleSaveSubscription}
-              disabled={isUpdatingSubscription}
+              disabled={isUpdatingSubscription || (selectedTier === "trial" && trialDays === "custom" && !customTrialDate)}
             >
               {isUpdatingSubscription && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Save Changes
