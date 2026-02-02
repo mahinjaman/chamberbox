@@ -19,8 +19,17 @@ const QueueStatus: React.FC = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
 
-  const { isLoading, error, queueData, lastUpdated, checkStatus, refresh, setError } =
-    useQueueStatus();
+  const { 
+    isLoading, 
+    error, 
+    queueData, 
+    lastUpdated, 
+    checkStatus, 
+    checkBySerialNumber,
+    checkByPhoneAndDate,
+    refresh, 
+    setError 
+  } = useQueueStatus();
 
   const t = translations[language];
 
@@ -48,10 +57,22 @@ const QueueStatus: React.FC = () => {
     setLanguage((prev) => (prev === 'en' ? 'bn' : 'en'));
   };
 
-  // Handle status check - now uses phone number as primary identifier
+  // Handle legacy status check - uses phone number
   const handleCheckStatus = async (phoneNumber: string, serialNumber?: number) => {
     setShowStatus(true);
     await checkStatus(phoneNumber, serialNumber);
+  };
+
+  // Handle serial number search
+  const handleSerialSearch = async (serialNumber: string) => {
+    setShowStatus(true);
+    await checkBySerialNumber(serialNumber);
+  };
+
+  // Handle phone + date search
+  const handlePhoneDateSearch = async (phoneNumber: string, date: Date) => {
+    setShowStatus(true);
+    await checkByPhoneAndDate(phoneNumber, date);
   };
 
   // Handle notification toggle
@@ -175,7 +196,13 @@ const QueueStatus: React.FC = () => {
         </motion.div>
 
         {/* Input Form */}
-        <QueueInputForm onSubmit={handleCheckStatus} isLoading={isLoading} t={t} />
+        <QueueInputForm 
+          onSubmit={handleCheckStatus} 
+          onSerialSearch={handleSerialSearch}
+          onPhoneDateSearch={handlePhoneDateSearch}
+          isLoading={isLoading} 
+          t={t} 
+        />
 
         {/* Status Display */}
         <AnimatePresence mode="wait">
