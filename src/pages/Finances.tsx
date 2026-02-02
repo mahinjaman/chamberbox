@@ -681,6 +681,11 @@ const Finances = () => {
                             {format(new Date(t.transaction_date), "dd MMM")}
                             {t.payment_method && ` • ${t.payment_method}`}
                           </p>
+                          {t.description && (
+                            <p className="text-xs text-muted-foreground/80 mt-0.5 italic">
+                              "{t.description}"
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
