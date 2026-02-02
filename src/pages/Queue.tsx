@@ -195,7 +195,10 @@ const Queue = () => {
     setIsPaymentModalOpen(true);
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = (amount: number, method: string) => {
+    if (currentToken) {
+      updatePaymentStatus({ tokenId: currentToken.id, amount, method });
+    }
     setIsPaymentModalOpen(false);
   };
 

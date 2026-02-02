@@ -32,7 +32,7 @@ interface PaymentCollectionModalProps {
     isFollowUp?: boolean;
   } | null;
   tokenNumber?: number;
-  onSuccess?: () => void;
+  onSuccess?: (amount: number, method: string) => void;
 }
 
 const PAYMENT_METHODS = [
@@ -82,17 +82,18 @@ export function PaymentCollectionModal({
     });
 
     // Reset form
+    const collectedAmount = parseFloat(amount);
+    const collectedMethod = paymentMethod;
     setAmount("");
     setCategory("Consultation Fee");
     setPaymentMethod("cash");
     setDescription("");
     
-    onSuccess?.();
+    onSuccess?.(collectedAmount, collectedMethod);
     onClose();
   };
 
   const handleSkip = () => {
-    onSuccess?.();
     onClose();
   };
 
