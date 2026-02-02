@@ -231,42 +231,6 @@ const DoctorPublicProfile = () => {
 
                 {/* Info + Video Side */}
                 <div className="flex-1 flex flex-col sm:flex-row gap-4">
-                  {/* Text Info */}
-                  <div className="flex-1 text-center sm:text-left space-y-1.5">
-                    {/* Name */}
-                    <h1 className="text-lg md:text-xl font-bold text-foreground">
-                      {profile.full_name}
-                    </h1>
-                    
-                    {/* Specialization & Degrees in card */}
-                    <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                      {profile.specialization && (
-                        <Badge variant="default" className="text-xs px-2.5 py-0.5">
-                          {profile.specialization}
-                        </Badge>
-                      )}
-                      {profile.degrees && profile.degrees.length > 0 && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Award className="w-3 h-3" />
-                          <span>{profile.degrees.join(", ")}</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Other Info - Bio snippet or services */}
-                    {profile.bio && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 max-w-md">
-                        {profile.bio}
-                      </p>
-                    )}
-
-                    {/* Small Social Links in card */}
-                    {socialLinks && Object.values(socialLinks).some(v => v) && (
-                      <div className="pt-1">
-                        <ProfileSocialLinksSection socialLinks={socialLinks} youtubeUrl={profile.youtube_url} />
-                      </div>
-                    )}
-                  </div>
 
                   {/* Intro Video Thumbnail */}
                   {introVideo && (
