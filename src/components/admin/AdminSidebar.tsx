@@ -6,7 +6,8 @@ import {
   MessageSquare, 
   Video,
   LogOut,
-  Shield
+  Shield,
+  Settings
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,6 +30,7 @@ const mainNavItems = [
   { title: "Overview", url: "/admin", icon: LayoutDashboard },
   { title: "Doctors", url: "/admin/doctors", icon: Users },
   { title: "Subscriptions", url: "/admin/subscriptions", icon: CreditCard },
+  { title: "Plan Config", url: "/admin/plans", icon: Settings },
   { title: "Support Tickets", url: "/admin/tickets", icon: MessageSquare },
   { title: "Video Tutorials", url: "/admin/tutorials", icon: Video },
 ];

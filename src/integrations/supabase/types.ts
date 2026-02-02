@@ -928,6 +928,125 @@ export type Database = {
           },
         ]
       }
+      subscription_plans: {
+        Row: {
+          can_export_data: boolean | null
+          can_use_analytics: boolean | null
+          can_use_custom_branding: boolean | null
+          can_use_public_profile: boolean | null
+          can_use_queue_booking: boolean | null
+          can_use_whatsapp_notifications: boolean | null
+          created_at: string
+          currency: string | null
+          description: string | null
+          id: string
+          max_chambers: number | null
+          max_patients: number | null
+          max_prescriptions_per_month: number | null
+          max_staff: number | null
+          name: string
+          price_monthly: number | null
+          price_yearly: number | null
+          sms_credits: number | null
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at: string
+        }
+        Insert: {
+          can_export_data?: boolean | null
+          can_use_analytics?: boolean | null
+          can_use_custom_branding?: boolean | null
+          can_use_public_profile?: boolean | null
+          can_use_queue_booking?: boolean | null
+          can_use_whatsapp_notifications?: boolean | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          max_chambers?: number | null
+          max_patients?: number | null
+          max_prescriptions_per_month?: number | null
+          max_staff?: number | null
+          name: string
+          price_monthly?: number | null
+          price_yearly?: number | null
+          sms_credits?: number | null
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+        }
+        Update: {
+          can_export_data?: boolean | null
+          can_use_analytics?: boolean | null
+          can_use_custom_branding?: boolean | null
+          can_use_public_profile?: boolean | null
+          can_use_queue_booking?: boolean | null
+          can_use_whatsapp_notifications?: boolean | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          max_chambers?: number | null
+          max_patients?: number | null
+          max_prescriptions_per_month?: number | null
+          max_staff?: number | null
+          name?: string
+          price_monthly?: number | null
+          price_yearly?: number | null
+          sms_credits?: number | null
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subscription_usage: {
+        Row: {
+          created_at: string
+          current_month: string | null
+          doctor_id: string
+          id: string
+          patients_added_this_month: number | null
+          prescriptions_this_month: number | null
+          sms_sent_this_month: number | null
+          total_patients: number | null
+          total_prescriptions: number | null
+          total_sms_sent: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_month?: string | null
+          doctor_id: string
+          id?: string
+          patients_added_this_month?: number | null
+          prescriptions_this_month?: number | null
+          sms_sent_this_month?: number | null
+          total_patients?: number | null
+          total_prescriptions?: number | null
+          total_sms_sent?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_month?: string | null
+          doctor_id?: string
+          id?: string
+          patients_added_this_month?: number | null
+          prescriptions_this_month?: number | null
+          sms_sent_this_month?: number | null
+          total_patients?: number | null
+          total_prescriptions?: number | null
+          total_sms_sent?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_usage_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_ticket_replies: {
         Row: {
           created_at: string
@@ -1249,6 +1368,7 @@ export type Database = {
         Args: { _doctor_id: string; _user_id: string }
         Returns: boolean
       }
+      reset_monthly_usage: { Args: never; Returns: undefined }
       staff_has_chamber_access: {
         Args: { _chamber_id: string; _user_id: string }
         Returns: boolean
