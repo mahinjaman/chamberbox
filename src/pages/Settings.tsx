@@ -139,7 +139,8 @@ const Settings = () => {
                     {!limits.patients.isUnlimited && (
                       <Progress 
                         value={limits.patients.percentage} 
-                        className={`h-2 ${getStatusColor(limits.patients.percentage)}`}
+                        className="h-2"
+                        indicatorClassName={getStatusColor(limits.patients.percentage)}
                       />
                     )}
                     {limits.patients.isUnlimited && (
@@ -164,7 +165,8 @@ const Settings = () => {
                     {!limits.prescriptions.isUnlimited && (
                       <Progress 
                         value={limits.prescriptions.percentage} 
-                        className={`h-2 ${getStatusColor(limits.prescriptions.percentage)}`}
+                        className="h-2"
+                        indicatorClassName={getStatusColor(limits.prescriptions.percentage)}
                       />
                     )}
                     {limits.prescriptions.isUnlimited && (
@@ -189,7 +191,8 @@ const Settings = () => {
                     {!limits.sms.isUnlimited && (
                       <Progress 
                         value={limits.sms.percentage} 
-                        className={`h-2 ${getStatusColor(limits.sms.percentage)}`}
+                        className="h-2"
+                        indicatorClassName={getStatusColor(limits.sms.percentage)}
                       />
                     )}
                     {limits.sms.isUnlimited && (
@@ -214,7 +217,8 @@ const Settings = () => {
                     {!limits.staff.isUnlimited && (
                       <Progress 
                         value={limits.staff.percentage} 
-                        className={`h-2 ${getStatusColor(limits.staff.percentage)}`}
+                        className="h-2"
+                        indicatorClassName={getStatusColor(limits.staff.percentage)}
                       />
                     )}
                     {limits.staff.isUnlimited && (
@@ -239,7 +243,8 @@ const Settings = () => {
                     {!limits.chambers.isUnlimited && (
                       <Progress 
                         value={limits.chambers.percentage} 
-                        className={`h-2 ${getStatusColor(limits.chambers.percentage)}`}
+                        className="h-2"
+                        indicatorClassName={getStatusColor(limits.chambers.percentage)}
                       />
                     )}
                     {limits.chambers.isUnlimited && (
