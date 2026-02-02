@@ -111,91 +111,97 @@ const DoctorPublicProfile = () => {
   const hasMultipleChambers = chambers && chambers.length > 1;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-muted/30">
       {/* Hero Section */}
       <div className="relative">
-        {/* Cover Photo */}
+        {/* Cover Photo - Taller with better gradient */}
         <div 
-          className="h-40 md:h-56 bg-gradient-to-r from-primary via-primary/80 to-primary/60"
+          className="h-48 md:h-64 bg-gradient-to-br from-primary via-primary/90 to-primary/70"
           style={profile.cover_photo_url ? {
             backgroundImage: `url(${profile.cover_photo_url})`,
             backgroundSize: "cover",
             backgroundPosition: "center"
           } : undefined}
         >
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+          {/* Overlay gradient for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         </div>
 
-        {/* Profile Info Overlay */}
+        {/* Profile Card - Clean centered card design */}
         <div className="container max-w-4xl mx-auto px-4">
-          <div className="relative -mt-16 md:-mt-20">
+          <div className="relative -mt-24 md:-mt-28">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col md:flex-row md:items-end gap-4"
             >
-              {/* Avatar */}
-              <div className="relative">
-                <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-background border-4 border-background shadow-xl flex items-center justify-center overflow-hidden">
-                  {profile.avatar_url ? (
-                    <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-4xl font-bold text-primary">
-                      {profile.full_name?.charAt(0) || "D"}
-                    </span>
-                  )}
-                </div>
-                {/* Online Status */}
-                {isAvailableToday && (
-                  <div className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-1 bg-green-500 text-white text-xs rounded-full shadow-lg">
-                    <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                    Available
-                  </div>
-                )}
-              </div>
-
-              {/* Name & Title */}
-              <div className="flex-1 pb-2 md:pb-4 space-y-3">
-                {/* Name Row */}
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
-                    {profile.full_name}
-                  </h1>
-                  {profile.verified && (
-                    <Badge className="bg-blue-500 hover:bg-blue-600 gap-1">
-                      <Shield className="w-3 h-3" />
-                      Verified
-                    </Badge>
-                  )}
-                </div>
-                
-                {/* Specialization & Degrees Row - Improved */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  {profile.specialization && (
-                    <Badge 
-                      variant="default" 
-                      className="text-sm px-4 py-1.5 bg-gradient-to-r from-primary to-primary/80 shadow-md"
-                    >
-                      {profile.specialization}
-                    </Badge>
-                  )}
-                  {profile.degrees && profile.degrees.length > 0 && (
-                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/50 border border-border/50">
-                      <Award className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span className="text-sm font-medium text-muted-foreground">
-                        {profile.degrees.join(", ")}
-                      </span>
+              <Card className="shadow-xl border-0 overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-6">
+                    {/* Avatar - Larger and more prominent */}
+                    <div className="relative flex-shrink-0">
+                      <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-4 border-background shadow-2xl flex items-center justify-center overflow-hidden ring-4 ring-primary/10">
+                        {profile.avatar_url ? (
+                          <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-5xl font-bold text-primary">
+                            {profile.full_name?.charAt(0) || "D"}
+                          </span>
+                        )}
+                      </div>
+                      {/* Availability Badge */}
+                      {isAvailableToday && (
+                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white text-xs font-medium rounded-full shadow-lg whitespace-nowrap">
+                          <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                          Available Today
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                
-                {/* Social Links - Compact inline design */}
-                {socialLinks && Object.values(socialLinks).some(v => v) && (
-                  <div className="pt-2">
-                    <ProfileSocialLinksSection socialLinks={socialLinks} youtubeUrl={profile.youtube_url} />
+
+                    {/* Info Section */}
+                    <div className="flex-1 text-center sm:text-left space-y-3 pt-2">
+                      {/* Name Row */}
+                      <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                        <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+                          {profile.full_name}
+                        </h1>
+                        {profile.verified && (
+                          <Badge className="bg-blue-500 hover:bg-blue-600 gap-1 text-white">
+                            <Shield className="w-3.5 h-3.5" />
+                            Verified
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      {/* Specialization & Degrees */}
+                      <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                        {profile.specialization && (
+                          <Badge 
+                            variant="default" 
+                            className="text-sm px-4 py-1.5 bg-primary hover:bg-primary/90 font-medium"
+                          >
+                            {profile.specialization}
+                          </Badge>
+                        )}
+                        {profile.degrees && profile.degrees.length > 0 && (
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border">
+                            <Award className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-medium text-foreground">
+                              {profile.degrees.join(", ")}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Social Links - Better spaced */}
+                      {socialLinks && Object.values(socialLinks).some(v => v) && (
+                        <div className="pt-1">
+                          <ProfileSocialLinksSection socialLinks={socialLinks} youtubeUrl={profile.youtube_url} />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
+                </CardContent>
+              </Card>
             </motion.div>
           </div>
         </div>
