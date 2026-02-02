@@ -105,24 +105,24 @@ export const useAvailableSlots = (doctorId: string, startDate?: Date, days: numb
       const dateFrom = format(start, "yyyy-MM-dd");
       const dateTo = format(addDays(start, days - 1), "yyyy-MM-dd");
 
-      // Include open, running, and paused sessions (paused sessions still accept bookings)
+      // Include open, running, paused, and closed sessions to properly filter availability
       const { data: sessions } = await supabase
         .from("queue_sessions")
         .select("id, chamber_id, session_date, start_time, end_time, status, max_patients, current_token")
         .eq("doctor_id", doctorId)
         .gte("session_date", dateFrom)
-        .lte("session_date", dateTo)
-        .in("status", ["open", "running", "paused"]);
+        .lte("session_date", dateTo);
 
       // Get token counts for sessions (only count waiting/current, NOT completed/cancelled)
-      const sessionIds = sessions?.map(s => s.id) || [];
+      // Only count tokens from open/running/paused sessions
+      const activeSessionIds = sessions?.filter(s => s.status !== "closed").map(s => s.id) || [];
       let tokenCounts: Record<string, number> = {};
 
-      if (sessionIds.length > 0) {
+      if (activeSessionIds.length > 0) {
         const { data: tokens } = await supabase
           .from("queue_tokens")
           .select("session_id")
-          .in("session_id", sessionIds)
+          .in("session_id", activeSessionIds)
           .in("status", ["waiting", "current"]); // Only count active tokens
 
         tokens?.forEach(t => {
@@ -161,6 +161,9 @@ export const useAvailableSlots = (doctorId: string, startDate?: Date, days: numb
             const currentBookings = existingSession ? (tokenCounts[existingSession.id] || 0) : 0;
             const maxPatients = existingSession?.max_patients || 30;
             const isSessionClosed = existingSession?.status === "closed";
+            
+            // Skip closed sessions entirely - don't show them as available slots
+            if (isSessionClosed) return;
 
             result.push({
               date: dateStr,
