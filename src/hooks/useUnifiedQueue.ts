@@ -114,7 +114,7 @@ export const useAvailableSlots = (doctorId: string, startDate?: Date, days: numb
         .lte("session_date", dateTo)
         .in("status", ["open", "running", "paused"]);
 
-      // Get token counts for sessions
+      // Get token counts for sessions (only count waiting/current, NOT completed/cancelled)
       const sessionIds = sessions?.map(s => s.id) || [];
       let tokenCounts: Record<string, number> = {};
 
@@ -123,7 +123,7 @@ export const useAvailableSlots = (doctorId: string, startDate?: Date, days: numb
           .from("queue_tokens")
           .select("session_id")
           .in("session_id", sessionIds)
-          .neq("status", "cancelled");
+          .in("status", ["waiting", "current"]); // Only count active tokens
 
         tokens?.forEach(t => {
           if (t.session_id) {
@@ -289,7 +289,17 @@ export const useCreateQueueBooking = () => {
 
       if (tokenError) throw tokenError;
 
-      return token as QueueBooking;
+      // Count actual waiting patients ahead (excluding completed/cancelled)
+      const { count: waitingAhead } = await supabase
+        .from("queue_tokens")
+        .select("id", { count: "exact", head: true })
+        .eq("doctor_id", doctor_id)
+        .eq("queue_date", queue_date)
+        .eq("chamber_id", chamber_id)
+        .in("status", ["waiting", "current"])
+        .lt("token_number", tokenNumber);
+
+      return { ...token, waiting_ahead: waitingAhead || 0 } as QueueBooking & { waiting_ahead: number };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["available_slots"] });
