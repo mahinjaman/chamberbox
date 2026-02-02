@@ -160,37 +160,46 @@ export function EditStaffDialog({ open, onOpenChange, staff, chambers }: EditSta
             <span>{permissionDescriptions[language][formData.role].join(" • ")}</span>
           </div>
 
-          {/* Active status and Chamber access side by side */}
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="flex items-center justify-between p-3 border rounded-md">
-              <div>
-                <Label className="text-sm">{language === "bn" ? "সক্রিয়" : "Active"}</Label>
-                <p className="text-xs text-muted-foreground">
-                  {language === "bn" ? "লগইন অনুমতি" : "Login access"}
-                </p>
-              </div>
+          {/* Active status and Chamber access in a unified row */}
+          <div className="flex items-start gap-6 p-3 border rounded-lg bg-muted/30">
+            {/* Active toggle */}
+            <div className="flex items-center gap-3">
               <Switch
                 checked={formData.is_active}
                 onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
               />
+              <div>
+                <Label className="text-sm font-medium">{language === "bn" ? "সক্রিয়" : "Active"}</Label>
+                <p className="text-xs text-muted-foreground">
+                  {language === "bn" ? "লগইন অনুমতি" : "Can login"}
+                </p>
+              </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-sm">
-                {language === "bn" ? "চেম্বার" : "Chambers"} *
+            {/* Divider */}
+            <div className="w-px h-12 bg-border" />
+
+            {/* Chamber selection */}
+            <div className="flex-1">
+              <Label className="text-sm font-medium mb-1.5 block">
+                {language === "bn" ? "চেম্বার অ্যাক্সেস" : "Chamber Access"} *
               </Label>
-              <div className="space-y-1 max-h-24 overflow-y-auto border rounded-md p-2">
+              <div className="flex flex-wrap gap-2">
                 {chambers.map((chamber) => (
                   <label
                     key={chamber.id}
-                    className="flex items-center gap-2 p-1.5 rounded hover:bg-muted cursor-pointer text-sm"
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border cursor-pointer text-xs transition-colors ${
+                      formData.chamber_ids.includes(chamber.id)
+                        ? "bg-primary/10 border-primary text-primary"
+                        : "bg-background border-input hover:bg-muted"
+                    }`}
                   >
                     <Checkbox
                       checked={formData.chamber_ids.includes(chamber.id)}
                       onCheckedChange={() => toggleChamber(chamber.id)}
+                      className="h-3 w-3"
                     />
-                    <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
-                    <span className="truncate">{chamber.name}</span>
+                    <span>{chamber.name}</span>
                   </label>
                 ))}
               </div>
