@@ -6,42 +6,75 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Stethoscope } from "lucide-react";
 import { mapAuthError } from "@/lib/errors";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { LanguageToggle } from "@/components/common/LanguageToggle";
 
-const Login = () => {
+const DoctorLogin = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !password) {
-      toast.error("Please fill in all fields");
+      toast.error(language === "bn" ? "সব ফিল্ড পূরণ করুন" : "Please fill in all fields");
       return;
     }
 
     setLoading(true);
     
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
 
-    setLoading(false);
-
     if (error) {
+      setLoading(false);
       toast.error(mapAuthError(error));
       return;
     }
 
-    toast.success("Welcome back!");
+    // Check if user is a doctor (has profile)
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("user_id", authData.user.id)
+      .single();
+
+    setLoading(false);
+
+    if (!profile) {
+      // Not a doctor - check if staff
+      const { data: staffMember } = await supabase
+        .from("staff_members")
+        .select("id")
+        .eq("user_id", authData.user.id)
+        .eq("is_active", true)
+        .single();
+
+      if (staffMember) {
+        toast.error(language === "bn" 
+          ? "এই অ্যাকাউন্টটি স্টাফ হিসেবে নিবন্ধিত। স্টাফ লগইন ব্যবহার করুন।"
+          : "This account is registered as staff. Please use the Staff Login.");
+        await supabase.auth.signOut();
+        navigate("/staff/login");
+        return;
+      }
+
+      toast.error(language === "bn" 
+        ? "এই ইমেইলে কোনো ডাক্তার অ্যাকাউন্ট নেই।"
+        : "No doctor account found with this email.");
+      await supabase.auth.signOut();
+      return;
+    }
+
+    toast.success(language === "bn" ? "স্বাগতম!" : "Welcome back!");
     navigate("/dashboard");
   };
 
@@ -59,13 +92,17 @@ const Login = () => {
       <Card className="w-full max-w-md relative z-10 shadow-2xl">
         <CardHeader className="text-center">
           <Link to="/" className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">C</span>
+            <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center">
+              <Stethoscope className="w-6 h-6 text-primary-foreground" />
             </div>
           </Link>
-          <CardTitle className="text-2xl">{t.auth.welcomeBack}</CardTitle>
+          <CardTitle className="text-2xl">
+            {language === "bn" ? "ডাক্তার লগইন" : "Doctor Login"}
+          </CardTitle>
           <CardDescription>
-            {t.auth.signInToAccount}
+            {language === "bn" 
+              ? "আপনার চেম্বার ম্যানেজ করতে লগইন করুন"
+              : "Sign in to manage your chamber"}
           </CardDescription>
         </CardHeader>
 
@@ -133,6 +170,36 @@ const Login = () => {
                 {t.auth.signUp}
               </Link>
             </p>
+
+            <div className="relative w-full">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">
+                  {language === "bn" ? "অন্যান্য লগইন" : "Other logins"}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex gap-2 w-full">
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => navigate("/staff/login")}
+              >
+                {language === "bn" ? "স্টাফ" : "Staff"}
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => navigate("/admin/login")}
+              >
+                {language === "bn" ? "অ্যাডমিন" : "Admin"}
+              </Button>
+            </div>
           </CardFooter>
         </form>
       </Card>
@@ -140,4 +207,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default DoctorLogin;
