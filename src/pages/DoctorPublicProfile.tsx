@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { usePublicDoctorProfile } from "@/hooks/useDoctorProfile";
 import { usePublicDoctorVideos } from "@/hooks/useDoctorVideos";
-import { usePublicIntegrationSettings } from "@/hooks/useIntegrationSettings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,7 +15,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookingWidget } from "@/components/public-profile/BookingWidget";
-import { CalendlyWidget } from "@/components/public-profile/CalendlyWidget";
 import { QueueBookingWidget } from "@/components/public-profile/QueueBookingWidget";
 import { ProfileEducationSection } from "@/components/public-profile/ProfileEducationSection";
 import { ProfileSocialLinksSection } from "@/components/public-profile/ProfileSocialLinksSection";
@@ -50,11 +48,7 @@ const DoctorPublicProfile = () => {
   const { introVideo, feedVideos } = usePublicDoctorVideos(profile?.id || "");
   const [bioExpanded, setBioExpanded] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
-  const [useBuiltInBooking, setUseBuiltInBooking] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
-  
-  // Get integration settings for Calendly/WhatsApp
-  const { settings: integrationSettings } = usePublicIntegrationSettings(profile?.id || "");
 
   const primaryChamber = chambers?.find(c => c.is_primary) || chambers?.[0];
   const primarySlots = primaryChamber 
@@ -475,21 +469,12 @@ const DoctorPublicProfile = () => {
                 chamber={primaryChamber || null}
               />
               
-              {/* Calendly Widget if enabled */}
-              {integrationSettings?.calendly_enabled && !useBuiltInBooking ? (
-                <CalendlyWidget
-                  settings={integrationSettings}
-                  doctorName={profile.full_name}
-                  fee={primaryChamber?.new_patient_fee}
-                  onFallbackToBuiltIn={() => setUseBuiltInBooking(true)}
-                />
-              ) : (
-                <BookingWidget 
-                  profile={profile} 
-                  chamber={primaryChamber || null} 
-                  availabilitySlots={primarySlots}
-                />
-              )}
+              {/* Booking Widget */}
+              <BookingWidget 
+                profile={profile} 
+                chamber={primaryChamber || null} 
+                availabilitySlots={primarySlots}
+              />
             </div>
           </div>
         </div>
@@ -504,20 +489,9 @@ const DoctorPublicProfile = () => {
               {primaryChamber ? formatCurrency(primaryChamber.new_patient_fee) : "৳0"}
             </p>
           </div>
-          {integrationSettings?.calendly_enabled && !useBuiltInBooking ? (
-            <Button 
-              size="lg" 
-              className="flex-1"
-              onClick={() => window.open(integrationSettings.calendly_url!, '_blank')}
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              Book via Calendly
-            </Button>
-          ) : (
-            <Button size="lg" className="flex-1" onClick={() => setShowBooking(true)}>
-              Book Appointment
-            </Button>
-          )}
+          <Button size="lg" className="flex-1" onClick={() => setShowBooking(true)}>
+            Book Appointment
+          </Button>
         </div>
       </div>
 
