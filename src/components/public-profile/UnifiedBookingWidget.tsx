@@ -196,21 +196,13 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                           : "border-border hover:border-primary/30 hover:bg-muted/50"
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className={`font-medium text-sm ${isSelected ? "text-primary-foreground" : "text-foreground"}`}>
-                            {formatDateLabel(date)}
-                          </p>
-                          <p className={`text-xs ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
-                            {format(parseISO(date), "MMM d, yyyy")}
-                          </p>
-                        </div>
-                        <Badge 
-                          variant="outline"
-                          className={`text-xs ${isSelected ? "bg-primary-foreground/90 text-primary border-primary-foreground/50" : ""}`}
-                        >
-                          {totalAvailable} slot{totalAvailable !== 1 ? "s" : ""}
-                        </Badge>
+                      <div>
+                        <p className={`font-medium text-sm ${isSelected ? "text-primary-foreground" : "text-foreground"}`}>
+                          {formatDateLabel(date)}
+                        </p>
+                        <p className={`text-xs ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                          {format(parseISO(date), "MMM d, yyyy")}
+                        </p>
                       </div>
                     </button>
                   );
