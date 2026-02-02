@@ -68,18 +68,15 @@ export const useQueue = (sessionId?: string, date?: string) => {
     }) => {
       if (!profile?.id) throw new Error("Profile not loaded");
       
-      // Get max token number for this session/date combination
-      let query = supabase
+      // Get max token number for this doctor/date combination (across ALL sessions)
+      // The unique constraint is on (doctor_id, queue_date, token_number), so we must
+      // calculate token numbers globally, not per-session
+      const { data: existingTokens } = await supabase
         .from("queue_tokens")
         .select("token_number")
         .eq("doctor_id", profile.id)
         .eq("queue_date", queueDate);
       
-      if (sid) {
-        query = query.eq("session_id", sid);
-      }
-      
-      const { data: existingTokens } = await query;
       const maxToken = existingTokens?.reduce((max, t) => Math.max(max, t.token_number), 0) || 0;
       const tokenNumber = maxToken + 1;
       
