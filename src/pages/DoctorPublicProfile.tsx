@@ -128,7 +128,7 @@ const DoctorPublicProfile = () => {
     <div className="min-h-screen bg-background">
       {/* Hero Section - Shorter Cover */}
       <div className="relative">
-        {/* Cover Photo - Reduced height (3:1 ratio for shorter look) */}
+        {/* Cover Photo */}
         <div 
           className="w-full bg-gradient-to-br from-primary via-primary/90 to-primary/70 relative h-[180px] md:h-[240px]"
           style={profile.cover_photo_url ? {
@@ -138,26 +138,7 @@ const DoctorPublicProfile = () => {
           } : {}}
         >
           {/* Subtle overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-        </div>
-
-        {/* Expertise Banner - At cover bottom */}
-        <div className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-sm py-2.5">
-          <div className="container max-w-4xl mx-auto px-4 flex flex-wrap items-center justify-center gap-2 md:gap-4 text-white">
-            {profile.specialization && (
-              <span className="px-3 py-1 bg-primary rounded text-xs md:text-sm font-medium">
-                {profile.specialization}
-              </span>
-            )}
-            {profile.degrees && profile.degrees.length > 0 && (
-              <span className="px-3 py-1 bg-primary/80 rounded text-xs md:text-sm font-medium">
-                {profile.degrees.join(", ")}
-              </span>
-            )}
-            {profile.email && (
-              <span className="text-xs md:text-sm opacity-90">{profile.email}</span>
-            )}
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
         </div>
 
         {/* Centered Profile Image - Overlapping */}
@@ -187,6 +168,25 @@ const DoctorPublicProfile = () => {
 
       {/* Content Below Cover */}
       <div className="bg-background pt-16 md:pt-20">
+        {/* Expertise Badges - Below Profile Image */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="flex flex-wrap items-center justify-center gap-2 pb-3"
+        >
+          {profile.specialization && (
+            <span className="px-3 py-1 bg-primary text-primary-foreground rounded text-xs md:text-sm font-medium">
+              {profile.specialization}
+            </span>
+          )}
+          {profile.degrees && profile.degrees.length > 0 && (
+            <span className="px-3 py-1 bg-primary/80 text-primary-foreground rounded text-xs md:text-sm font-medium">
+              {profile.degrees.join(", ")}
+            </span>
+          )}
+        </motion.div>
+
         {/* Social Links - Centered */}
         {socialLinks && Object.values(socialLinks).some(v => v) && (
           <motion.div
@@ -199,7 +199,7 @@ const DoctorPublicProfile = () => {
           </motion.div>
         )}
 
-        {/* Profile Card with Avatar + Video */}
+        {/* Stats Card */}
         <div className="container max-w-4xl mx-auto px-4">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -207,53 +207,8 @@ const DoctorPublicProfile = () => {
             transition={{ delay: 0.1 }}
           >
             <Card className="shadow-lg border overflow-hidden">
-              <CardContent className="p-4 md:p-5">
-                {/* Avatar + Video Row */}
-                <div className="flex items-center justify-center gap-4">
-                  {/* Small Avatar */}
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-muted border-2 border-border shadow-md flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {profile.avatar_url ? (
-                      <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-xl font-bold text-primary">
-                        {profile.full_name?.charAt(0) || "D"}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Intro Video Thumbnail */}
-                  {introVideo && (
-                    <div 
-                      className="cursor-pointer group"
-                      onClick={() => setActiveTab("videos")}
-                    >
-                      <div className="relative w-28 md:w-36 aspect-video rounded-lg overflow-hidden bg-muted shadow-md">
-                        {getYoutubeThumbnail(introVideo.youtube_url) ? (
-                          <img 
-                            src={getYoutubeThumbnail(introVideo.youtube_url)!}
-                            alt="Intro Video"
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-muted">
-                            <Video className="w-5 h-5 text-muted-foreground" />
-                          </div>
-                        )}
-                        {/* Play overlay */}
-                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
-                          <div className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                            <Video className="w-3.5 h-3.5 text-primary" />
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-[10px] text-center text-muted-foreground mt-1">Watch Intro</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-
               {/* Stats Row */}
-              <div className="border-t bg-muted/20">
+              <div className="bg-muted/20">
                 <div className="grid grid-cols-3 divide-x divide-border">
                   <div className="py-3 text-center">
                     <div className="flex items-center justify-center gap-1.5">
