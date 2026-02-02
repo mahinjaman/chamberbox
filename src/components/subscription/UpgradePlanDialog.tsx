@@ -35,6 +35,20 @@ interface UpgradePlanDialogProps {
 }
 
 type Step = "select-plan" | "select-billing" | "payment" | "success";
+type BillingPeriod = "monthly" | "quarterly" | "biannual" | "yearly";
+
+const BILLING_OPTIONS: { 
+  id: BillingPeriod; 
+  label: string; 
+  description: string; 
+  months: number;
+  discount: number; 
+}[] = [
+  { id: "monthly", label: "Monthly", description: "Billed every month", months: 1, discount: 0 },
+  { id: "quarterly", label: "3 Months", description: "Billed every 3 months", months: 3, discount: 5 },
+  { id: "biannual", label: "6 Months", description: "Billed every 6 months", months: 6, discount: 10 },
+  { id: "yearly", label: "Yearly", description: "Billed annually", months: 12, discount: 17 },
+];
 
 const PAYMENT_METHODS = [
   { id: "bkash", name: "bKash", color: "#E2136E", number: "01712345678" },
@@ -47,7 +61,7 @@ export const UpgradePlanDialog = ({ open, onOpenChange }: UpgradePlanDialogProps
   const { profile } = useProfile();
   const [step, setStep] = useState<Step>("select-plan");
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("monthly");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("bkash");
   const [transactionId, setTransactionId] = useState("");
   const [payerMobile, setPayerMobile] = useState("");
@@ -57,11 +71,24 @@ export const UpgradePlanDialog = ({ open, onOpenChange }: UpgradePlanDialogProps
     (plan) => plan.tier !== "trial" && plan.tier !== currentPlan?.tier
   );
 
-  const selectedPrice = selectedPlan
-    ? billingPeriod === "yearly"
-      ? selectedPlan.price_yearly
-      : selectedPlan.price_monthly
-    : 0;
+  // Calculate price based on billing period
+  const calculatePrice = (plan: SubscriptionPlan | null, period: BillingPeriod): number => {
+    if (!plan) return 0;
+    const option = BILLING_OPTIONS.find(o => o.id === period);
+    if (!option) return 0;
+    
+    if (period === "yearly" && plan.price_yearly) {
+      return plan.price_yearly;
+    }
+    
+    const monthlyPrice = plan.price_monthly || 0;
+    const totalBeforeDiscount = monthlyPrice * option.months;
+    const discountAmount = totalBeforeDiscount * (option.discount / 100);
+    return Math.round(totalBeforeDiscount - discountAmount);
+  };
+
+  const selectedPrice = calculatePrice(selectedPlan, billingPeriod);
+  const currentBillingOption = BILLING_OPTIONS.find(o => o.id === billingPeriod);
 
   const paymentMethod = PAYMENT_METHODS.find((m) => m.id === selectedPaymentMethod);
 
@@ -212,53 +239,54 @@ export const UpgradePlanDialog = ({ open, onOpenChange }: UpgradePlanDialogProps
               <div className="text-center p-4 bg-muted/50 rounded-lg">
                 <p className="text-sm text-muted-foreground">Selected Plan</p>
                 <h3 className="text-xl font-bold">{selectedPlan?.name}</h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  ৳{selectedPlan?.price_monthly?.toLocaleString()}/month base price
+                </p>
               </div>
 
               <RadioGroup
                 value={billingPeriod}
-                onValueChange={(v) => setBillingPeriod(v as "monthly" | "yearly")}
+                onValueChange={(v) => setBillingPeriod(v as BillingPeriod)}
                 className="space-y-3"
               >
-                <Label
-                  htmlFor="monthly"
-                  className={cn(
-                    "flex items-center justify-between p-4 border rounded-lg cursor-pointer",
-                    billingPeriod === "monthly" ? "border-primary bg-primary/5" : ""
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="monthly" id="monthly" />
-                    <div>
-                      <p className="font-medium">Monthly</p>
-                      <p className="text-sm text-muted-foreground">Billed every month</p>
-                    </div>
-                  </div>
-                  <p className="text-lg font-bold">
-                    ৳{selectedPlan?.price_monthly?.toLocaleString()}
-                  </p>
-                </Label>
-
-                <Label
-                  htmlFor="yearly"
-                  className={cn(
-                    "flex items-center justify-between p-4 border rounded-lg cursor-pointer relative",
-                    billingPeriod === "yearly" ? "border-primary bg-primary/5" : ""
-                  )}
-                >
-                  <Badge className="absolute -top-2 right-4 bg-primary text-primary-foreground">
-                    Save 17%
-                  </Badge>
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="yearly" id="yearly" />
-                    <div>
-                      <p className="font-medium">Yearly</p>
-                      <p className="text-sm text-muted-foreground">Billed annually</p>
-                    </div>
-                  </div>
-                  <p className="text-lg font-bold">
-                    ৳{selectedPlan?.price_yearly?.toLocaleString()}
-                  </p>
-                </Label>
+                {BILLING_OPTIONS.map((option) => {
+                  const price = calculatePrice(selectedPlan, option.id);
+                  const monthlyEquivalent = Math.round(price / option.months);
+                  
+                  return (
+                    <Label
+                      key={option.id}
+                      htmlFor={option.id}
+                      className={cn(
+                        "flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all relative",
+                        billingPeriod === option.id 
+                          ? "border-primary bg-primary/5 ring-2 ring-primary/20" 
+                          : "hover:border-primary/50"
+                      )}
+                    >
+                      {option.discount > 0 && (
+                        <Badge className="absolute -top-2 right-4 bg-primary text-primary-foreground text-xs">
+                          Save {option.discount}%
+                        </Badge>
+                      )}
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value={option.id} id={option.id} />
+                        <div>
+                          <p className="font-medium">{option.label}</p>
+                          <p className="text-sm text-muted-foreground">{option.description}</p>
+                          {option.months > 1 && (
+                            <p className="text-xs text-primary mt-0.5">
+                              ≈ ৳{monthlyEquivalent?.toLocaleString()}/month
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-lg font-bold">
+                        ৳{price?.toLocaleString()}
+                      </p>
+                    </Label>
+                  );
+                })}
               </RadioGroup>
 
               <div className="flex gap-3">
