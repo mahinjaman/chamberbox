@@ -38,6 +38,10 @@ import SubscriptionManagement from "./pages/admin/SubscriptionManagement";
 import TicketManagement from "./pages/admin/TicketManagement";
 import TutorialManagement from "./pages/admin/TutorialManagement";
 
+// Staff Pages
+import StaffManagement from "./pages/StaffManagement";
+import StaffDashboard from "./pages/StaffDashboard";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -160,6 +164,24 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <MyTickets />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/staff"
+              element={
+                <ProtectedRoute>
+                  <StaffManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Staff Routes */}
+            <Route
+              path="/staff"
+              element={
+                <ProtectedRoute>
+                  <StaffDashboard />
                 </ProtectedRoute>
               }
             />

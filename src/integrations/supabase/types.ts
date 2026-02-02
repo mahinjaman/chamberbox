@@ -830,6 +830,104 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_chamber_access: {
+        Row: {
+          can_manage_patients: boolean | null
+          can_manage_queue: boolean | null
+          can_view_prescriptions: boolean | null
+          chamber_id: string
+          created_at: string | null
+          id: string
+          staff_id: string
+        }
+        Insert: {
+          can_manage_patients?: boolean | null
+          can_manage_queue?: boolean | null
+          can_view_prescriptions?: boolean | null
+          chamber_id: string
+          created_at?: string | null
+          id?: string
+          staff_id: string
+        }
+        Update: {
+          can_manage_patients?: boolean | null
+          can_manage_queue?: boolean | null
+          can_view_prescriptions?: boolean | null
+          chamber_id?: string
+          created_at?: string | null
+          id?: string
+          staff_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_chamber_access_chamber_id_fkey"
+            columns: ["chamber_id"]
+            isOneToOne: false
+            referencedRelation: "chambers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_chamber_access_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_members: {
+        Row: {
+          accepted_at: string | null
+          created_at: string | null
+          doctor_id: string
+          email: string
+          full_name: string
+          id: string
+          invited_at: string | null
+          is_active: boolean | null
+          phone: string | null
+          role: Database["public"]["Enums"]["staff_role"]
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string | null
+          doctor_id: string
+          email: string
+          full_name: string
+          id?: string
+          invited_at?: string | null
+          is_active?: boolean | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["staff_role"]
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string | null
+          doctor_id?: string
+          email?: string
+          full_name?: string
+          id?: string
+          invited_at?: string | null
+          is_active?: boolean | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["staff_role"]
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_members_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_ticket_replies: {
         Row: {
           created_at: string
@@ -1138,6 +1236,7 @@ export type Database = {
       }
     }
     Functions: {
+      get_staff_doctor_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1146,9 +1245,18 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_staff_of: {
+        Args: { _doctor_id: string; _user_id: string }
+        Returns: boolean
+      }
+      staff_has_chamber_access: {
+        Args: { _chamber_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "super_admin"
+      staff_role: "receptionist" | "assistant" | "manager"
       subscription_tier: "basic" | "pro" | "premium" | "trial" | "enterprise"
     }
     CompositeTypes: {
@@ -1278,6 +1386,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "super_admin"],
+      staff_role: ["receptionist", "assistant", "manager"],
       subscription_tier: ["basic", "pro", "premium", "trial", "enterprise"],
     },
   },

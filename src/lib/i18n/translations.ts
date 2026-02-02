@@ -99,6 +99,7 @@ export interface Translations {
     startFreeTrial: string;
     myProfile: string;
     myTickets: string;
+    staffManagement: string;
   };
 
   // Landing Page
@@ -617,6 +618,7 @@ export const translations: Record<Language, Translations> = {
       startFreeTrial: "Start Free Trial",
       myProfile: "My Profile",
       myTickets: "My Tickets",
+      staffManagement: "Staff Management",
     },
     landing: {
       heroTitle: "Modern Practice Management for Doctors",
@@ -1103,6 +1105,7 @@ export const translations: Record<Language, Translations> = {
       startFreeTrial: "বিনামূল্যে শুরু করুন",
       myProfile: "আমার প্রোফাইল",
       myTickets: "আমার টিকেট",
+      staffManagement: "স্টাফ ম্যানেজমেন্ট",
     },
     landing: {
       heroTitle: "ডাক্তারদের জন্য আধুনিক প্র্যাকটিস ম্যানেজমেন্ট",

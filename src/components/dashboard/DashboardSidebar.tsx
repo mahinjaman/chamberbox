@@ -12,7 +12,8 @@ import {
   Globe,
   Plug,
   Shield,
-  MessageSquare
+  MessageSquare,
+  UserCog
 } from "lucide-react";
 import {
   Sidebar,
@@ -59,6 +60,7 @@ export const DashboardSidebar = () => {
   const settingsNavItems = [
     { title: t.nav.myProfile, url: "/dashboard/profile", icon: Globe },
     { title: t.nav.integrations, url: "/dashboard/integrations", icon: Plug },
+    { title: t.nav.staffManagement, url: "/dashboard/staff", icon: UserCog },
     { title: t.nav.myTickets, url: "/dashboard/tickets", icon: MessageSquare },
     { title: t.nav.settings, url: "/dashboard/settings", icon: Settings },
   ];
