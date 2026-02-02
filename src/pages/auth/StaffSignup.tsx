@@ -136,7 +136,7 @@ const StaffSignup = () => {
           user_id: authData.user.id,
           accepted_at: new Date().toISOString(),
         })
-        .eq("email", email.trim().toLowerCase());
+        .ilike("email", email.trim());
 
       if (linkError) {
         console.error("Failed to link staff account:", linkError);
