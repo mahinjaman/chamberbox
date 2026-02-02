@@ -10,7 +10,10 @@ import { FloatingWidgets } from "@/components/common/FloatingWidgets";
 
 // Pages
 import Landing from "./pages/Landing";
-import Login from "./pages/Login";
+import DoctorLogin from "./pages/auth/DoctorLogin";
+import StaffLogin from "./pages/auth/StaffLogin";
+import StaffSignup from "./pages/auth/StaffSignup";
+import AdminLogin from "./pages/auth/AdminLogin";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -57,8 +60,13 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/queue-status" element={<QueueStatus />} />
             <Route path="/doctor/:slug" element={<DoctorPublicProfile />} />
-            <Route path="/login" element={<Login />} />
+            
+            {/* Auth Routes - Separate portals for each role */}
+            <Route path="/login" element={<DoctorLogin />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/staff/login" element={<StaffLogin />} />
+            <Route path="/staff/signup" element={<StaffSignup />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
