@@ -8,7 +8,7 @@ interface ProfileVideoSectionProps {
   feedVideos: DoctorVideo[];
 }
 
-const getYoutubeEmbedUrl = (url: string) => {
+const getYoutubeEmbedUrl = (url: string, cleanMode = false) => {
   if (!url) return null;
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
@@ -17,7 +17,12 @@ const getYoutubeEmbedUrl = (url: string) => {
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match) {
-      return `https://www.youtube.com/embed/${match[1]}`;
+      const baseUrl = `https://www.youtube.com/embed/${match[1]}`;
+      if (cleanMode) {
+        // Clean mode: hide controls, related videos, and branding
+        return `${baseUrl}?rel=0&modestbranding=1&iv_load_policy=3&showinfo=0&controls=1&disablekb=0`;
+      }
+      return baseUrl;
     }
   }
   return null;
@@ -57,7 +62,7 @@ export const ProfileVideoSection = ({ introVideo, feedVideos }: ProfileVideoSect
               </h3>
               <div className="aspect-video rounded-lg overflow-hidden bg-muted">
                 <iframe
-                  src={getYoutubeEmbedUrl(introVideo.youtube_url) || ""}
+                  src={getYoutubeEmbedUrl(introVideo.youtube_url, true) || ""}
                   title={introVideo.title || "Introduction video"}
                   className="w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
