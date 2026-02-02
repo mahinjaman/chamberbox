@@ -13,7 +13,7 @@ import { formatTime12Hour, formatCurrency } from "@/lib/doctor-profile-utils";
 import { format, parseISO, isToday, isTomorrow } from "date-fns";
 import { 
   Calendar, Clock, Users, MapPin, Loader2, 
-  AlertCircle, ArrowLeft, ArrowRight
+  AlertCircle, ArrowLeft, ArrowRight, Lock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -249,17 +249,19 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                   {slotsForDate.map((slot, idx) => {
                     const isSelected = selectedSlot?.chamber_id === slot.chamber_id && 
                                        selectedSlot?.start_time === slot.start_time;
-                    const isFull = !slot.is_available;
+                    const isBookingClosed = slot.booking_open === false;
+                    const isFull = slot.current_bookings >= slot.max_patients;
+                    const isDisabled = !slot.is_available || isBookingClosed || isFull;
                     
                     return (
                       <button
                         key={`${slot.chamber_id}-${slot.start_time}-${idx}`}
-                        disabled={isFull}
+                        disabled={isDisabled}
                         onClick={() => setSelectedSlot(slot)}
                         className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
                           isSelected 
                             ? "border-primary bg-primary text-primary-foreground shadow-lg" 
-                            : isFull 
+                            : isDisabled 
                               ? "opacity-50 cursor-not-allowed bg-muted" 
                               : "hover:border-primary/30 hover:bg-muted/50"
                         }`}
@@ -288,7 +290,12 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                               </span>
                             </div>
                           </div>
-                          {isFull ? (
+                          {isBookingClosed ? (
+                            <Badge variant="secondary" className="bg-destructive/10 text-destructive text-xs">
+                              <Lock className="w-3 h-3 mr-1" />
+                              Closed
+                            </Badge>
+                          ) : isFull ? (
                             <Badge variant="destructive" className="text-xs">Full</Badge>
                           ) : (
                             <Badge 

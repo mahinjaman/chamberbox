@@ -31,6 +31,7 @@ export interface BookingSlot {
   is_available: boolean;
   session_id?: string;
   session_status?: string;
+  booking_open?: boolean;
 }
 
 export interface QueueBooking {
@@ -108,7 +109,7 @@ export const useAvailableSlots = (doctorId: string, startDate?: Date, days: numb
       // Include open, running, paused, and closed sessions to properly filter availability
       const { data: sessions } = await supabase
         .from("queue_sessions")
-        .select("id, chamber_id, session_date, start_time, end_time, status, max_patients, current_token")
+        .select("id, chamber_id, session_date, start_time, end_time, status, max_patients, current_token, booking_open")
         .eq("doctor_id", doctorId)
         .gte("session_date", dateFrom)
         .lte("session_date", dateTo);
@@ -161,6 +162,8 @@ export const useAvailableSlots = (doctorId: string, startDate?: Date, days: numb
             const currentBookings = existingSession ? (tokenCounts[existingSession.id] || 0) : 0;
             const maxPatients = existingSession?.max_patients || 30;
             const isSessionClosed = existingSession?.status === "closed";
+            // Check if booking is manually closed by doctor
+            const isBookingClosed = existingSession?.booking_open === false;
             
             // Skip closed sessions entirely - don't show them as available slots
             if (isSessionClosed) return;
@@ -177,8 +180,9 @@ export const useAvailableSlots = (doctorId: string, startDate?: Date, days: numb
               return_patient_fee: chamber.return_patient_fee || 300,
               current_bookings: currentBookings,
               max_patients: maxPatients,
-              is_available: !isSessionClosed && currentBookings < maxPatients,
+              is_available: !isSessionClosed && !isBookingClosed && currentBookings < maxPatients,
               session_id: existingSession?.id,
+              booking_open: existingSession?.booking_open ?? true,
               session_status: existingSession?.status,
             });
           });
