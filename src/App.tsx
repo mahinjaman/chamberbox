@@ -44,6 +44,10 @@ import TutorialManagement from "./pages/admin/TutorialManagement";
 // Staff Pages
 import StaffManagement from "./pages/StaffManagement";
 import StaffDashboard from "./pages/StaffDashboard";
+import StaffQueue from "./pages/staff/StaffQueue";
+import StaffPatients from "./pages/staff/StaffPatients";
+import StaffPrescriptions from "./pages/staff/StaffPrescriptions";
+import StaffChambers from "./pages/staff/StaffChambers";
 
 const queryClient = new QueryClient();
 
@@ -197,7 +201,7 @@ const App = () => (
               path="/staff/queue"
               element={
                 <ProtectedRoute>
-                  <Queue />
+                  <StaffQueue />
                 </ProtectedRoute>
               }
             />
@@ -205,7 +209,7 @@ const App = () => (
               path="/staff/patients"
               element={
                 <ProtectedRoute>
-                  <Patients />
+                  <StaffPatients />
                 </ProtectedRoute>
               }
             />
@@ -221,15 +225,7 @@ const App = () => (
               path="/staff/prescriptions"
               element={
                 <ProtectedRoute>
-                  <Prescriptions />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/staff/finances"
-              element={
-                <ProtectedRoute>
-                  <Finances />
+                  <StaffPrescriptions />
                 </ProtectedRoute>
               }
             />
@@ -237,14 +233,13 @@ const App = () => (
               path="/staff/chambers"
               element={
                 <ProtectedRoute>
-                  <Settings />
+                  <StaffChambers />
                 </ProtectedRoute>
               }
             />
 
             {/* Admin Routes */}
             <Route
-              path="/admin"
               element={
                 <ProtectedRoute>
                   <AdminDashboard />
