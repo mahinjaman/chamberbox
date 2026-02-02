@@ -29,10 +29,14 @@ const StaffSignup = () => {
   // Check if the email has a valid staff invitation
   useEffect(() => {
     const checkInvitation = async () => {
-      if (!email) {
+      const emailToCheck = email.trim().toLowerCase();
+      
+      if (!emailToCheck) {
         setCheckingInvite(false);
         return;
       }
+
+      console.log("Checking invitation for email:", emailToCheck);
 
       const { data: staff, error } = await supabase
         .from("staff_members")
@@ -42,12 +46,17 @@ const StaffSignup = () => {
           user_id,
           doctor:profiles!staff_members_doctor_id_fkey(full_name)
         `)
-        .eq("email", email.trim().toLowerCase())
+        .ilike("email", emailToCheck)
+        .is("user_id", null)
+        .eq("is_active", true)
         .single();
+
+      console.log("Invitation check result:", { staff, error });
 
       setCheckingInvite(false);
 
       if (error || !staff) {
+        console.log("No valid invitation found:", error?.message);
         setInviteValid(false);
         return;
       }
@@ -69,7 +78,7 @@ const StaffSignup = () => {
     };
 
     checkInvitation();
-  }, [email]);
+  }, [email, language, navigate]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,6 +198,8 @@ const StaffSignup = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
+                readOnly={!!inviteEmail}
+                className={inviteEmail ? "bg-muted cursor-not-allowed" : ""}
               />
             </div>
 
