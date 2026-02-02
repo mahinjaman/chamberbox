@@ -77,6 +77,7 @@ export function AddStaffDialog({ open, onOpenChange, chambers }: AddStaffDialogP
   };
 
   const signupUrl = `${window.location.origin}/staff/signup?email=${encodeURIComponent(addedEmail)}`;
+  const displayUrl = `${window.location.origin}/staff/signup?email=${addedEmail}`;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(signupUrl);
@@ -120,7 +121,7 @@ export function AddStaffDialog({ open, onOpenChange, chambers }: AddStaffDialogP
 
             <div className="flex gap-2">
               <Input 
-                value={signupUrl} 
+                value={displayUrl} 
                 readOnly 
                 className="text-xs font-mono"
               />
