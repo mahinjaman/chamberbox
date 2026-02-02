@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/lib/auth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { DoctorRoute } from "@/components/auth/DoctorRoute";
+import { StaffRoute } from "@/components/auth/StaffRoute";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { FloatingWidgets } from "@/components/common/FloatingWidgets";
 
@@ -46,6 +48,7 @@ import StaffManagement from "./pages/StaffManagement";
 import StaffDashboard from "./pages/StaffDashboard";
 import StaffQueue from "./pages/staff/StaffQueue";
 import StaffPatients from "./pages/staff/StaffPatients";
+import StaffPatientDetail from "./pages/staff/StaffPatientDetail";
 import StaffPrescriptions from "./pages/staff/StaffPrescriptions";
 import StaffChambers from "./pages/staff/StaffChambers";
 
@@ -74,167 +77,167 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Protected Dashboard Routes */}
+            {/* Doctor Dashboard Routes - Only doctors can access */}
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute>
+                <DoctorRoute>
                   <Dashboard />
-                </ProtectedRoute>
+                </DoctorRoute>
               }
             />
             <Route
               path="/dashboard/patients"
               element={
-                <ProtectedRoute>
+                <DoctorRoute>
                   <Patients />
-                </ProtectedRoute>
+                </DoctorRoute>
               }
             />
             <Route
               path="/dashboard/patients/new"
               element={
-                <ProtectedRoute>
+                <DoctorRoute>
                   <NewPatient />
-                </ProtectedRoute>
+                </DoctorRoute>
               }
             />
             <Route
               path="/dashboard/patients/:id/edit"
               element={
-                <ProtectedRoute>
+                <DoctorRoute>
                   <EditPatient />
-                </ProtectedRoute>
+                </DoctorRoute>
               }
             />
             <Route
               path="/dashboard/patients/:id"
               element={
-                <ProtectedRoute>
+                <DoctorRoute>
                   <PatientDetail />
-                </ProtectedRoute>
+                </DoctorRoute>
               }
             />
             <Route
               path="/dashboard/queue"
               element={
-                <ProtectedRoute>
+                <DoctorRoute>
                   <Queue />
-                </ProtectedRoute>
+                </DoctorRoute>
               }
             />
             <Route
               path="/dashboard/prescriptions"
               element={
-                <ProtectedRoute>
+                <DoctorRoute>
                   <Prescriptions />
-                </ProtectedRoute>
+                </DoctorRoute>
               }
             />
             <Route
               path="/dashboard/finances"
               element={
-                <ProtectedRoute>
+                <DoctorRoute>
                   <Finances />
-                </ProtectedRoute>
+                </DoctorRoute>
               }
             />
             <Route
               path="/dashboard/analytics"
               element={
-                <ProtectedRoute>
+                <DoctorRoute>
                   <Analytics />
-                </ProtectedRoute>
+                </DoctorRoute>
               }
             />
             <Route
               path="/dashboard/settings"
               element={
-                <ProtectedRoute>
+                <DoctorRoute>
                   <Settings />
-                </ProtectedRoute>
+                </DoctorRoute>
               }
             />
             <Route
               path="/dashboard/profile"
               element={
-                <ProtectedRoute>
+                <DoctorRoute>
                   <ProfileEditor />
-                </ProtectedRoute>
+                </DoctorRoute>
               }
             />
             <Route
               path="/dashboard/integrations"
               element={
-                <ProtectedRoute>
+                <DoctorRoute>
                   <IntegrationSettings />
-                </ProtectedRoute>
+                </DoctorRoute>
               }
             />
             <Route
               path="/dashboard/tickets"
               element={
-                <ProtectedRoute>
+                <DoctorRoute>
                   <MyTickets />
-                </ProtectedRoute>
+                </DoctorRoute>
               }
             />
             <Route
               path="/dashboard/staff"
               element={
-                <ProtectedRoute>
+                <DoctorRoute>
                   <StaffManagement />
-                </ProtectedRoute>
+                </DoctorRoute>
               }
             />
 
-            {/* Staff Routes */}
+            {/* Staff Routes - Only staff can access */}
             <Route
               path="/staff"
               element={
-                <ProtectedRoute>
+                <StaffRoute>
                   <StaffDashboard />
-                </ProtectedRoute>
+                </StaffRoute>
               }
             />
             <Route
               path="/staff/queue"
               element={
-                <ProtectedRoute>
+                <StaffRoute>
                   <StaffQueue />
-                </ProtectedRoute>
+                </StaffRoute>
               }
             />
             <Route
               path="/staff/patients"
               element={
-                <ProtectedRoute>
+                <StaffRoute>
                   <StaffPatients />
-                </ProtectedRoute>
+                </StaffRoute>
               }
             />
             <Route
               path="/staff/patients/:id"
               element={
-                <ProtectedRoute>
-                  <PatientDetail />
-                </ProtectedRoute>
+                <StaffRoute>
+                  <StaffPatientDetail />
+                </StaffRoute>
               }
             />
             <Route
               path="/staff/prescriptions"
               element={
-                <ProtectedRoute>
+                <StaffRoute>
                   <StaffPrescriptions />
-                </ProtectedRoute>
+                </StaffRoute>
               }
             />
             <Route
               path="/staff/chambers"
               element={
-                <ProtectedRoute>
+                <StaffRoute>
                   <StaffChambers />
-                </ProtectedRoute>
+                </StaffRoute>
               }
             />
 
