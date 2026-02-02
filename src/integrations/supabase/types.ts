@@ -998,13 +998,18 @@ export type Database = {
           created_at: string
           currency: string | null
           description: string | null
+          discount_biannual: number | null
+          discount_quarterly: number | null
+          discount_yearly: number | null
           id: string
           max_chambers: number | null
           max_patients: number | null
           max_prescriptions_per_month: number | null
           max_staff: number | null
           name: string
+          price_biannual: number | null
           price_monthly: number | null
+          price_quarterly: number | null
           price_yearly: number | null
           sms_credits: number | null
           tier: Database["public"]["Enums"]["subscription_tier"]
@@ -1020,13 +1025,18 @@ export type Database = {
           created_at?: string
           currency?: string | null
           description?: string | null
+          discount_biannual?: number | null
+          discount_quarterly?: number | null
+          discount_yearly?: number | null
           id?: string
           max_chambers?: number | null
           max_patients?: number | null
           max_prescriptions_per_month?: number | null
           max_staff?: number | null
           name: string
+          price_biannual?: number | null
           price_monthly?: number | null
+          price_quarterly?: number | null
           price_yearly?: number | null
           sms_credits?: number | null
           tier: Database["public"]["Enums"]["subscription_tier"]
@@ -1042,13 +1052,18 @@ export type Database = {
           created_at?: string
           currency?: string | null
           description?: string | null
+          discount_biannual?: number | null
+          discount_quarterly?: number | null
+          discount_yearly?: number | null
           id?: string
           max_chambers?: number | null
           max_patients?: number | null
           max_prescriptions_per_month?: number | null
           max_staff?: number | null
           name?: string
+          price_biannual?: number | null
           price_monthly?: number | null
+          price_quarterly?: number | null
           price_yearly?: number | null
           sms_credits?: number | null
           tier?: Database["public"]["Enums"]["subscription_tier"]

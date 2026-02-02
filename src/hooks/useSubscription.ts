@@ -21,6 +21,11 @@ export interface SubscriptionPlan {
   can_use_custom_branding: boolean;
   price_monthly: number;
   price_yearly: number;
+  price_quarterly: number | null;
+  price_biannual: number | null;
+  discount_quarterly: number;
+  discount_biannual: number;
+  discount_yearly: number;
   currency: string;
   created_at: string;
   updated_at: string;

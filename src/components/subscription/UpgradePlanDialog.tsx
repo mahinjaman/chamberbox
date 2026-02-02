@@ -42,12 +42,11 @@ const BILLING_OPTIONS: {
   label: string; 
   description: string; 
   months: number;
-  discount: number; 
 }[] = [
-  { id: "monthly", label: "Monthly", description: "Billed every month", months: 1, discount: 0 },
-  { id: "quarterly", label: "3 Months", description: "Billed every 3 months", months: 3, discount: 5 },
-  { id: "biannual", label: "6 Months", description: "Billed every 6 months", months: 6, discount: 10 },
-  { id: "yearly", label: "Yearly", description: "Billed annually", months: 12, discount: 17 },
+  { id: "monthly", label: "Monthly", description: "Billed every month", months: 1 },
+  { id: "quarterly", label: "3 Months", description: "Billed every 3 months", months: 3 },
+  { id: "biannual", label: "6 Months", description: "Billed every 6 months", months: 6 },
+  { id: "yearly", label: "Yearly", description: "Billed annually", months: 12 },
 ];
 
 const PAYMENT_METHODS = [
@@ -71,23 +70,38 @@ export const UpgradePlanDialog = ({ open, onOpenChange }: UpgradePlanDialogProps
     (plan) => plan.tier !== "trial" && plan.tier !== currentPlan?.tier
   );
 
-  // Calculate price based on billing period
+  // Get discount from plan based on period
+  const getDiscount = (plan: SubscriptionPlan | null, period: BillingPeriod): number => {
+    if (!plan) return 0;
+    switch (period) {
+      case "quarterly": return plan.discount_quarterly || 5;
+      case "biannual": return plan.discount_biannual || 10;
+      case "yearly": return plan.discount_yearly || 17;
+      default: return 0;
+    }
+  };
+
+  // Calculate price based on billing period using admin-configured discounts
   const calculatePrice = (plan: SubscriptionPlan | null, period: BillingPeriod): number => {
     if (!plan) return 0;
     const option = BILLING_OPTIONS.find(o => o.id === period);
     if (!option) return 0;
     
-    if (period === "yearly" && plan.price_yearly) {
-      return plan.price_yearly;
-    }
+    // Check for custom prices first
+    if (period === "yearly" && plan.price_yearly) return plan.price_yearly;
+    if (period === "quarterly" && plan.price_quarterly) return plan.price_quarterly;
+    if (period === "biannual" && plan.price_biannual) return plan.price_biannual;
     
+    // Calculate with discount
     const monthlyPrice = plan.price_monthly || 0;
     const totalBeforeDiscount = monthlyPrice * option.months;
-    const discountAmount = totalBeforeDiscount * (option.discount / 100);
+    const discount = getDiscount(plan, period);
+    const discountAmount = totalBeforeDiscount * (discount / 100);
     return Math.round(totalBeforeDiscount - discountAmount);
   };
 
   const selectedPrice = calculatePrice(selectedPlan, billingPeriod);
+  const currentDiscount = getDiscount(selectedPlan, billingPeriod);
   const currentBillingOption = BILLING_OPTIONS.find(o => o.id === billingPeriod);
 
   const paymentMethod = PAYMENT_METHODS.find((m) => m.id === selectedPaymentMethod);
@@ -249,8 +263,9 @@ export const UpgradePlanDialog = ({ open, onOpenChange }: UpgradePlanDialogProps
                 onValueChange={(v) => setBillingPeriod(v as BillingPeriod)}
                 className="space-y-3"
               >
-                {BILLING_OPTIONS.map((option) => {
+              {BILLING_OPTIONS.map((option) => {
                   const price = calculatePrice(selectedPlan, option.id);
+                  const discount = getDiscount(selectedPlan, option.id);
                   const monthlyEquivalent = Math.round(price / option.months);
                   
                   return (
@@ -264,9 +279,9 @@ export const UpgradePlanDialog = ({ open, onOpenChange }: UpgradePlanDialogProps
                           : "hover:border-primary/50"
                       )}
                     >
-                      {option.discount > 0 && (
+                      {discount > 0 && (
                         <Badge className="absolute -top-2 right-4 bg-primary text-primary-foreground text-xs">
-                          Save {option.discount}%
+                          Save {discount}%
                         </Badge>
                       )}
                       <div className="flex items-center gap-3">
