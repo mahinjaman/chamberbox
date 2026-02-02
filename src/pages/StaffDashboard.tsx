@@ -6,16 +6,26 @@ import { Badge } from "@/components/ui/badge";
 import { useStaff } from "@/hooks/useStaff";
 import { useAuth } from "@/lib/auth";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { getPermissionsForRole, permissionDescriptions, StaffPermissions } from "@/lib/staff-permissions";
 import { 
   Users, 
   ClipboardList, 
   Building2, 
   LogOut,
   FileText,
-  Stethoscope
+  Stethoscope,
+  DollarSign,
+  UserPlus,
+  Info
 } from "lucide-react";
 import { LanguageToggle } from "@/components/common/LanguageToggle";
 import { Loader2 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const roleLabels = {
   receptionist: { en: "Receptionist", bn: "রিসেপশনিস্ট" },
@@ -26,8 +36,13 @@ const roleLabels = {
 export default function StaffDashboard() {
   const { language } = useLanguage();
   const { user, signOut } = useAuth();
-  const { staffInfo, staffInfoLoading, linkStaffAccount } = useStaff();
+  const { staffInfo, staffInfoLoading, linkStaffAccount, staffPermissions } = useStaff();
   const navigate = useNavigate();
+
+  // Get permissions based on role
+  const permissions: StaffPermissions | null = staffInfo 
+    ? getPermissionsForRole(staffInfo.role as any)
+    : null;
 
   // Link staff account on first login
   useEffect(() => {
@@ -102,9 +117,26 @@ export default function StaffDashboard() {
                 <h2 className="font-semibold">{staffInfo.full_name}</h2>
                 <p className="text-sm text-muted-foreground">{staffInfo.email}</p>
               </div>
-              <Badge>
-                {roleLabels[staffInfo.role as keyof typeof roleLabels]?.[language] || staffInfo.role}
-              </Badge>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Badge className="cursor-help">
+                      {roleLabels[staffInfo.role as keyof typeof roleLabels]?.[language] || staffInfo.role}
+                      <Info className="w-3 h-3 ml-1" />
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p className="font-semibold mb-1">
+                      {language === "bn" ? "আপনার অনুমতি:" : "Your Permissions:"}
+                    </p>
+                    <ul className="text-xs space-y-1">
+                      {permissionDescriptions[language][staffInfo.role as keyof typeof permissionDescriptions.en].map((perm, idx) => (
+                        <li key={idx}>• {perm}</li>
+                      ))}
+                    </ul>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </CardContent>
         </Card>
@@ -160,48 +192,100 @@ export default function StaffDashboard() {
             {language === "bn" ? "দ্রুত অ্যাক্সেস" : "Quick Actions"}
           </h3>
           <div className="grid grid-cols-2 gap-4">
-            <Card 
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => navigate("/staff/queue")}
-            >
-              <CardContent className="p-4 flex flex-col items-center text-center">
-                <div className="p-3 rounded-full bg-primary/10 mb-2">
-                  <ClipboardList className="w-6 h-6 text-primary" />
-                </div>
-                <h4 className="font-medium">
-                  {language === "bn" ? "কিউ ম্যানেজ" : "Queue"}
-                </h4>
-              </CardContent>
-            </Card>
+            {/* Queue - Available to all */}
+            {permissions?.canManageQueue && (
+              <Card 
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => navigate("/staff/queue")}
+              >
+                <CardContent className="p-4 flex flex-col items-center text-center">
+                  <div className="p-3 rounded-full bg-primary/10 mb-2">
+                    <ClipboardList className="w-6 h-6 text-primary" />
+                  </div>
+                  <h4 className="font-medium">
+                    {language === "bn" ? "কিউ ম্যানেজ" : "Queue"}
+                  </h4>
+                </CardContent>
+              </Card>
+            )}
 
-            <Card 
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => navigate("/staff/patients")}
-            >
-              <CardContent className="p-4 flex flex-col items-center text-center">
-                <div className="p-3 rounded-full bg-secondary mb-2">
-                  <Users className="w-6 h-6 text-secondary-foreground" />
-                </div>
-                <h4 className="font-medium">
-                  {language === "bn" ? "রোগী" : "Patients"}
-                </h4>
-              </CardContent>
-            </Card>
+            {/* Patients - View for all, but different access levels */}
+            {permissions?.canViewPatientList && (
+              <Card 
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => navigate("/staff/patients")}
+              >
+                <CardContent className="p-4 flex flex-col items-center text-center">
+                  <div className="p-3 rounded-full bg-secondary mb-2">
+                    <Users className="w-6 h-6 text-secondary-foreground" />
+                  </div>
+                  <h4 className="font-medium">
+                    {language === "bn" ? "রোগী" : "Patients"}
+                  </h4>
+                  {!permissions?.canEditPatients && (
+                    <p className="text-xs text-muted-foreground">
+                      {language === "bn" ? "শুধু দেখুন" : "View only"}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
-            <Card 
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => navigate("/staff/prescriptions")}
-            >
-              <CardContent className="p-4 flex flex-col items-center text-center">
-                <div className="p-3 rounded-full bg-accent mb-2">
-                  <FileText className="w-6 h-6 text-accent-foreground" />
-                </div>
-                <h4 className="font-medium">
-                  {language === "bn" ? "প্রেসক্রিপশন" : "Prescriptions"}
-                </h4>
-              </CardContent>
-            </Card>
+            {/* Prescriptions - Assistant & Manager only */}
+            {permissions?.canViewPrescriptions && (
+              <Card 
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => navigate("/staff/prescriptions")}
+              >
+                <CardContent className="p-4 flex flex-col items-center text-center">
+                  <div className="p-3 rounded-full bg-accent mb-2">
+                    <FileText className="w-6 h-6 text-accent-foreground" />
+                  </div>
+                  <h4 className="font-medium">
+                    {language === "bn" ? "প্রেসক্রিপশন" : "Prescriptions"}
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    {language === "bn" ? "শুধু দেখুন" : "View only"}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
+            {/* Finances - Manager only */}
+            {permissions?.canViewFinances && (
+              <Card 
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => navigate("/staff/finances")}
+              >
+                <CardContent className="p-4 flex flex-col items-center text-center">
+                  <div className="p-3 rounded-full bg-green-100 mb-2">
+                    <DollarSign className="w-6 h-6 text-green-600" />
+                  </div>
+                  <h4 className="font-medium">
+                    {language === "bn" ? "আর্থিক" : "Finances"}
+                  </h4>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Staff Management - Manager only */}
+            {permissions?.canManageStaff && (
+              <Card 
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => navigate("/staff/team")}
+              >
+                <CardContent className="p-4 flex flex-col items-center text-center">
+                  <div className="p-3 rounded-full bg-purple-100 mb-2">
+                    <UserPlus className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <h4 className="font-medium">
+                    {language === "bn" ? "স্টাফ" : "Staff"}
+                  </h4>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Chambers - Available to all */}
             <Card 
               className="cursor-pointer hover:bg-muted/50 transition-colors"
               onClick={() => navigate("/staff/chambers")}

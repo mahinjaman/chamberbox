@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useStaff, StaffMember, StaffRole } from "@/hooks/useStaff";
 import { useProfile } from "@/hooks/useProfile";
-import { Plus, Users, Pencil, Trash2, Building2, Shield } from "lucide-react";
+import { Plus, Users, Pencil, Trash2, Building2, Shield, Mail, KeyRound, Info } from "lucide-react";
 import { AddStaffDialog } from "@/components/staff/AddStaffDialog";
 import { EditStaffDialog } from "@/components/staff/EditStaffDialog";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { permissionDescriptions } from "@/lib/staff-permissions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +20,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const roleColors: Record<StaffRole, string> = {
   receptionist: "bg-blue-100 text-blue-800",
@@ -34,17 +41,25 @@ const roleLabels: Record<StaffRole, { en: string; bn: string }> = {
 
 export default function StaffManagement() {
   const { t, language } = useLanguage();
-  const { staffMembers, staffLoading, deleteStaff, isDeletingStaff } = useStaff();
+  const { staffMembers, staffLoading, deleteStaff, isDeletingStaff, sendPasswordReset, isSendingPasswordReset } = useStaff();
   const { chambers } = useProfile();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
   const [deletingStaff, setDeletingStaff] = useState<StaffMember | null>(null);
+  const [sendingResetTo, setSendingResetTo] = useState<string | null>(null);
 
   const handleDelete = () => {
     if (deletingStaff) {
       deleteStaff(deletingStaff.id);
       setDeletingStaff(null);
     }
+  };
+
+  const handleSendPasswordReset = (email: string) => {
+    setSendingResetTo(email);
+    sendPasswordReset(email, {
+      onSettled: () => setSendingResetTo(null),
+    });
   };
 
   return (
@@ -145,17 +160,39 @@ export default function StaffManagement() {
                 {staffMembers.map((staff) => (
                   <div
                     key={staff.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4"
+                    className="flex flex-col sm:flex-row sm:items-start justify-between p-4 border rounded-lg gap-4"
                   >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                    <div className="space-y-1 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-medium">{staff.full_name}</h3>
-                        <Badge className={roleColors[staff.role]}>
-                          {roleLabels[staff.role][language]}
-                        </Badge>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Badge className={`${roleColors[staff.role]} cursor-help`}>
+                                {roleLabels[staff.role][language]}
+                                <Info className="w-3 h-3 ml-1" />
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p className="font-semibold mb-1">
+                                {language === "bn" ? "অনুমতি:" : "Permissions:"}
+                              </p>
+                              <ul className="text-xs space-y-1">
+                                {permissionDescriptions[language][staff.role].map((perm, idx) => (
+                                  <li key={idx}>• {perm}</li>
+                                ))}
+                              </ul>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                         {!staff.is_active && (
                           <Badge variant="secondary">
                             {language === "bn" ? "নিষ্ক্রিয়" : "Inactive"}
+                          </Badge>
+                        )}
+                        {!staff.user_id && (
+                          <Badge variant="outline" className="text-orange-600 border-orange-300">
+                            {language === "bn" ? "সাইন আপ হয়নি" : "Not Signed Up"}
                           </Badge>
                         )}
                       </div>
@@ -172,7 +209,26 @@ export default function StaffManagement() {
                         ))}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleSendPasswordReset(staff.email)}
+                              disabled={sendingResetTo === staff.email}
+                            >
+                              <KeyRound className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {language === "bn" 
+                              ? "পাসওয়ার্ড সেটআপ/রিসেট ইমেইল পাঠান"
+                              : "Send password setup/reset email"}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <Button
                         variant="outline"
                         size="sm"

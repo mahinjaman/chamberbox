@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
-
+import { getPermissionsForRole, StaffPermissions } from "@/lib/staff-permissions";
 export type StaffRole = "receptionist" | "assistant" | "manager";
 
 export interface StaffMember {
@@ -252,18 +252,42 @@ export const useStaff = () => {
     },
   });
 
+  // Send password reset email to staff
+  const sendPasswordReset = useMutation({
+    mutationFn: async (email: string) => {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Password reset email sent!");
+    },
+    onError: (error) => {
+      toast.error("Failed to send reset email: " + error.message);
+    },
+  });
+
+  // Get permissions for current staff member
+  const staffPermissions: StaffPermissions | null = staffInfo 
+    ? getPermissionsForRole(staffInfo.role as StaffRole)
+    : null;
+
   return {
     staffMembers,
     staffLoading,
     staffInfo,
     staffInfoLoading,
+    staffPermissions,
     isStaff: !!staffInfo,
     addStaff: addStaff.mutate,
     updateStaff: updateStaff.mutate,
     deleteStaff: deleteStaff.mutate,
     linkStaffAccount: linkStaffAccount.mutate,
+    sendPasswordReset: sendPasswordReset.mutate,
     isAddingStaff: addStaff.isPending,
     isUpdatingStaff: updateStaff.isPending,
     isDeletingStaff: deleteStaff.isPending,
+    isSendingPasswordReset: sendPasswordReset.isPending,
   };
 };
