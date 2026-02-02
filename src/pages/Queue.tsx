@@ -47,6 +47,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -69,6 +71,8 @@ const Queue = () => {
   const [newPatientPhone, setNewPatientPhone] = useState("");
   const [newPatientAge, setNewPatientAge] = useState("");
   const [newPatientGender, setNewPatientGender] = useState<"male" | "female" | "">("");
+  const [newPatientIsFollowUp, setNewPatientIsFollowUp] = useState(false);
+  const [newPatientVisitingReason, setNewPatientVisitingReason] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [formErrors, setFormErrors] = useState<{ age?: string; gender?: string }>({});
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -173,6 +177,8 @@ const Queue = () => {
       setNewPatientPhone("");
       setNewPatientAge("");
       setNewPatientGender("");
+      setNewPatientIsFollowUp(false);
+      setNewPatientVisitingReason("");
       setIsNewPatientDialogOpen(false);
     } catch (error) {
       console.error("Error creating patient:", error);
@@ -371,6 +377,32 @@ const Queue = () => {
                     </Select>
                     {formErrors.gender && <p className="text-sm text-destructive">{formErrors.gender}</p>}
                   </div>
+                </div>
+
+                {/* Follow-up Toggle */}
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div>
+                    <Label htmlFor="follow-up-toggle" className="text-sm font-medium">Follow-up Visit</Label>
+                    <p className="text-xs text-muted-foreground">Toggle if this is a return visit</p>
+                  </div>
+                  <Switch
+                    id="follow-up-toggle"
+                    checked={newPatientIsFollowUp}
+                    onCheckedChange={setNewPatientIsFollowUp}
+                  />
+                </div>
+
+                {/* Visiting Reason */}
+                <div className="space-y-2">
+                  <Label htmlFor="visiting-reason">Visiting Reason (Optional)</Label>
+                  <Textarea
+                    id="visiting-reason"
+                    placeholder="Briefly describe symptoms or reason for visit"
+                    value={newPatientVisitingReason}
+                    onChange={(e) => setNewPatientVisitingReason(e.target.value.slice(0, 200))}
+                    className="resize-none h-16"
+                  />
+                  <p className="text-xs text-muted-foreground text-right">{newPatientVisitingReason.length}/200</p>
                 </div>
               </div>
               <div className="flex justify-end gap-2">
