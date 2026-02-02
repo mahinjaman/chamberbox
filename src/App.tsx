@@ -193,6 +193,54 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/staff/queue"
+              element={
+                <ProtectedRoute>
+                  <Queue />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/staff/patients"
+              element={
+                <ProtectedRoute>
+                  <Patients />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/staff/patients/:id"
+              element={
+                <ProtectedRoute>
+                  <PatientDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/staff/prescriptions"
+              element={
+                <ProtectedRoute>
+                  <Prescriptions />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/staff/finances"
+              element={
+                <ProtectedRoute>
+                  <Finances />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/staff/chambers"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Admin Routes */}
             <Route
