@@ -239,7 +239,7 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                 </span>
               </div>
               
-              <ScrollArea className="h-[200px]">
+              <ScrollArea className="h-[180px]">
                 <div className="space-y-2 pr-4">
                   {slotsForDate.map((slot, idx) => {
                     const isSelected = selectedSlot?.chamber_id === slot.chamber_id && 
@@ -286,7 +286,7 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                           {isFull ? (
                             <Badge variant="destructive" className="text-xs">Full</Badge>
                           ) : (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs font-bold">
                               #{slot.current_bookings + 1}
                             </Badge>
                           )}
@@ -296,6 +296,45 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                   })}
                 </div>
               </ScrollArea>
+
+              {/* Queue Preview - Show when slot is selected */}
+              {selectedSlot && (() => {
+                const nextSerial = selectedSlot.current_bookings + 1;
+                const patientsAhead = selectedSlot.current_bookings;
+                const avgMinutes = selectedSlot.slot_duration_minutes || 5;
+                const waitMinutes = patientsAhead * avgMinutes;
+                const [hours, mins] = selectedSlot.start_time.split(":").map(Number);
+                const totalMinutes = hours * 60 + mins + waitMinutes;
+                const arrivalHours = Math.floor(totalMinutes / 60) % 24;
+                const arrivalMins = totalMinutes % 60;
+                const expectedTime = formatTime12Hour(`${arrivalHours.toString().padStart(2, "0")}:${arrivalMins.toString().padStart(2, "0")}`);
+
+                return (
+                  <div className="space-y-3 p-3 rounded-xl bg-muted/30 border">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-center">
+                        <div className="flex items-center justify-center gap-1 mb-0.5">
+                          <Users className="w-3 h-3 text-amber-600" />
+                          <p className="text-[10px] text-amber-700 dark:text-amber-400">Patients Ahead</p>
+                        </div>
+                        <p className="text-lg font-bold text-amber-600">{patientsAhead}</p>
+                      </div>
+                      <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-center">
+                        <div className="flex items-center justify-center gap-1 mb-0.5">
+                          <Clock className="w-3 h-3 text-blue-600" />
+                          <p className="text-[10px] text-blue-700 dark:text-blue-400">Est. Wait</p>
+                        </div>
+                        <p className="text-lg font-bold text-blue-600">~{waitMinutes}<span className="text-xs font-normal">min</span></p>
+                      </div>
+                    </div>
+                    <div className="p-2 rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800 text-center">
+                      <p className="text-[10px] text-muted-foreground">Expected Call Time</p>
+                      <p className="text-lg font-bold text-emerald-600">{expectedTime}</p>
+                      <p className="text-[10px] text-muted-foreground">Based on ~{avgMinutes} min per patient</p>
+                    </div>
+                  </div>
+                );
+              })()}
               
               <div className="flex gap-2">
                 <Button 
