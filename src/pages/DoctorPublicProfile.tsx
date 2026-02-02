@@ -474,14 +474,6 @@ const DoctorPublicProfile = () => {
                       Select a convenient date and time slot
                     </p>
                   </div>
-                  {primaryChamber && (
-                    <div className="py-3 border-y">
-                      <p className="text-xs text-muted-foreground">Consultation Fee</p>
-                      <p className="text-2xl font-bold text-primary">
-                        {formatCurrency(primaryChamber.new_patient_fee)}
-                      </p>
-                    </div>
-                  )}
                   <Button size="lg" className="w-full" onClick={() => setShowBooking(true)}>
                     <Calendar className="w-4 h-4 mr-2" />
                     Book Serial Now
@@ -495,17 +487,10 @@ const DoctorPublicProfile = () => {
 
       {/* Mobile Sticky Book Button */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur border-t md:hidden z-50">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs text-muted-foreground">Consultation Fee</p>
-            <p className="text-xl font-bold text-primary">
-              {primaryChamber ? formatCurrency(primaryChamber.new_patient_fee) : "৳0"}
-            </p>
-          </div>
-          <Button size="lg" className="flex-1" onClick={() => setShowBooking(true)}>
-            Book Appointment
-          </Button>
-        </div>
+        <Button size="lg" className="w-full" onClick={() => setShowBooking(true)}>
+          <Calendar className="w-4 h-4 mr-2" />
+          Book Appointment
+        </Button>
       </div>
 
       {/* Booking Dialog - Works for both desktop and mobile */}
