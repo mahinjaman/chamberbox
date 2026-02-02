@@ -21,7 +21,7 @@ import { useSubscriptionAdmin, SubscriptionPlan } from "@/hooks/useSubscription"
 import { 
   Loader2, Edit, Save, Crown, Users, FileText, MessageSquare, 
   Building2, UserPlus, Check, X, Sparkles, Globe, Bell, 
-  BarChart3, Download, Palette, Infinity
+  BarChart3, Download, Palette, Infinity, Percent
 } from "lucide-react";
 
 export default function PlanConfiguration() {
@@ -55,6 +55,9 @@ export default function PlanConfiguration() {
         can_use_custom_branding: formData.can_use_custom_branding,
         price_monthly: Number(formData.price_monthly),
         price_yearly: Number(formData.price_yearly),
+        discount_quarterly: Number(formData.discount_quarterly) || 5,
+        discount_biannual: Number(formData.discount_biannual) || 10,
+        discount_yearly: Number(formData.discount_yearly) || 17,
       },
     });
 
@@ -239,10 +242,11 @@ export default function PlanConfiguration() {
           </DialogHeader>
           
           <Tabs defaultValue="limits" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="limits">Limits</TabsTrigger>
               <TabsTrigger value="features">Features</TabsTrigger>
               <TabsTrigger value="pricing">Pricing</TabsTrigger>
+              <TabsTrigger value="discounts">Discounts</TabsTrigger>
             </TabsList>
 
             <TabsContent value="limits" className="space-y-4 py-4">
@@ -378,6 +382,103 @@ export default function PlanConfiguration() {
                         {Math.round((1 - (formData.price_yearly / (formData.price_monthly * 12))) * 100)}% savings vs monthly
                       </p>
                     ) : null}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="discounts" className="space-y-4 py-4">
+              <p className="text-sm text-muted-foreground">
+                Set discount percentages for different billing periods. These discounts are applied automatically when doctors subscribe.
+              </p>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Percent className="w-4 h-4 text-muted-foreground" />
+                    3-Month Discount
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData.discount_quarterly ?? 5}
+                      onChange={(e) => setFormData({ ...formData, discount_quarterly: Number(e.target.value) })}
+                      className="pr-8"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Quarterly billing discount
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Percent className="w-4 h-4 text-muted-foreground" />
+                    6-Month Discount
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData.discount_biannual ?? 10}
+                      onChange={(e) => setFormData({ ...formData, discount_biannual: Number(e.target.value) })}
+                      className="pr-8"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Bi-annual billing discount
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Percent className="w-4 h-4 text-muted-foreground" />
+                    Yearly Discount
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData.discount_yearly ?? 17}
+                      onChange={(e) => setFormData({ ...formData, discount_yearly: Number(e.target.value) })}
+                      className="pr-8"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Annual billing discount
+                  </p>
+                </div>
+              </div>
+
+              {/* Preview section */}
+              <div className="mt-6 p-4 border rounded-lg bg-muted/30">
+                <p className="text-sm font-medium mb-3">Price Preview (based on ৳{formData.price_monthly?.toLocaleString()}/month)</p>
+                <div className="grid gap-2 sm:grid-cols-4 text-sm">
+                  <div className="flex justify-between p-2 rounded bg-background">
+                    <span>Monthly</span>
+                    <span className="font-medium">৳{formData.price_monthly?.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between p-2 rounded bg-background">
+                    <span>3 Months</span>
+                    <span className="font-medium">
+                      ৳{Math.round((formData.price_monthly || 0) * 3 * (1 - (formData.discount_quarterly || 5) / 100)).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between p-2 rounded bg-background">
+                    <span>6 Months</span>
+                    <span className="font-medium">
+                      ৳{Math.round((formData.price_monthly || 0) * 6 * (1 - (formData.discount_biannual || 10) / 100)).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between p-2 rounded bg-background">
+                    <span>Yearly</span>
+                    <span className="font-medium">
+                      ৳{formData.price_yearly?.toLocaleString() || Math.round((formData.price_monthly || 0) * 12 * (1 - (formData.discount_yearly || 17) / 100)).toLocaleString()}
+                    </span>
                   </div>
                 </div>
               </div>
