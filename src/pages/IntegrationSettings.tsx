@@ -2,14 +2,13 @@ import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIntegrationSettings } from "@/hooks/useIntegrationSettings";
-import { CalendlySettings } from "@/components/integrations/CalendlySettings";
 import { WhatsAppSettings } from "@/components/integrations/WhatsAppSettings";
 import { NotificationSettings } from "@/components/integrations/NotificationSettings";
-import { Loader2, Calendar, MessageCircle, Bell } from "lucide-react";
+import { Loader2, MessageCircle, Bell } from "lucide-react";
 
 const IntegrationSettings = () => {
   const { settings, isLoading } = useIntegrationSettings();
-  const [activeTab, setActiveTab] = useState("calendly");
+  const [activeTab, setActiveTab] = useState("whatsapp");
 
   if (isLoading) {
     return (
@@ -24,16 +23,12 @@ const IntegrationSettings = () => {
   return (
     <DashboardLayout
       title="Integration Settings"
-      description="Connect external services for appointment booking and patient notifications"
+      description="Connect external services for patient notifications"
     >
       <div className="space-y-6">
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-flex">
-            <TabsTrigger value="calendly" className="gap-2">
-              <Calendar className="w-4 h-4" />
-              <span className="hidden sm:inline">Calendly</span>
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-flex">
             <TabsTrigger value="whatsapp" className="gap-2">
               <MessageCircle className="w-4 h-4" />
               <span className="hidden sm:inline">WhatsApp</span>
@@ -43,10 +38,6 @@ const IntegrationSettings = () => {
               <span className="hidden sm:inline">Notifications</span>
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="calendly">
-            <CalendlySettings settings={settings} />
-          </TabsContent>
 
           <TabsContent value="whatsapp">
             <WhatsAppSettings settings={settings} />
