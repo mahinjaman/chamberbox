@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -127,47 +126,36 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="py-8 flex items-center justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
-        </CardContent>
-      </Card>
+      <div className="py-8 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
     );
   }
 
   if (availableDates.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-8 text-center">
-          <AlertCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-          <h4 className="font-medium mb-1">No Slots Available</h4>
-          <p className="text-sm text-muted-foreground">
-            The doctor hasn't set up their availability schedule yet.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="py-8 text-center">
+        <AlertCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+        <h4 className="font-medium mb-1">No Slots Available</h4>
+        <p className="text-sm text-muted-foreground">
+          The doctor hasn't set up their availability schedule yet.
+        </p>
+      </div>
     );
   }
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Ticket className="w-5 h-5" />
-          Book Serial
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Progress indicator */}
-        {step !== "success" && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-            <span className={step === "date" ? "text-primary font-medium" : ""}>Date</span>
-            <ArrowRight className="w-3 h-3" />
-            <span className={step === "slot" ? "text-primary font-medium" : ""}>Time</span>
-            <ArrowRight className="w-3 h-3" />
-            <span className={step === "details" ? "text-primary font-medium" : ""}>Details</span>
-          </div>
-        )}
+    <div className="space-y-4">
+      {/* Progress indicator */}
+      {step !== "success" && (
+        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
+          <span className={step === "date" ? "text-primary font-medium" : ""}>Date</span>
+          <ArrowRight className="w-3 h-3" />
+          <span className={step === "slot" ? "text-primary font-medium" : ""}>Time</span>
+          <ArrowRight className="w-3 h-3" />
+          <span className={step === "details" ? "text-primary font-medium" : ""}>Details</span>
+        </div>
+      )}
 
         <AnimatePresence mode="wait">
           {/* Step 1: Select Date */}
@@ -499,7 +487,6 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
             </motion.div>
           )}
         </AnimatePresence>
-      </CardContent>
-    </Card>
+      </div>
   );
 };

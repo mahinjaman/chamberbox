@@ -4,6 +4,7 @@ import { usePublicDoctorProfile } from "@/hooks/useDoctorProfile";
 import { usePublicDoctorVideos } from "@/hooks/useDoctorVideos";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -459,14 +460,34 @@ const DoctorPublicProfile = () => {
             </Tabs>
           </div>
 
-          {/* Right Column - Booking Widget (Desktop) */}
+          {/* Right Column - Book Button (Desktop) */}
           <div className="hidden md:block">
-            <div className="sticky top-4">
-              {/* Unified Booking Widget - supports both today's queue and future dates */}
-              <UnifiedBookingWidget 
-                profile={profile} 
-                chamber={primaryChamber || null}
-              />
+            <div className="sticky top-4 space-y-4">
+              <Card className="overflow-hidden">
+                <CardContent className="p-6 text-center space-y-4">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+                    <Calendar className="w-8 h-8 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Book Your Serial</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Select a convenient date and time slot
+                    </p>
+                  </div>
+                  {primaryChamber && (
+                    <div className="py-3 border-y">
+                      <p className="text-xs text-muted-foreground">Consultation Fee</p>
+                      <p className="text-2xl font-bold text-primary">
+                        {formatCurrency(primaryChamber.new_patient_fee)}
+                      </p>
+                    </div>
+                  )}
+                  <Button size="lg" className="w-full" onClick={() => setShowBooking(true)}>
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Book Serial Now
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
@@ -487,41 +508,24 @@ const DoctorPublicProfile = () => {
         </div>
       </div>
 
-      {/* Mobile Booking Sheet */}
-      <AnimatePresence>
-        {showBooking && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50 md:hidden"
-            onClick={() => setShowBooking(false)}
-          >
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="absolute bottom-0 left-0 right-0 bg-background rounded-t-3xl max-h-[90vh] overflow-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="sticky top-0 bg-background p-4 border-b flex items-center justify-between">
-                <h2 className="font-semibold">Book Appointment</h2>
-                <Button variant="ghost" size="sm" onClick={() => setShowBooking(false)}>
-                  Close
-                </Button>
-              </div>
-              <div className="p-4">
-                <UnifiedBookingWidget 
-                  profile={profile} 
-                  chamber={primaryChamber || null}
-                  onClose={() => setShowBooking(false)}
-                />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Booking Dialog - Works for both desktop and mobile */}
+      <Dialog open={showBooking} onOpenChange={setShowBooking}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary" />
+              Book Your Serial
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-6 pt-4">
+            <UnifiedBookingWidget 
+              profile={profile} 
+              chamber={primaryChamber || null}
+              onClose={() => setShowBooking(false)}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Trust Signals */}
       <div className="container max-w-4xl mx-auto px-4 py-8 pb-24 md:pb-8">
