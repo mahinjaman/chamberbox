@@ -6,7 +6,9 @@ import {
   Building2,
   LogOut,
   Home,
-  Stethoscope
+  Stethoscope,
+  DollarSign,
+  UserPlus
 } from "lucide-react";
 import {
   Sidebar,
@@ -63,6 +65,18 @@ export const StaffSidebar = () => {
       url: "/staff/prescriptions", 
       icon: FileText,
       show: staffPermissions?.canViewPrescriptions 
+    },
+    { 
+      title: language === "bn" ? "আর্থিক" : "Finances", 
+      url: "/staff/finances", 
+      icon: DollarSign,
+      show: staffPermissions?.canViewFinances 
+    },
+    { 
+      title: language === "bn" ? "স্টাফ টিম" : "Staff Team", 
+      url: "/staff/team", 
+      icon: UserPlus,
+      show: staffPermissions?.canManageStaff 
     },
     { 
       title: language === "bn" ? "চেম্বার" : "Chambers", 

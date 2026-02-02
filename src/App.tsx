@@ -51,6 +51,8 @@ import StaffPatients from "./pages/staff/StaffPatients";
 import StaffPatientDetail from "./pages/staff/StaffPatientDetail";
 import StaffPrescriptions from "./pages/staff/StaffPrescriptions";
 import StaffChambers from "./pages/staff/StaffChambers";
+import StaffFinances from "./pages/staff/StaffFinances";
+import StaffTeam from "./pages/staff/StaffTeam";
 
 const queryClient = new QueryClient();
 
@@ -237,6 +239,22 @@ const App = () => (
               element={
                 <StaffRoute>
                   <StaffChambers />
+                </StaffRoute>
+              }
+            />
+            <Route
+              path="/staff/finances"
+              element={
+                <StaffRoute>
+                  <StaffFinances />
+                </StaffRoute>
+              }
+            />
+            <Route
+              path="/staff/team"
+              element={
+                <StaffRoute>
+                  <StaffTeam />
                 </StaffRoute>
               }
             />
