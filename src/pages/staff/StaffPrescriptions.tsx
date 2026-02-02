@@ -7,14 +7,19 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Search, FileText, Eye, Pill } from "lucide-react";
 import { format } from "date-fns";
+import { PrescriptionView } from "@/components/prescription/PrescriptionView";
+import { Prescription } from "@/hooks/usePrescriptions";
 
 export default function StaffPrescriptions() {
   const { language } = useLanguage();
   const { staffInfo, staffInfoLoading, staffPermissions } = useStaff();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
   // Get doctor_id from staff info
   const doctorId = (staffInfo?.doctor as any)?.id;
@@ -29,13 +34,19 @@ export default function StaffPrescriptions() {
         .from("prescriptions")
         .select(`
           *,
-          patient:patients(name, phone, age, gender)
+          patient:patients(name, phone, age, gender, blood_group)
         `)
         .eq("doctor_id", doctorId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      
+      // Map the data to match the Prescription type
+      return data.map(item => ({
+        ...item,
+        medicines: (Array.isArray(item.medicines) ? item.medicines : []) as unknown as Prescription["medicines"],
+        investigations: (Array.isArray(item.investigations) ? item.investigations : []) as unknown as Prescription["investigations"],
+      })) as Prescription[];
     },
     enabled: !!doctorId,
   });
@@ -61,9 +72,15 @@ export default function StaffPrescriptions() {
   }
 
   const filteredPrescriptions = prescriptions.filter((rx) => {
-    const patientName = (rx.patient as any)?.name?.toLowerCase() || "";
-    return patientName.includes(searchQuery.toLowerCase());
+    const patientName = rx.patient?.name?.toLowerCase() || "";
+    const patientPhone = rx.patient?.phone || "";
+    return patientName.includes(searchQuery.toLowerCase()) || patientPhone.includes(searchQuery);
   });
+
+  const handleView = (prescription: Prescription) => {
+    setSelectedPrescription(prescription);
+    setIsViewDialogOpen(true);
+  };
 
   return (
     <StaffLayout 
@@ -75,7 +92,7 @@ export default function StaffPrescriptions() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder={language === "bn" ? "রোগীর নাম দিয়ে খুঁজুন..." : "Search by patient name..."}
+            placeholder={language === "bn" ? "রোগীর নাম বা ফোন দিয়ে খুঁজুন..." : "Search by patient name or phone..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -109,18 +126,32 @@ export default function StaffPrescriptions() {
                         <FileText className="w-6 h-6 text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-medium">{(prescription.patient as any)?.name}</h3>
+                        <h3 className="font-medium">{prescription.patient?.name}</h3>
                         <p className="text-sm text-muted-foreground">
+                          {prescription.patient?.phone}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
                           {format(new Date(prescription.created_at), "PPP")}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right text-sm text-muted-foreground">
-                      {prescription.medicines && Array.isArray(prescription.medicines) && (
-                        <p>
-                          {prescription.medicines.length} {language === "bn" ? "ওষুধ" : "medicines"}
-                        </p>
-                      )}
+                    <div className="flex items-center gap-4">
+                      <div className="text-right text-sm text-muted-foreground hidden sm:block">
+                        {prescription.medicines && Array.isArray(prescription.medicines) && (
+                          <p className="flex items-center gap-1">
+                            <Pill className="w-3 h-3" />
+                            {prescription.medicines.length} {language === "bn" ? "ওষুধ" : "medicines"}
+                          </p>
+                        )}
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleView(prescription)}
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        {language === "bn" ? "দেখুন" : "View"}
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -128,6 +159,16 @@ export default function StaffPrescriptions() {
             ))}
           </div>
         )}
+
+        {/* View Prescription Dialog */}
+        <PrescriptionView
+          prescription={selectedPrescription}
+          isOpen={isViewDialogOpen}
+          onClose={() => {
+            setIsViewDialogOpen(false);
+            setSelectedPrescription(null);
+          }}
+        />
       </div>
     </StaffLayout>
   );

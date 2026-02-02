@@ -1,19 +1,32 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { StaffLayout } from "@/components/staff/StaffLayout";
 import { useStaff } from "@/hooks/useStaff";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Loader2, Search, User, Plus, UserPlus } from "lucide-react";
+import { toast } from "sonner";
 
 export default function StaffPatients() {
   const { language } = useLanguage();
   const { staffInfo, staffInfoLoading, staffPermissions } = useStaff();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newPatientName, setNewPatientName] = useState("");
+  const [newPatientPhone, setNewPatientPhone] = useState("");
+  const [newPatientAge, setNewPatientAge] = useState("");
+  const [newPatientGender, setNewPatientGender] = useState<"male" | "female" | "">("");
+  const [newPatientAddress, setNewPatientAddress] = useState("");
 
   // Get doctor_id from staff info
   const doctorId = (staffInfo?.doctor as any)?.id;
@@ -34,6 +47,48 @@ export default function StaffPatients() {
       return data;
     },
     enabled: !!doctorId,
+  });
+
+  // Create patient mutation
+  const createPatientMutation = useMutation({
+    mutationFn: async (data: { 
+      name: string; 
+      phone: string; 
+      age: number; 
+      gender: string;
+      address?: string;
+    }) => {
+      if (!doctorId) throw new Error("No doctor ID");
+      
+      const { data: newPatient, error } = await supabase
+        .from("patients")
+        .insert({
+          doctor_id: doctorId,
+          name: data.name,
+          phone: data.phone,
+          age: data.age,
+          gender: data.gender,
+          address: data.address || null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return newPatient;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["staff_patients"] });
+      setIsAddDialogOpen(false);
+      setNewPatientName("");
+      setNewPatientPhone("");
+      setNewPatientAge("");
+      setNewPatientGender("");
+      setNewPatientAddress("");
+      toast.success(language === "bn" ? "রোগী যোগ করা হয়েছে" : "Patient added successfully");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
   });
 
   useEffect(() => {
@@ -62,12 +117,113 @@ export default function StaffPatients() {
       patient.phone.includes(searchQuery)
   );
 
+  const handleCreatePatient = () => {
+    if (!newPatientName || !newPatientPhone || !newPatientAge || !newPatientGender) {
+      toast.error(language === "bn" ? "সব তথ্য পূরণ করুন" : "Fill all required fields");
+      return;
+    }
+    createPatientMutation.mutate({
+      name: newPatientName,
+      phone: newPatientPhone,
+      age: parseInt(newPatientAge),
+      gender: newPatientGender,
+      address: newPatientAddress,
+    });
+  };
+
   return (
     <StaffLayout 
       title={language === "bn" ? "রোগী" : "Patients"}
       description={language === "bn" 
         ? `মোট ${patients.length} জন রোগী` 
         : `Total ${patients.length} patients`}
+      actions={
+        staffPermissions?.canAddPatients && (
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-1" />
+                {language === "bn" ? "নতুন রোগী" : "New Patient"}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>{language === "bn" ? "নতুন রোগী যোগ করুন" : "Add New Patient"}</DialogTitle>
+                <DialogDescription>
+                  {language === "bn" 
+                    ? "রোগীর তথ্য পূরণ করুন" 
+                    : "Fill in patient details"}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>{language === "bn" ? "নাম *" : "Name *"}</Label>
+                    <Input
+                      value={newPatientName}
+                      onChange={(e) => setNewPatientName(e.target.value)}
+                      placeholder={language === "bn" ? "রোগীর নাম" : "Patient name"}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{language === "bn" ? "ফোন *" : "Phone *"}</Label>
+                    <Input
+                      value={newPatientPhone}
+                      onChange={(e) => setNewPatientPhone(e.target.value)}
+                      placeholder="01XXXXXXXXX"
+                      maxLength={11}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{language === "bn" ? "বয়স *" : "Age *"}</Label>
+                    <Input
+                      type="number"
+                      value={newPatientAge}
+                      onChange={(e) => setNewPatientAge(e.target.value)}
+                      placeholder={language === "bn" ? "বছর" : "Years"}
+                      min="1"
+                      max="150"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{language === "bn" ? "লিঙ্গ *" : "Gender *"}</Label>
+                    <Select value={newPatientGender} onValueChange={(v) => setNewPatientGender(v as any)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={language === "bn" ? "নির্বাচন করুন" : "Select"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">{language === "bn" ? "পুরুষ" : "Male"}</SelectItem>
+                        <SelectItem value="female">{language === "bn" ? "মহিলা" : "Female"}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label>{language === "bn" ? "ঠিকানা" : "Address"}</Label>
+                    <Input
+                      value={newPatientAddress}
+                      onChange={(e) => setNewPatientAddress(e.target.value)}
+                      placeholder={language === "bn" ? "ঠিকানা (ঐচ্ছিক)" : "Address (optional)"}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                  {language === "bn" ? "বাতিল" : "Cancel"}
+                </Button>
+                <Button 
+                  onClick={handleCreatePatient}
+                  disabled={createPatientMutation.isPending}
+                >
+                  {createPatientMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  <UserPlus className="w-4 h-4 mr-1" />
+                  {language === "bn" ? "যোগ করুন" : "Add Patient"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )
+      }
     >
       <div className="space-y-6">
         {/* Search */}
