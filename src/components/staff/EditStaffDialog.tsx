@@ -185,23 +185,24 @@ export function EditStaffDialog({ open, onOpenChange, staff, chambers }: EditSta
                 {language === "bn" ? "চেম্বার অ্যাক্সেস" : "Chamber Access"} *
               </Label>
               <div className="flex flex-wrap gap-2">
-                {chambers.map((chamber) => (
-                  <label
-                    key={chamber.id}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border cursor-pointer text-xs transition-colors ${
-                      formData.chamber_ids.includes(chamber.id)
-                        ? "bg-primary/10 border-primary text-primary"
-                        : "bg-background border-input hover:bg-muted"
-                    }`}
-                  >
-                    <Checkbox
-                      checked={formData.chamber_ids.includes(chamber.id)}
-                      onCheckedChange={() => toggleChamber(chamber.id)}
-                      className="h-3 w-3"
-                    />
-                    <span>{chamber.name}</span>
-                  </label>
-                ))}
+                {chambers.map((chamber) => {
+                  const isSelected = formData.chamber_ids.includes(chamber.id);
+                  return (
+                    <button
+                      key={chamber.id}
+                      type="button"
+                      onClick={() => toggleChamber(chamber.id)}
+                      className={`inline-flex items-center gap-1.5 px-3 h-7 rounded-full border text-xs font-medium transition-colors ${
+                        isSelected
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background border-input text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                    >
+                      <Building2 className="h-3 w-3" />
+                      {chamber.name}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
