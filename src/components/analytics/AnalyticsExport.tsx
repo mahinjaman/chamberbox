@@ -6,12 +6,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Download, FileText, FileSpreadsheet, Loader2 } from "lucide-react";
+import { Download, FileText, FileSpreadsheet, Loader2, Lock } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { FilteredAnalyticsData } from "@/hooks/useFilteredAnalytics";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 
 interface AnalyticsExportProps {
   data: FilteredAnalyticsData;
@@ -29,6 +30,8 @@ export const AnalyticsExport = ({
   doctorName = "Doctor",
 }: AnalyticsExportProps) => {
   const [exporting, setExporting] = useState(false);
+  const { canExportData, checkFeatureAccess } = useFeatureAccess();
+  const exportAccess = checkFeatureAccess("export");
 
   const formatCurrency = (amount: number) => `৳${amount.toLocaleString()}`;
 
@@ -258,6 +261,16 @@ export const AnalyticsExport = ({
       setExporting(false);
     }
   };
+
+  // If user doesn't have export access, show disabled button
+  if (!canExportData()) {
+    return (
+      <Button variant="outline" disabled title={exportAccess.message}>
+        <Lock className="h-4 w-4 mr-2" />
+        Export (Upgrade Required)
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>

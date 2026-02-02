@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useDoctorProfile, DoctorProfile, Chamber, AvailabilitySlot } from "@/hooks/useDoctorProfile";
+import { useSubscription } from "@/hooks/useSubscription";
 import { DAYS_OF_WEEK, formatPhoneNumber, formatTime12Hour } from "@/lib/doctor-profile-utils";
-import { Loader2, Plus, Trash2, MapPin, Clock, Phone, Building2 } from "lucide-react";
+import { Loader2, Plus, Trash2, MapPin, Clock, Phone, Building2, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ProfileChambersProps {
   profile: DoctorProfile | null | undefined;
@@ -20,8 +22,14 @@ interface ProfileChambersProps {
 
 export const ProfileChambers = ({ profile, chambers, availabilitySlots }: ProfileChambersProps) => {
   const { upsertChamber, deleteChamber, upsertAvailability } = useDoctorProfile();
+  const { currentPlan, canAddMore } = useSubscription();
   const [editingChamber, setEditingChamber] = useState<Partial<Chamber> | null>(null);
   const [showChamberDialog, setShowChamberDialog] = useState(false);
+
+  const chamberCount = chambers.length;
+  const maxChambers = currentPlan?.max_chambers || 1;
+  const canAddChamber = canAddMore('chambers', chamberCount);
+  const chamberLimitReached = !canAddChamber && maxChambers !== -1;
 
   const [chamberForm, setChamberForm] = useState({
     name: "",
@@ -126,13 +134,52 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold">Chamber Locations</h2>
-          <p className="text-muted-foreground text-sm">Manage your practice locations and schedules</p>
+          <p className="text-muted-foreground text-sm">
+            Manage your practice locations and schedules 
+            {maxChambers !== -1 && (
+              <span className="ml-1">({chamberCount}/{maxChambers} used)</span>
+            )}
+          </p>
         </div>
-        <Button onClick={openNewChamber} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Chamber
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Button 
+                  onClick={openNewChamber} 
+                  className="gap-2"
+                  disabled={chamberLimitReached}
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Chamber
+                </Button>
+              </span>
+            </TooltipTrigger>
+            {chamberLimitReached && (
+              <TooltipContent>
+                <p>Your plan allows maximum {maxChambers} chambers. Upgrade to add more.</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </div>
+
+      {/* Chamber Limit Warning */}
+      {chamberLimitReached && (
+        <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20">
+          <CardContent className="py-3 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                Chamber limit reached ({chamberCount}/{maxChambers})
+              </p>
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                Upgrade your plan to add more chambers.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <AnimatePresence mode="popLayout">
         {chambers.length === 0 ? (
