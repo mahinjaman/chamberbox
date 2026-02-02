@@ -13,9 +13,10 @@ import { formatTime12Hour, DAYS_OF_WEEK } from "@/lib/doctor-profile-utils";
 import { format } from "date-fns";
 import { 
   Plus, Clock, MapPin, Users, Play, Pause, Square, 
-  Loader2, Trash2, CalendarClock, ChevronRight
+  Loader2, Trash2, CalendarClock, ChevronRight, LockOpen, Lock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SessionManagerProps {
   sessions: QueueSession[];
@@ -23,6 +24,7 @@ interface SessionManagerProps {
   onSelectSession: (session: QueueSession) => void;
   onCreateSession: (input: CreateSessionInput) => void;
   onUpdateStatus: (id: string, status: QueueSession["status"]) => void;
+  onToggleBooking: (id: string, booking_open: boolean) => void;
   onDeleteSession: (id: string) => void;
   isCreating: boolean;
   sessionDate: string;
@@ -34,6 +36,7 @@ export const SessionManager = ({
   onSelectSession,
   onCreateSession,
   onUpdateStatus,
+  onToggleBooking,
   onDeleteSession,
   isCreating,
   sessionDate,
@@ -327,6 +330,12 @@ export const SessionManager = ({
                         {session.is_custom && (
                           <Badge variant="outline">Custom</Badge>
                         )}
+                        {session.booking_open === false && (
+                          <Badge variant="secondary" className="bg-destructive/10 text-destructive border-0">
+                            <Lock className="w-3 h-3 mr-1" />
+                            Booking Closed
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                         <span className="flex items-center gap-1">
@@ -342,6 +351,33 @@ export const SessionManager = ({
                   </div>
                   
                   <div className="flex items-center gap-2">
+                    {/* Booking Toggle Button */}
+                    {session.status !== "closed" && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              size="sm" 
+                              variant={session.booking_open !== false ? "outline" : "secondary"}
+                              className={session.booking_open === false ? "bg-destructive/10 hover:bg-destructive/20 text-destructive" : ""}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onToggleBooking(session.id, session.booking_open === false);
+                              }}
+                            >
+                              {session.booking_open === false ? (
+                                <Lock className="w-4 h-4" />
+                              ) : (
+                                <LockOpen className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{session.booking_open === false ? "Enable public booking" : "Disable public booking"}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                     {session.status === "open" && (
                       <Button 
                         size="sm" 

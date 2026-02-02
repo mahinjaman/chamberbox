@@ -12,7 +12,7 @@ import { formatTime12Hour, formatCurrency } from "@/lib/doctor-profile-utils";
 import { format } from "date-fns";
 import { 
   Clock, Users, MapPin, Ticket, Loader2, 
-  CheckCircle2, AlertCircle, User, Phone
+  CheckCircle2, AlertCircle, User, Phone, Lock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -196,17 +196,19 @@ export const QueueBookingWidget = ({ profile, chamber, onClose }: QueueBookingWi
               <div className="space-y-2">
                 {sessions.map(session => {
                   const isFull = (session.tokens_count || 0) >= session.max_patients;
+                  const isBookingClosed = session.booking_open === false;
+                  const isDisabled = isFull || isBookingClosed;
                   const isSelected = selectedSessionId === session.id;
                   
                   return (
                     <button
                       key={session.id}
-                      disabled={isFull}
+                      disabled={isDisabled}
                       onClick={() => setSelectedSessionId(session.id)}
                       className={`w-full p-4 rounded-lg border text-left transition-all ${
                         isSelected 
                           ? "border-primary bg-primary/5 ring-2 ring-primary" 
-                          : isFull 
+                          : isDisabled 
                             ? "opacity-50 cursor-not-allowed bg-muted" 
                             : "hover:border-primary/50 hover:bg-accent"
                       }`}
@@ -235,7 +237,12 @@ export const QueueBookingWidget = ({ profile, chamber, onClose }: QueueBookingWi
                             </span>
                           </div>
                         </div>
-                        {isFull ? (
+                        {isBookingClosed ? (
+                          <Badge variant="secondary" className="bg-destructive/10 text-destructive">
+                            <Lock className="w-3 h-3 mr-1" />
+                            Closed
+                          </Badge>
+                        ) : isFull ? (
                           <Badge variant="destructive">Full</Badge>
                         ) : (
                           <Badge variant="outline">
