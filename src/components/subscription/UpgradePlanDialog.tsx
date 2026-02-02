@@ -111,7 +111,7 @@ export const UpgradePlanDialog = ({ open, onOpenChange }: UpgradePlanDialogProps
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from("subscription_payments" as any).insert({
+      const { error } = await supabase.from("subscription_payments").insert({
         doctor_id: profile?.id,
         plan_tier: selectedPlan?.tier,
         billing_period: billingPeriod,
