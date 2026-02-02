@@ -10,13 +10,13 @@ import { DoctorProfile, Chamber } from "@/hooks/useDoctorProfile";
 import { formatTime12Hour, formatCurrency } from "@/lib/doctor-profile-utils";
 import { format, parseISO, isToday, isTomorrow } from "date-fns";
 import { 
-  Calendar, Clock, Users, MapPin, Ticket, Loader2, 
-  CheckCircle2, AlertCircle, ArrowLeft, ArrowRight
+  Calendar, Clock, Users, MapPin, Loader2, 
+  AlertCircle, ArrowLeft, ArrowRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
-import { WhatsAppConfirmation } from "./WhatsAppConfirmation";
+import { BookingSuccessCard } from "./BookingSuccessCard";
 
 interface UnifiedBookingWidgetProps {
   profile: DoctorProfile;
@@ -431,116 +431,17 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
           )}
 
           {/* Step 4: Success */}
-          {step === "success" && bookingResult && (() => {
-            const timeDetails = getEstimatedTimeDetails();
-            return (
-              <motion.div
-                key="success"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="text-center space-y-4"
-              >
-                <div className="w-16 h-16 mx-auto rounded-full bg-success/10 flex items-center justify-center">
-                  <CheckCircle2 className="w-8 h-8 text-success" />
-                </div>
-                
-                <div>
-                  <h3 className="text-xl font-bold text-success">Booking Confirmed!</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Your appointment has been scheduled successfully
-                  </p>
-                </div>
-                
-                {/* Serial Number Card */}
-                <div className="p-5 rounded-xl bg-primary/5 border border-primary/20">
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Your Serial Number</p>
-                  <p className="text-5xl font-black text-primary">#{timeDetails?.serialNumber}</p>
-                </div>
-
-                {/* Queue & Time Info */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-lg bg-muted/50 border">
-                    <div className="flex items-center justify-center gap-1.5 mb-1">
-                      <Users className="w-4 h-4 text-amber-600" />
-                      <p className="text-xs text-muted-foreground">Patients Ahead</p>
-                    </div>
-                    <p className="text-2xl font-bold text-amber-600">
-                      {timeDetails?.patientsAhead || 0}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/50 border">
-                    <div className="flex items-center justify-center gap-1.5 mb-1">
-                      <Clock className="w-4 h-4 text-blue-600" />
-                      <p className="text-xs text-muted-foreground">Est. Wait</p>
-                    </div>
-                    <p className="text-2xl font-bold text-blue-600">
-                      ~{timeDetails?.waitMinutes || 0}<span className="text-sm font-normal">min</span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Expected Time */}
-                <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-sky-500/10 border border-emerald-500/20">
-                  <p className="text-xs text-muted-foreground mb-1">Expected Call Time</p>
-                  <p className="text-2xl font-bold text-emerald-600">{timeDetails?.estimatedTime}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Based on ~{timeDetails?.avgMinutes} min per patient
-                  </p>
-                </div>
-                
-                {/* Appointment Details */}
-                <div className="space-y-2 text-sm p-3 rounded-lg border bg-card">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      Date
-                    </span>
-                    <span className="font-medium">{selectedDate && format(parseISO(selectedDate), "EEE, MMM d, yyyy")}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-muted-foreground">
-                      <Clock className="w-4 h-4" />
-                      Session
-                    </span>
-                    <span className="font-medium">{selectedSlot && formatTime12Hour(selectedSlot.start_time)} - {selectedSlot && formatTime12Hour(selectedSlot.end_time)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
-                      Chamber
-                    </span>
-                    <span className="font-medium">{selectedSlot?.chamber_name}</span>
-                  </div>
-                  <div className="flex items-center justify-between border-t pt-2 mt-2">
-                    <span className="text-muted-foreground">Consultation Fee</span>
-                    <span className="font-bold text-primary">{formatCurrency(selectedSlot?.new_patient_fee || 500)}</span>
-                  </div>
-                </div>
-                
-                {/* WhatsApp Confirmation */}
-                <WhatsAppConfirmation
-                  doctorName={profile.full_name}
-                  patientName={formData.patient_name}
-                  tokenNumber={bookingResult.token_number}
-                  date={selectedDate ? format(parseISO(selectedDate), "MMMM d, yyyy") : ""}
-                  time={timeDetails?.estimatedTime || ""}
-                  chamberAddress={selectedSlot?.chamber_address || ""}
-                />
-                
-                <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-sm">
-                  <p className="text-warning-foreground">
-                    ⏰ Please arrive 15 minutes before your expected time
-                  </p>
-                </div>
-                
-                {onClose && (
-                  <Button onClick={onClose} variant="outline" className="w-full">
-                    Done
-                  </Button>
-                )}
-              </motion.div>
-            );
-          })()}
+          {step === "success" && bookingResult && selectedSlot && selectedDate && (
+            <BookingSuccessCard
+              bookingResult={bookingResult}
+              selectedSlot={selectedSlot}
+              selectedDate={selectedDate}
+              formData={formData}
+              profile={profile}
+              timeDetails={getEstimatedTimeDetails()}
+              onClose={onClose}
+            />
+          )}
         </AnimatePresence>
       </div>
   );
