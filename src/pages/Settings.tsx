@@ -9,12 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useProfile } from "@/hooks/useProfile";
 import { useSubscription } from "@/hooks/useSubscription";
+import { UpgradePlanDialog } from "@/components/subscription/UpgradePlanDialog";
 import { Loader2, Save, Users, FileText, MessageSquare, Building2, Crown, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 
 const Settings = () => {
   const { profile, isLoading, updateProfile, isUpdating } = useProfile();
   const { currentPlan, usage, limits, expiresAt, isExpired, daysRemaining, isLoading: subscriptionLoading } = useSubscription();
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -238,11 +240,16 @@ const Settings = () => {
 
                 {/* Upgrade Button */}
                 <div className="flex justify-end">
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={() => setShowUpgradeDialog(true)}>
                     <Crown className="w-4 h-4 mr-2" />
                     Upgrade Plan
                   </Button>
                 </div>
+
+                <UpgradePlanDialog 
+                  open={showUpgradeDialog} 
+                  onOpenChange={setShowUpgradeDialog} 
+                />
               </>
             )}
           </CardContent>

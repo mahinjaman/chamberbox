@@ -43,6 +43,7 @@ import SubscriptionManagement from "./pages/admin/SubscriptionManagement";
 import TicketManagement from "./pages/admin/TicketManagement";
 import TutorialManagement from "./pages/admin/TutorialManagement";
 import PlanConfiguration from "./pages/admin/PlanConfiguration";
+import PaymentVerification from "./pages/admin/PaymentVerification";
 
 // Staff Pages
 import StaffManagement from "./pages/StaffManagement";
@@ -262,6 +263,7 @@ const App = () => (
 
             {/* Admin Routes */}
             <Route
+              path="/admin"
               element={
                 <ProtectedRoute>
                   <AdminDashboard />
@@ -289,6 +291,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <PlanConfiguration />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/payments"
+              element={
+                <ProtectedRoute>
+                  <PaymentVerification />
                 </ProtectedRoute>
               }
             />
