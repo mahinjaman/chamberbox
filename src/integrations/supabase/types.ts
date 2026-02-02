@@ -928,6 +928,65 @@ export type Database = {
           },
         ]
       }
+      subscription_payments: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          billing_period: string
+          created_at: string
+          doctor_id: string
+          id: string
+          payer_mobile: string
+          payment_method: string
+          plan_tier: string
+          status: string
+          transaction_id: string
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          billing_period: string
+          created_at?: string
+          doctor_id: string
+          id?: string
+          payer_mobile: string
+          payment_method: string
+          plan_tier: string
+          status?: string
+          transaction_id: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          billing_period?: string
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          payer_mobile?: string
+          payment_method?: string
+          plan_tier?: string
+          status?: string
+          transaction_id?: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_payments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_plans: {
         Row: {
           can_export_data: boolean | null
