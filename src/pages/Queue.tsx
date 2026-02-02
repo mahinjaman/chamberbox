@@ -511,7 +511,13 @@ const Queue = () => {
                               <div key={token.id} className={cn("flex items-center justify-between p-3 rounded-lg border transition-all", index === 0 && "bg-warning/5 border-warning/30 shadow-sm")}>
                                 <div className="flex items-center gap-3">
                                   <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm", index === 0 ? "bg-warning text-warning-foreground" : "bg-muted text-muted-foreground")}>#{token.token_number}</div>
-                                  <div><p className="font-medium text-foreground text-sm">{token.patient?.name}</p><p className="text-xs text-muted-foreground">{token.patient?.phone}</p></div>
+                                  <div>
+                                    <p className="font-medium text-foreground text-sm">{token.patient?.name}</p>
+                                    <p className="text-xs text-muted-foreground">{token.patient?.phone}</p>
+                                    {token.serial_number && (
+                                      <p className="text-[10px] text-muted-foreground/70 font-mono mt-0.5">{token.serial_number}</p>
+                                    )}
+                                  </div>
                                 </div>
                                 {index === 0 && <Badge className="bg-warning/20 text-warning border-0 text-xs">Next</Badge>}
                               </div>
@@ -536,7 +542,13 @@ const Queue = () => {
                               <div key={token.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
                                 <div className="flex items-center gap-3">
                                   <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center font-bold text-sm text-muted-foreground">#{token.token_number}</div>
-                                  <div><p className="font-medium text-foreground text-sm">{token.patient?.name}</p><p className="text-xs text-muted-foreground">{token.patient?.phone}</p></div>
+                                  <div>
+                                    <p className="font-medium text-foreground text-sm">{token.patient?.name}</p>
+                                    <p className="text-xs text-muted-foreground">{token.patient?.phone}</p>
+                                    {token.serial_number && (
+                                      <p className="text-[10px] text-muted-foreground/70 font-mono mt-0.5">{token.serial_number}</p>
+                                    )}
+                                  </div>
                                 </div>
                                 <Badge variant={token.status === "completed" ? "secondary" : "destructive"} className="text-xs">{token.status === "completed" ? "Done" : "Cancelled"}</Badge>
                               </div>

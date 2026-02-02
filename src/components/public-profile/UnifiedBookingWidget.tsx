@@ -125,7 +125,8 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
     const estimatedTime = formatTime12Hour(`${arrivalHours.toString().padStart(2, "0")}:${arrivalMins.toString().padStart(2, "0")}`);
     
     return {
-      serialNumber: bookingResult.token_number,
+      serialNumber: bookingResult.serial_number || `#${bookingResult.token_number}`, // Use unique serial number
+      tokenNumber: bookingResult.token_number, // Queue position (token)
       patientsAhead,
       waitMinutes,
       estimatedTime,

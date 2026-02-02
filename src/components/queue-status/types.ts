@@ -1,6 +1,7 @@
 export interface QueueData {
   currentSerial: number;
-  patientSerial: number;
+  patientSerial: number; // Queue position (token number)
+  serialNumber?: string; // Unique booking reference (e.g., 260203-1234-0001)
   patientName?: string;
   patientPhone: string;
   patientsAhead: number;

@@ -53,6 +53,7 @@ export const useQueueStatus = () => {
           .select(`
             id,
             token_number,
+            serial_number,
             status,
             session_id,
             doctor_id,
@@ -214,6 +215,7 @@ export const useQueueStatus = () => {
         setQueueData({
           currentSerial: session.current_token || 0,
           patientSerial: token.token_number,
+          serialNumber: token.serial_number || undefined,
           patientName: patient?.name,
           patientPhone: phoneNumber,
           patientsAhead: ahead,
