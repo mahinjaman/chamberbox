@@ -7,6 +7,7 @@ import { QueueStatusTranslations } from './types';
 
 interface PatientPositionCardProps {
   patientSerial: number;
+  serialNumber?: string; // Unique booking reference
   currentSerial: number;
   patientsAhead: number;
   t: QueueStatusTranslations;
@@ -14,6 +15,7 @@ interface PatientPositionCardProps {
 
 export const PatientPositionCard: React.FC<PatientPositionCardProps> = ({
   patientSerial,
+  serialNumber,
   currentSerial,
   patientsAhead,
   t,
@@ -33,7 +35,15 @@ export const PatientPositionCard: React.FC<PatientPositionCardProps> = ({
       <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 via-transparent to-violet-500/5 pointer-events-none" />
 
       <div className="relative space-y-5">
-        {/* Your Serial */}
+        {/* Serial Number (Unique Booking Reference) */}
+        {serialNumber && (
+          <div className="text-center pb-2 border-b border-border/30">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Booking Reference</p>
+            <p className="text-sm font-bold font-mono text-primary">{serialNumber}</p>
+          </div>
+        )}
+
+        {/* Your Queue Position (Token) */}
         <div className="text-center">
           <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">
             {t.yourSerial}

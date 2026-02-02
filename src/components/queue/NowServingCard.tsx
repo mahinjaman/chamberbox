@@ -103,6 +103,11 @@ export const NowServingCard = ({
                   {token.patient.age} yrs, {token.patient.gender}
                 </p>
               )}
+              {token.serial_number && (
+                <p className="text-xs text-muted-foreground/70 font-mono mt-1">
+                  Ref: {token.serial_number}
+                </p>
+              )}
             </div>
           </div>
 

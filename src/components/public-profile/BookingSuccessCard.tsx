@@ -21,7 +21,8 @@ interface BookingSuccessCardProps {
     full_name: string;
   };
   timeDetails: {
-    serialNumber: number;
+    serialNumber: string; // Unique booking reference (e.g., 260203-1234-0001)
+    tokenNumber: number; // Queue position (e.g., 3)
     patientsAhead: number;
     waitMinutes: number;
     estimatedTime: string;
@@ -55,17 +56,22 @@ export const BookingSuccessCard = ({
     
     // Serial Number Box
     doc.setTextColor(16, 185, 129);
-    doc.setFontSize(14);
-    doc.text("Your Serial Number", pageWidth / 2, 55, { align: "center" });
-    doc.setFontSize(48);
+    doc.setFontSize(12);
+    doc.text("Your Booking Reference", pageWidth / 2, 52, { align: "center" });
+    doc.setFontSize(20);
     doc.setTextColor(20, 184, 166);
-    doc.text(`#${timeDetails?.serialNumber}`, pageWidth / 2, 75, { align: "center" });
+    doc.text(`${timeDetails?.serialNumber}`, pageWidth / 2, 65, { align: "center" });
+    
+    // Token Number
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Queue Position: #${timeDetails?.tokenNumber}`, pageWidth / 2, 75, { align: "center" });
     
     // Info section
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(11);
     
-    const startY = 95;
+    const startY = 90;
     const lineHeight = 10;
     
     doc.text(`Patient: ${formData.patient_name}`, 20, startY);
@@ -97,7 +103,8 @@ export const BookingSuccessCard = ({
     doc.setTextColor(146, 64, 14); // amber-800
     doc.text("Please arrive 15 minutes before your expected time", pageWidth / 2, startY + lineHeight * 12.5, { align: "center" });
     
-    doc.save(`serial-${timeDetails?.serialNumber}-${format(parseISO(selectedDate), "yyyy-MM-dd")}.pdf`);
+    const fileName = timeDetails?.serialNumber?.replace(/[^a-zA-Z0-9-]/g, '-') || `token-${timeDetails?.tokenNumber}`;
+    doc.save(`booking-${fileName}.pdf`);
     toast.success("PDF downloaded successfully!");
   };
 
@@ -118,10 +125,16 @@ export const BookingSuccessCard = ({
         </div>
         
         <div className="p-4 space-y-4">
-          {/* Serial Number */}
-          <div className="text-center py-3">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Your Serial Number</p>
-            <p className="text-5xl font-black text-primary">#{timeDetails?.serialNumber}</p>
+          {/* Booking Reference (Serial Number) */}
+          <div className="text-center py-2">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Booking Reference</p>
+            <p className="text-lg font-bold text-primary font-mono">{timeDetails?.serialNumber}</p>
+          </div>
+
+          {/* Queue Position (Token Number) */}
+          <div className="text-center py-3 bg-muted/30 rounded-xl">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Your Queue Position</p>
+            <p className="text-5xl font-black text-primary">#{timeDetails?.tokenNumber}</p>
           </div>
 
           {/* Queue Stats */}

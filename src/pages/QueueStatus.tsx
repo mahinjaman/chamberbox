@@ -230,6 +230,7 @@ const QueueStatus: React.FC = () => {
                       {/* Patient Position */}
                       <PatientPositionCard
                         patientSerial={queueData.patientSerial}
+                        serialNumber={queueData.serialNumber}
                         currentSerial={queueData.currentSerial}
                         patientsAhead={queueData.patientsAhead}
                         t={t}

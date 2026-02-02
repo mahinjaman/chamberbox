@@ -546,6 +546,7 @@ export type Database = {
           created_at: string
           custom_info: Json | null
           degrees: string[] | null
+          doctor_code: string | null
           education: Json | null
           email: string | null
           experience_years: number | null
@@ -583,6 +584,7 @@ export type Database = {
           created_at?: string
           custom_info?: Json | null
           degrees?: string[] | null
+          doctor_code?: string | null
           education?: Json | null
           email?: string | null
           experience_years?: number | null
@@ -620,6 +622,7 @@ export type Database = {
           created_at?: string
           custom_info?: Json | null
           degrees?: string[] | null
+          doctor_code?: string | null
           education?: Json | null
           email?: string | null
           experience_years?: number | null
@@ -730,6 +733,7 @@ export type Database = {
           payment_method: string | null
           prescription_id: string | null
           queue_date: string
+          serial_number: string | null
           session_id: string | null
           status: string | null
           token_number: number
@@ -749,6 +753,7 @@ export type Database = {
           payment_method?: string | null
           prescription_id?: string | null
           queue_date?: string
+          serial_number?: string | null
           session_id?: string | null
           status?: string | null
           token_number: number
@@ -768,6 +773,7 @@ export type Database = {
           payment_method?: string | null
           prescription_id?: string | null
           queue_date?: string
+          serial_number?: string | null
           session_id?: string | null
           status?: string | null
           token_number?: number

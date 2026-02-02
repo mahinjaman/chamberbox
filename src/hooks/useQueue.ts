@@ -11,6 +11,7 @@ export interface QueueToken {
   session_id: string | null;
   chamber_id: string | null;
   token_number: number;
+  serial_number: string | null; // Unique booking reference (e.g., 260203-1234-0001)
   queue_date: string;
   status: "waiting" | "current" | "completed" | "cancelled";
   estimated_time: string | null;
