@@ -49,6 +49,10 @@ const ProfileEditor = () => {
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Basic</span>
             </TabsTrigger>
+            <TabsTrigger value="chambers" className="gap-2">
+              <Building2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Chambers</span>
+            </TabsTrigger>
             <TabsTrigger value="education" className="gap-2">
               <GraduationCap className="w-4 h-4" />
               <span className="hidden sm:inline">Education</span>
@@ -64,10 +68,6 @@ const ProfileEditor = () => {
             <TabsTrigger value="custom" className="gap-2">
               <Info className="w-4 h-4" />
               <span className="hidden sm:inline">Custom</span>
-            </TabsTrigger>
-            <TabsTrigger value="chambers" className="gap-2">
-              <Building2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Chambers</span>
             </TabsTrigger>
             <TabsTrigger value="public" className="gap-2">
               <Globe className="w-4 h-4" />
