@@ -20,12 +20,15 @@ import {
   FileText,
   SkipForward,
   CalendarClock,
-  Banknote
+  Banknote,
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon
 } from "lucide-react";
 import { PrescriptionModal } from "@/components/queue/PrescriptionModal";
 import { PaymentCollectionModal } from "@/components/queue/PaymentCollectionModal";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, addDays, subDays, isSameDay, isToday, isFuture } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -45,8 +48,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const Queue = () => {
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedSession, setSelectedSession] = useState<QueueSession | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isNewPatientDialogOpen, setIsNewPatientDialogOpen] = useState(false);
@@ -61,8 +71,9 @@ const Queue = () => {
   const [newPatientGender, setNewPatientGender] = useState<"male" | "female" | "">("");
   const [isCreating, setIsCreating] = useState(false);
   const [formErrors, setFormErrors] = useState<{ age?: string; gender?: string }>({});
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   
-  const sessionDate = new Date().toISOString().split("T")[0];
+  const sessionDate = format(selectedDate, "yyyy-MM-dd");
   
   const {
     sessions,
@@ -86,6 +97,13 @@ const Queue = () => {
   } = useQueue(selectedSession?.id, sessionDate);
   
   const { patients, addPatientAsync } = usePatients();
+
+  // Reset selected session when date changes
+  const handleDateChange = (date: Date) => {
+    setSelectedSession(null);
+    setSelectedDate(date);
+    setIsCalendarOpen(false);
+  };
 
   // Get patient IDs already in today's queue for the selected session (or all if no session)
   const patientsInQueue = new Set(
@@ -216,16 +234,75 @@ const Queue = () => {
   const waitingTokens = queue.filter((t) => t.status === "waiting");
   const completedTokens = queue.filter((t) => t.status === "completed" || t.status === "cancelled");
 
+  const isTodaySelected = isToday(selectedDate);
+  const isFutureDate = isFuture(selectedDate) && !isTodaySelected;
+
   return (
     <DashboardLayout
-      title="Queue Management"
-      description={`${format(new Date(), "EEEE, MMMM d, yyyy")}`}
+      title={
+        <div className="flex items-center gap-4">
+          <span>Queue Management</span>
+          {/* Date Navigation */}
+          <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => handleDateChange(subDays(selectedDate, 1))}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "h-8 px-3 font-medium text-sm",
+                    isTodaySelected && "text-primary"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {isTodaySelected ? "Today" : format(selectedDate, "EEE, MMM d")}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => date && handleDateChange(date)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => handleDateChange(addDays(selectedDate, 1))}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          {!isTodaySelected && (
+            <Button
+              variant="link"
+              className="h-8 px-2 text-primary"
+              onClick={() => handleDateChange(new Date())}
+            >
+              Go to Today
+            </Button>
+          )}
+        </div>
+      }
       actions={
         <div className="flex gap-2">
           {/* New Patient Button */}
           <Dialog open={isNewPatientDialogOpen} onOpenChange={setIsNewPatientDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button disabled={!selectedSession}>
                 <Plus className="mr-2 h-4 w-4" />
                 New Patient
               </Button>
@@ -234,7 +311,7 @@ const Queue = () => {
               <DialogHeader>
                 <DialogTitle>Add New Patient to Queue</DialogTitle>
                 <DialogDescription>
-                  Create a new patient and automatically add them to today's queue.
+                  Create a new patient and add them to {selectedSession?.chamber?.name || "the queue"}.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
@@ -315,7 +392,7 @@ const Queue = () => {
                   ) : (
                     <>
                       <UserPlus className="mr-2 h-4 w-4" />
-                      Create & Add to Queue
+                      Create & Add
                     </>
                   )}
                 </Button>
@@ -326,7 +403,7 @@ const Queue = () => {
           {/* Existing Patient Button */}
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline">
+              <Button variant="outline" disabled={!selectedSession}>
                 <UserPlus className="mr-2 h-4 w-4" />
                 Add Existing
               </Button>
@@ -335,7 +412,7 @@ const Queue = () => {
               <DialogHeader>
                 <DialogTitle>Add Patient to Queue</DialogTitle>
                 <DialogDescription>
-                  Select a patient to add to today's queue. They will get the next token number.
+                  Select a patient to add to {selectedSession?.chamber?.name || "the queue"}.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
@@ -356,7 +433,7 @@ const Queue = () => {
                       ) : searchQuery ? (
                         <p>No patients found matching "{searchQuery}"</p>
                       ) : (
-                        <p>All patients are already in today's queue</p>
+                        <p>All patients are already in the queue</p>
                       )}
                     </div>
                   ) : (
@@ -385,9 +462,10 @@ const Queue = () => {
               </div>
             </DialogContent>
           </Dialog>
+          
           <Button 
             onClick={handleCallNextClick} 
-            disabled={waitingCount === 0 && !currentToken}
+            disabled={!isTodaySelected || waitingCount === 0 && !currentToken}
             size="lg"
           >
             <Play className="mr-2 h-4 w-4" />
@@ -396,10 +474,10 @@ const Queue = () => {
         </div>
       }
     >
-      {/* Two Column Layout: Sessions + Queue */}
-      <div className="grid gap-6 lg:grid-cols-4">
-        {/* Left Column: Session Manager */}
-        <div className="lg:col-span-1">
+      {/* Main Layout */}
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* Left Sidebar: Sessions */}
+        <div className="lg:col-span-3">
           <SessionManager
             sessions={sessions}
             selectedSession={selectedSession}
@@ -412,241 +490,277 @@ const Queue = () => {
           />
         </div>
 
-        {/* Right Column: Queue */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Stats */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card className="bg-success/5 border-success/20">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
-                    <Users className="w-6 h-6 text-success" />
+        {/* Main Content: Queue */}
+        <div className="lg:col-span-9 space-y-6">
+          {/* Stats Cards */}
+          <div className="grid gap-4 grid-cols-3">
+            <Card className="border-l-4 border-l-success">
+              <CardContent className="py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
+                    <CheckCircle2 className="w-5 h-5 text-success" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{completedCount}</p>
-                    <p className="text-sm text-muted-foreground">Completed</p>
+                    <p className="text-xs text-muted-foreground">Completed</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-warning/5 border-warning/20">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
-                    <Clock className="w-6 h-6 text-warning" />
+            <Card className="border-l-4 border-l-warning">
+              <CardContent className="py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-warning" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{waitingCount}</p>
-                    <p className="text-sm text-muted-foreground">Waiting</p>
+                    <p className="text-xs text-muted-foreground">Waiting</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Play className="w-6 h-6 text-primary" />
+            <Card className="border-l-4 border-l-primary">
+              <CardContent className="py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Play className="w-5 h-5 text-primary" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">
                       {currentToken ? `#${currentToken.token_number}` : "—"}
                     </p>
-                    <p className="text-sm text-muted-foreground">Current</p>
+                    <p className="text-xs text-muted-foreground">Current</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
+          {/* Content Area */}
           {!selectedSession ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <CalendarClock className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium text-foreground mb-2">Select a Session</h3>
-                <p className="text-muted-foreground mb-4">
-                  Create or select a session to manage the queue
+            <Card className="border-dashed">
+              <CardContent className="text-center py-16">
+                <CalendarClock className="w-16 h-16 mx-auto mb-4 text-muted-foreground/30" />
+                <h3 className="text-xl font-semibold text-foreground mb-2">Select a Session</h3>
+                <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+                  Create or select a session from the left panel to start managing patients
                 </p>
               </CardContent>
             </Card>
           ) : isLoading ? (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex items-center justify-center py-16">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
-          ) : queue.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Clock className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium text-foreground mb-2">No patients in queue</h3>
-                <p className="text-muted-foreground mb-4">
-                  Add patients to the queue to get started
-                </p>
-                <Button onClick={() => setIsNewPatientDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add New Patient
-                </Button>
-              </CardContent>
-            </Card>
           ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Current Patient */}
-          {currentToken && (
-            <Card className="lg:col-span-2 bg-success/5 border-success/30">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="relative">
-                    <div className="w-3 h-3 rounded-full bg-success"></div>
-                    <div className="absolute inset-0 w-3 h-3 rounded-full bg-success animate-ping"></div>
-                  </div>
-                  Now Serving
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-6">
-                    <div className="w-20 h-20 rounded-2xl bg-success flex items-center justify-center text-success-foreground">
-                      <span className="text-3xl font-bold">#{currentToken.token_number}</span>
+            <div className="space-y-6">
+              {/* Current Patient Card */}
+              {currentToken && (
+                <Card className="bg-gradient-to-r from-success/10 to-success/5 border-success/30">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <div className="w-3 h-3 rounded-full bg-success"></div>
+                        <div className="absolute inset-0 w-3 h-3 rounded-full bg-success animate-ping"></div>
+                      </div>
+                      <CardTitle className="text-base">Now Serving</CardTitle>
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-foreground">
-                        {currentToken.patient?.name}
-                      </p>
-                      <p className="text-muted-foreground">{currentToken.patient?.phone}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleMakePrescription}
-                    >
-                      <FileText className="mr-2 h-4 w-4" />
-                      Make Prescription
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleComplete(currentToken)}
-                    >
-                      <Banknote className="mr-2 h-4 w-4" />
-                      Complete & Pay
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => handleCancel(currentToken.id)}
-                    >
-                      <XCircle className="mr-2 h-4 w-4" />
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Waiting List */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Waiting ({waitingTokens.length})</CardTitle>
-              <CardDescription>Patients waiting to be called</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {waitingTokens.length === 0 ? (
-                <p className="text-center py-6 text-muted-foreground">
-                  No patients waiting
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {waitingTokens.map((token, index) => (
-                    <div
-                      key={token.id}
-                      className={cn(
-                        "flex items-center justify-between p-3 rounded-lg border transition-colors",
-                        index === 0 && "bg-warning/5 border-warning/30"
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={cn(
-                            "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm",
-                            index === 0
-                              ? "bg-warning text-warning-foreground"
-                              : "bg-muted text-muted-foreground"
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between flex-wrap gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-2xl bg-success flex items-center justify-center text-success-foreground shadow-lg">
+                          <span className="text-2xl font-bold">#{currentToken.token_number}</span>
+                        </div>
+                        <div>
+                          <p className="text-xl font-bold text-foreground">
+                            {currentToken.patient?.name}
+                          </p>
+                          <p className="text-muted-foreground">{currentToken.patient?.phone}</p>
+                          {currentToken.patient?.age && (
+                            <p className="text-sm text-muted-foreground">
+                              {currentToken.patient.age} yrs, {currentToken.patient.gender}
+                            </p>
                           )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button size="sm" onClick={handleMakePrescription}>
+                          <FileText className="mr-2 h-4 w-4" />
+                          Prescription
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleComplete(currentToken)}
                         >
-                          #{token.token_number}
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {token.patient?.name}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {token.patient?.phone}
-                          </p>
-                        </div>
+                          <Banknote className="mr-2 h-4 w-4" />
+                          Complete & Pay
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleCancel(currentToken.id)}
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </Button>
                       </div>
-                      {index === 0 && (
-                        <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
-                          Next
-                        </Badge>
-                      )}
                     </div>
-                  ))}
-                </div>
+                  </CardContent>
+                </Card>
               )}
-            </CardContent>
-          </Card>
 
-          {/* Completed List */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Completed ({completedTokens.length})</CardTitle>
-              <CardDescription>Patients seen today</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {completedTokens.length === 0 ? (
-                <p className="text-center py-6 text-muted-foreground">
-                  No patients completed yet
-                </p>
-              ) : (
-                <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                  {completedTokens.map((token) => (
-                    <div
-                      key={token.id}
-                      className="flex items-center justify-between p-3 rounded-lg border bg-muted/30 opacity-70"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-bold text-sm text-muted-foreground">
-                          #{token.token_number}
-                        </div>
+              {/* No patients state */}
+              {queue.length === 0 && (
+                <Card className="border-dashed">
+                  <CardContent className="text-center py-12">
+                    <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">No patients in queue</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Add patients to get started
+                    </p>
+                    <div className="flex gap-2 justify-center">
+                      <Button onClick={() => setIsNewPatientDialogOpen(true)}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        New Patient
+                      </Button>
+                      <Button variant="outline" onClick={() => setIsAddDialogOpen(true)}>
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Existing Patient
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Waiting & Completed Lists */}
+              {queue.length > 0 && (
+                <div className="grid gap-6 lg:grid-cols-2">
+                  {/* Waiting List */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-foreground">
-                            {token.patient?.name}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {token.patient?.phone}
-                          </p>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-warning" />
+                            Waiting
+                          </CardTitle>
+                          <CardDescription>{waitingTokens.length} patients</CardDescription>
                         </div>
                       </div>
-                      <Badge
-                        variant={token.status === "completed" ? "secondary" : "destructive"}
-                      >
-                        {token.status === "completed" ? (
-                          <><CheckCircle2 className="mr-1 h-3 w-3" /> Done</>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="h-[400px] -mr-4 pr-4">
+                        {waitingTokens.length === 0 ? (
+                          <p className="text-center py-6 text-muted-foreground text-sm">
+                            No patients waiting
+                          </p>
                         ) : (
-                          <><XCircle className="mr-1 h-3 w-3" /> Cancelled</>
+                          <div className="space-y-2">
+                            {waitingTokens.map((token, index) => (
+                              <div
+                                key={token.id}
+                                className={cn(
+                                  "flex items-center justify-between p-3 rounded-lg border transition-all",
+                                  index === 0 && "bg-warning/5 border-warning/30 shadow-sm"
+                                )}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div
+                                    className={cn(
+                                      "w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm",
+                                      index === 0
+                                        ? "bg-warning text-warning-foreground"
+                                        : "bg-muted text-muted-foreground"
+                                    )}
+                                  >
+                                    #{token.token_number}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-foreground text-sm">
+                                      {token.patient?.name}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {token.patient?.phone}
+                                    </p>
+                                  </div>
+                                </div>
+                                {index === 0 && (
+                                  <Badge className="bg-warning/20 text-warning border-0 text-xs">
+                                    Next
+                                  </Badge>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         )}
-                      </Badge>
-                    </div>
-                  ))}
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+
+                  {/* Completed List */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-success" />
+                            Completed
+                          </CardTitle>
+                          <CardDescription>{completedTokens.length} patients</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="h-[400px] -mr-4 pr-4">
+                        {completedTokens.length === 0 ? (
+                          <p className="text-center py-6 text-muted-foreground text-sm">
+                            No patients completed yet
+                          </p>
+                        ) : (
+                          <div className="space-y-2">
+                            {completedTokens.map((token) => (
+                              <div
+                                key={token.id}
+                                className="flex items-center justify-between p-3 rounded-lg border bg-muted/20"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center font-bold text-sm text-muted-foreground">
+                                    #{token.token_number}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-foreground text-sm">
+                                      {token.patient?.name}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {token.patient?.phone}
+                                    </p>
+                                  </div>
+                                </div>
+                                <Badge
+                                  variant={token.status === "completed" ? "secondary" : "destructive"}
+                                  className="text-xs"
+                                >
+                                  {token.status === "completed" ? "Done" : "Cancelled"}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
-        )}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Prescription Prompt Dialog */}
       <Dialog open={isPrescriptionPromptOpen} onOpenChange={setIsPrescriptionPromptOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

@@ -8,8 +8,8 @@ import { LanguageToggle } from "@/components/common/LanguageToggle";
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  title?: string;
-  description?: string;
+  title?: ReactNode;
+  description?: ReactNode;
   actions?: ReactNode;
 }
 
