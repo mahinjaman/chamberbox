@@ -17,10 +17,19 @@ const getYoutubeEmbedUrl = (url: string, cleanMode = false) => {
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match) {
-      const baseUrl = `https://www.youtube.com/embed/${match[1]}`;
+      // Use youtube-nocookie.com for privacy-enhanced mode
+      const baseUrl = `https://www.youtube-nocookie.com/embed/${match[1]}`;
       if (cleanMode) {
-        // Clean mode: hide controls, related videos, and branding
-        return `${baseUrl}?rel=0&modestbranding=1&iv_load_policy=3&showinfo=0&controls=1&disablekb=0`;
+        // Clean mode: hide related videos, annotations, info, and branding
+        // rel=0 - only show related videos from the same channel (deprecated but still helps)
+        // modestbranding=1 - hide YouTube logo from controls
+        // iv_load_policy=3 - hide video annotations
+        // fs=1 - allow fullscreen
+        // controls=1 - show player controls (needed for user interaction)
+        // disablekb=0 - enable keyboard controls
+        // playsinline=1 - play inline on mobile
+        // origin - helps with security
+        return `${baseUrl}?rel=0&modestbranding=1&iv_load_policy=3&showinfo=0&controls=1&disablekb=0&playsinline=1&fs=1`;
       }
       return baseUrl;
     }
