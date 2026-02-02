@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,30 +6,36 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useProfile } from "@/hooks/useProfile";
-import { Loader2, Save } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
+import { Loader2, Save, Users, FileText, MessageSquare, Building2, Crown, AlertTriangle, CheckCircle, Clock } from "lucide-react";
+import { format, differenceInDays } from "date-fns";
 
 const Settings = () => {
   const { profile, isLoading, updateProfile, isUpdating } = useProfile();
+  const { currentPlan, usage, limits, expiresAt, isExpired, daysRemaining, isLoading: subscriptionLoading } = useSubscription();
 
   const [formData, setFormData] = useState({
-    full_name: profile?.full_name || "",
-    phone: profile?.phone || "",
-    specialization: profile?.specialization || "",
-    bmdc_number: profile?.bmdc_number || "",
-    chamber_address: profile?.chamber_address || "",
+    full_name: "",
+    phone: "",
+    specialization: "",
+    bmdc_number: "",
+    chamber_address: "",
   });
 
   // Update form when profile loads
-  if (profile && !formData.full_name && profile.full_name) {
-    setFormData({
-      full_name: profile.full_name,
-      phone: profile.phone || "",
-      specialization: profile.specialization || "",
-      bmdc_number: profile.bmdc_number || "",
-      chamber_address: profile.chamber_address || "",
-    });
-  }
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || "",
+        phone: profile.phone || "",
+        specialization: profile.specialization || "",
+        bmdc_number: profile.bmdc_number || "",
+        chamber_address: profile.chamber_address || "",
+      });
+    }
+  }, [profile]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,37 +58,193 @@ const Settings = () => {
     );
   }
 
+  const formatLimit = (value: number) => value === -1 ? "Unlimited" : value.toLocaleString();
+
+  const getStatusColor = (percentage: number) => {
+    if (percentage >= 90) return "bg-destructive";
+    if (percentage >= 70) return "bg-yellow-500";
+    return "bg-primary";
+  };
+
   return (
     <DashboardLayout
       title="Settings"
-      description="Manage your profile and chamber settings"
+      description="Manage your profile and subscription"
     >
-      <div className="max-w-2xl space-y-6">
+      <div className="max-w-3xl space-y-6">
         {/* Subscription Info */}
         <Card>
           <CardHeader>
-            <CardTitle>Subscription</CardTitle>
-            <CardDescription>Your current plan and billing</CardDescription>
-          </CardHeader>
-          <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="font-semibold text-foreground capitalize">
-                    {profile?.subscription_tier || "Basic"} Plan
-                  </p>
-                  <Badge variant="secondary">Active</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {profile?.subscription_tier === "basic"
-                    ? "100 patients/month, 20 SMS credits"
-                    : profile?.subscription_tier === "pro"
-                    ? "Unlimited patients, 200 SMS credits"
-                    : "Unlimited patients, Unlimited SMS"}
-                </p>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-primary" />
+                  Subscription
+                </CardTitle>
+                <CardDescription>Your current plan and usage</CardDescription>
               </div>
-              <Button variant="outline">Upgrade Plan</Button>
+              <div className="text-right">
+                <div className="flex items-center gap-2">
+                  <Badge 
+                    variant={isExpired ? "destructive" : "default"} 
+                    className="capitalize text-sm"
+                  >
+                    {currentPlan?.name || profile?.subscription_tier || "Basic"}
+                  </Badge>
+                  {isExpired && (
+                    <Badge variant="destructive">
+                      <AlertTriangle className="w-3 h-3 mr-1" />
+                      Expired
+                    </Badge>
+                  )}
+                </div>
+                {expiresAt && !isExpired && (
+                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {daysRemaining} days remaining
+                  </p>
+                )}
+              </div>
             </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {subscriptionLoading ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : (
+              <>
+                {/* Usage Stats */}
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* Patients */}
+                  <div className="space-y-2 p-4 rounded-lg border bg-muted/30">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">Patients</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {usage?.total_patients || 0} / {formatLimit(currentPlan?.max_patients || 0)}
+                      </span>
+                    </div>
+                    {!limits.patients.isUnlimited && (
+                      <Progress 
+                        value={limits.patients.percentage} 
+                        className={`h-2 ${getStatusColor(limits.patients.percentage)}`}
+                      />
+                    )}
+                    {limits.patients.isUnlimited && (
+                      <div className="flex items-center gap-1 text-xs text-green-600">
+                        <CheckCircle className="w-3 h-3" />
+                        Unlimited
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Prescriptions This Month */}
+                  <div className="space-y-2 p-4 rounded-lg border bg-muted/30">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">Prescriptions/Month</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {usage?.prescriptions_this_month || 0} / {formatLimit(currentPlan?.max_prescriptions_per_month || 0)}
+                      </span>
+                    </div>
+                    {!limits.prescriptions.isUnlimited && (
+                      <Progress 
+                        value={limits.prescriptions.percentage} 
+                        className={`h-2 ${getStatusColor(limits.prescriptions.percentage)}`}
+                      />
+                    )}
+                    {limits.prescriptions.isUnlimited && (
+                      <div className="flex items-center gap-1 text-xs text-green-600">
+                        <CheckCircle className="w-3 h-3" />
+                        Unlimited
+                      </div>
+                    )}
+                  </div>
+
+                  {/* SMS Credits */}
+                  <div className="space-y-2 p-4 rounded-lg border bg-muted/30">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">SMS Credits</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {usage?.sms_sent_this_month || 0} / {formatLimit(currentPlan?.sms_credits || 0)}
+                      </span>
+                    </div>
+                    {!limits.sms.isUnlimited && (
+                      <Progress 
+                        value={limits.sms.percentage} 
+                        className={`h-2 ${getStatusColor(limits.sms.percentage)}`}
+                      />
+                    )}
+                    {limits.sms.isUnlimited && (
+                      <div className="flex items-center gap-1 text-xs text-green-600">
+                        <CheckCircle className="w-3 h-3" />
+                        Unlimited
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Chambers */}
+                  <div className="space-y-2 p-4 rounded-lg border bg-muted/30">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">Chambers</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        Max: {formatLimit(currentPlan?.max_chambers || 0)}
+                      </span>
+                    </div>
+                    {limits.chambers.isUnlimited && (
+                      <div className="flex items-center gap-1 text-xs text-green-600">
+                        <CheckCircle className="w-3 h-3" />
+                        Unlimited
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Features */}
+                <div className="pt-4 border-t">
+                  <p className="text-sm font-medium mb-3">Included Features</p>
+                  <div className="flex flex-wrap gap-2">
+                    {currentPlan?.can_use_public_profile && (
+                      <Badge variant="outline">Public Profile</Badge>
+                    )}
+                    {currentPlan?.can_use_queue_booking && (
+                      <Badge variant="outline">Queue Booking</Badge>
+                    )}
+                    {currentPlan?.can_use_whatsapp_notifications && (
+                      <Badge variant="outline">WhatsApp Notifications</Badge>
+                    )}
+                    {currentPlan?.can_use_analytics && (
+                      <Badge variant="outline">Analytics</Badge>
+                    )}
+                    {currentPlan?.can_export_data && (
+                      <Badge variant="outline">Data Export</Badge>
+                    )}
+                    {currentPlan?.can_use_custom_branding && (
+                      <Badge variant="outline">Custom Branding</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Upgrade Button */}
+                <div className="flex justify-end">
+                  <Button variant="outline">
+                    <Crown className="w-4 h-4 mr-2" />
+                    Upgrade Plan
+                  </Button>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 

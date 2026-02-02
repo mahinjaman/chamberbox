@@ -42,6 +42,7 @@ import DoctorManagement from "./pages/admin/DoctorManagement";
 import SubscriptionManagement from "./pages/admin/SubscriptionManagement";
 import TicketManagement from "./pages/admin/TicketManagement";
 import TutorialManagement from "./pages/admin/TutorialManagement";
+import PlanConfiguration from "./pages/admin/PlanConfiguration";
 
 // Staff Pages
 import StaffManagement from "./pages/StaffManagement";
@@ -280,6 +281,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <SubscriptionManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/plans"
+              element={
+                <ProtectedRoute>
+                  <PlanConfiguration />
                 </ProtectedRoute>
               }
             />
