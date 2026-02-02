@@ -538,7 +538,21 @@ const Queue = () => {
                                       Has Reason
                                     </Badge>
                                   )}
-                                  {index === 0 && <Badge className="bg-warning/20 text-warning border-0 text-xs">Next</Badge>}
+                                  {index === 0 && !currentToken && (
+                                    <Button
+                                      size="sm"
+                                      variant="default"
+                                      className="h-7 px-3 text-xs"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        updateTokenStatus({ id: token.id, status: "current" });
+                                      }}
+                                    >
+                                      <Play className="w-3 h-3 mr-1" />
+                                      Call
+                                    </Button>
+                                  )}
+                                  {index === 0 && currentToken && <Badge className="bg-warning/20 text-warning border-0 text-xs">Next</Badge>}
                                 </div>
                               </button>
                             ))}
