@@ -392,6 +392,19 @@ export const SessionManager = ({
                         Resume
                       </Button>
                     )}
+                    {session.status === "closed" && (
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onUpdateStatus(session.id, "running");
+                        }}
+                      >
+                        <Play className="w-4 h-4 mr-1" />
+                        Restart
+                      </Button>
+                    )}
                     {(session.status === "open" || session.status === "closed") && (
                       <Button 
                         size="sm" 
