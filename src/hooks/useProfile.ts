@@ -21,6 +21,19 @@ export interface Profile {
   updated_at: string;
 }
 
+export interface Chamber {
+  id: string;
+  doctor_id: string;
+  name: string;
+  address: string;
+  contact_number: string | null;
+  is_primary: boolean;
+  new_patient_fee: number | null;
+  return_patient_fee: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export const useProfile = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -40,6 +53,24 @@ export const useProfile = () => {
       return data as Profile;
     },
     enabled: !!user?.id,
+  });
+
+  // Fetch chambers for the doctor
+  const { data: chambers, isLoading: chambersLoading } = useQuery({
+    queryKey: ["chambers", profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+      
+      const { data, error } = await supabase
+        .from("chambers")
+        .select("*")
+        .eq("doctor_id", profile.id)
+        .order("is_primary", { ascending: false });
+
+      if (error) throw error;
+      return data as Chamber[];
+    },
+    enabled: !!profile?.id,
   });
 
   const updateProfile = useMutation({
@@ -66,6 +97,8 @@ export const useProfile = () => {
     profile,
     isLoading,
     error,
+    chambers,
+    chambersLoading,
     updateProfile: updateProfile.mutate,
     isUpdating: updateProfile.isPending,
   };
