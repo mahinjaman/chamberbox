@@ -80,7 +80,7 @@ export const CopyBookingLink = ({ slug, variant = "default", className }: CopyBo
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className={cn("gap-2", className)}>
+          <Button variant="default" size="sm" className={cn("gap-2", className)}>
             <Link2 className="w-4 h-4" />
             Booking Link
           </Button>
