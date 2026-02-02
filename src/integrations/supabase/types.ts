@@ -725,6 +725,10 @@ export type Database = {
           estimated_time: string | null
           id: string
           patient_id: string
+          payment_amount: number | null
+          payment_collected: boolean | null
+          payment_method: string | null
+          prescription_id: string | null
           queue_date: string
           session_id: string | null
           status: string | null
@@ -740,6 +744,10 @@ export type Database = {
           estimated_time?: string | null
           id?: string
           patient_id: string
+          payment_amount?: number | null
+          payment_collected?: boolean | null
+          payment_method?: string | null
+          prescription_id?: string | null
           queue_date?: string
           session_id?: string | null
           status?: string | null
@@ -755,6 +763,10 @@ export type Database = {
           estimated_time?: string | null
           id?: string
           patient_id?: string
+          payment_amount?: number | null
+          payment_collected?: boolean | null
+          payment_method?: string | null
+          prescription_id?: string | null
           queue_date?: string
           session_id?: string | null
           status?: string | null
@@ -780,6 +792,13 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_tokens_prescription_id_fkey"
+            columns: ["prescription_id"]
+            isOneToOne: false
+            referencedRelation: "prescriptions"
             referencedColumns: ["id"]
           },
           {

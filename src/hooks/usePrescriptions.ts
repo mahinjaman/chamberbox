@@ -197,6 +197,7 @@ export const usePrescriptions = (patientId?: string) => {
     templates,
     isLoading,
     createPrescription: createPrescription.mutate,
+    createPrescriptionAsync: createPrescription.mutateAsync,
     saveTemplate: saveTemplate.mutate,
     deleteTemplate: deleteTemplate.mutate,
     isCreating: createPrescription.isPending,

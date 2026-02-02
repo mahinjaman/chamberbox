@@ -68,7 +68,7 @@ interface PrescriptionModalProps {
   isOpen: boolean;
   onClose: () => void;
   patient: Patient | null;
-  onSuccess?: () => void;
+  onSuccess?: (prescriptionId: string) => void;
 }
 
 export const PrescriptionModal = ({
@@ -142,10 +142,12 @@ export const PrescriptionModal = ({
         language,
       },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           resetForm();
           onClose();
-          onSuccess?.();
+          if (data?.id) {
+            onSuccess?.(data.id);
+          }
         },
       }
     );
