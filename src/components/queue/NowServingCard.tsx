@@ -28,6 +28,7 @@ interface NowServingCardProps {
   onCollectPayment: () => void;
   onCancel: () => void;
   onCallNext: (skipIncomplete?: boolean) => Promise<{ incomplete: boolean; hasPrescription?: boolean; hasPayment?: boolean }>;
+  onCompleteOnly: () => void;
 }
 
 export const NowServingCard = ({
@@ -37,6 +38,7 @@ export const NowServingCard = ({
   onCollectPayment,
   onCancel,
   onCallNext,
+  onCompleteOnly,
 }: NowServingCardProps) => {
   const [showIncompleteDialog, setShowIncompleteDialog] = useState(false);
   const [incompleteState, setIncompleteState] = useState<{
@@ -207,28 +209,37 @@ export const NowServingCard = ({
           </div>
 
           {/* Complete Status & Call Next */}
-          <div className="pt-2 border-t">
-            <Button
-              className={cn(
-                "w-full",
-                isFullyComplete
-                  ? "bg-success hover:bg-success/90"
-                  : "bg-warning hover:bg-warning/90 text-warning-foreground"
-              )}
-              onClick={handleCallNextClick}
-            >
-              {isFullyComplete ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
-                  Complete & Call Next Patient
-                </>
-              ) : (
-                <>
-                  <AlertTriangle className="w-4 h-4 mr-2" />
-                  Call Next (Incomplete)
-                </>
-              )}
-            </Button>
+          <div className="pt-2 border-t space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                className="border-success text-success hover:bg-success/10"
+                onClick={onCompleteOnly}
+              >
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+                Complete Only
+              </Button>
+              <Button
+                className={cn(
+                  isFullyComplete
+                    ? "bg-success hover:bg-success/90"
+                    : "bg-warning hover:bg-warning/90 text-warning-foreground"
+                )}
+                onClick={handleCallNextClick}
+              >
+                {isFullyComplete ? (
+                  <>
+                    <SkipForward className="w-4 h-4 mr-2" />
+                    Call Next
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                    Call Next
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
