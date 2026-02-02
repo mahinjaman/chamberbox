@@ -360,27 +360,9 @@ const DoctorPublicProfile = () => {
                 {/* Education Section */}
                 <ProfileEducationSection education={education} />
 
-                {/* Custom Info Section */}
-                <ProfileCustomInfoSection customInfo={customInfo} />
-
-                {/* Services */}
-                {profile.services && profile.services.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <Card>
-                      <CardContent className="p-5">
-                        <h3 className="font-semibold mb-3">Services Offered</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {profile.services.map(service => (
-                            <Badge key={service} variant="secondary">{service}</Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
+                {/* Intro Video Preview */}
+                {introVideo && (
+                  <ProfileVideoSection introVideo={introVideo} feedVideos={[]} />
                 )}
 
                 {/* About */}
@@ -388,7 +370,7 @@ const DoctorPublicProfile = () => {
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
+                    transition={{ delay: 0.3 }}
                   >
                     <Card>
                       <CardContent className="p-5">
@@ -421,6 +403,26 @@ const DoctorPublicProfile = () => {
                   </motion.div>
                 )}
 
+                {/* Services */}
+                {profile.services && profile.services.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <Card>
+                      <CardContent className="p-5">
+                        <h3 className="font-semibold mb-3">Services Offered</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {profile.services.map(service => (
+                            <Badge key={service} variant="secondary">{service}</Badge>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+
                 {/* Languages */}
                 {profile.languages && profile.languages.length > 0 && (
                   <motion.div
@@ -441,10 +443,8 @@ const DoctorPublicProfile = () => {
                   </motion.div>
                 )}
 
-                {/* Intro Video Preview */}
-                {introVideo && (
-                  <ProfileVideoSection introVideo={introVideo} feedVideos={[]} />
-                )}
+                {/* Custom Info Section */}
+                <ProfileCustomInfoSection customInfo={customInfo} />
               </TabsContent>
 
               <TabsContent value="chambers">
