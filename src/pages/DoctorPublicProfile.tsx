@@ -126,11 +126,11 @@ const DoctorPublicProfile = () => {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      {/* Hero Section - Facebook Cover Ratio (820:312 ≈ 2.63:1) */}
+      {/* Hero Section - Facebook Cover Style */}
       <div className="relative">
-        {/* Cover Photo - Facebook aspect ratio */}
+        {/* Cover Photo - Facebook aspect ratio (820:312) */}
         <div 
-          className="w-full bg-gradient-to-br from-primary via-primary/90 to-primary/70"
+          className="w-full bg-gradient-to-br from-primary via-primary/90 to-primary/70 relative"
           style={{
             aspectRatio: "820/312",
             ...(profile.cover_photo_url ? {
@@ -140,140 +140,200 @@ const DoctorPublicProfile = () => {
             } : {})
           }}
         >
-          {/* Subtle overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+          {/* Subtle overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
         </div>
 
-        {/* Profile Card - Overlapping cover */}
-        <div className="container max-w-4xl mx-auto px-4">
-          <div className="relative -mt-16 md:-mt-20">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card className="shadow-xl border-0 overflow-hidden">
-                <CardContent className="p-0">
-                  {/* Main Profile Row */}
-                  <div className="flex flex-col sm:flex-row gap-4 p-5 pb-4">
-                    {/* Avatar */}
-                    <div className="relative flex-shrink-0 self-center sm:self-start">
-                      <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-background border-4 border-background shadow-xl flex items-center justify-center overflow-hidden">
-                        {profile.avatar_url ? (
-                          <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-4xl font-bold text-primary">
-                            {profile.full_name?.charAt(0) || "D"}
-                          </span>
-                        )}
-                      </div>
-                      {isAvailableToday && (
-                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-medium rounded-full shadow whitespace-nowrap">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                          Available
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Info + Video Side */}
-                    <div className="flex-1 flex flex-col sm:flex-row gap-4">
-                      {/* Text Info */}
-                      <div className="flex-1 text-center sm:text-left space-y-2">
-                        {/* Name */}
-                        <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                          <h1 className="text-xl md:text-2xl font-bold text-foreground">
-                            {profile.full_name}
-                          </h1>
-                          {profile.verified && (
-                            <Badge className="bg-blue-500 hover:bg-blue-600 gap-1 text-white text-xs">
-                              <Shield className="w-3 h-3" />
-                              Verified
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        {/* Specialization & Degrees */}
-                        <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                          {profile.specialization && (
-                            <Badge variant="default" className="text-xs px-3 py-1">
-                              {profile.specialization}
-                            </Badge>
-                          )}
-                          {profile.degrees && profile.degrees.length > 0 && (
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                              <Award className="w-3.5 h-3.5" />
-                              <span>{profile.degrees.join(", ")}</span>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Social Links */}
-                        {socialLinks && Object.values(socialLinks).some(v => v) && (
-                          <ProfileSocialLinksSection socialLinks={socialLinks} youtubeUrl={profile.youtube_url} />
-                        )}
-                      </div>
-
-                      {/* Intro Video Thumbnail */}
-                      {introVideo && (
-                        <div 
-                          className="w-full sm:w-36 md:w-44 flex-shrink-0 cursor-pointer group"
-                          onClick={() => setActiveTab("videos")}
-                        >
-                          <div className="relative aspect-video rounded-lg overflow-hidden bg-muted shadow-md">
-                            {getYoutubeThumbnail(introVideo.youtube_url) ? (
-                              <img 
-                                src={getYoutubeThumbnail(introVideo.youtube_url)!}
-                                alt="Intro Video"
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-muted">
-                                <Video className="w-8 h-8 text-muted-foreground" />
-                              </div>
-                            )}
-                            {/* Play overlay */}
-                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
-                              <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                                <Video className="w-5 h-5 text-primary" />
-                              </div>
-                            </div>
-                          </div>
-                          <p className="text-xs text-center text-muted-foreground mt-1">Watch Intro</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Stats Row - Inside Card */}
-                  <div className="border-t bg-muted/30">
-                    <div className="grid grid-cols-3 divide-x divide-border">
-                      <div className="p-3 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <Clock className="w-4 h-4 text-primary" />
-                          <span className="text-lg font-bold">{profile.experience_years || 0}+</span>
-                        </div>
-                        <p className="text-[10px] text-muted-foreground">Years Exp.</p>
-                      </div>
-                      <div className="p-3 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <Users className="w-4 h-4 text-primary" />
-                          <span className="text-lg font-bold">{profile.patient_count?.toLocaleString() || 0}</span>
-                        </div>
-                        <p className="text-[10px] text-muted-foreground">Patients</p>
-                      </div>
-                      <div className="p-3 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <Star className="w-4 h-4 text-amber-500" />
-                          <span className="text-lg font-bold">{profile.rating || "N/A"}</span>
-                        </div>
-                        <p className="text-[10px] text-muted-foreground">Rating</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+        {/* Expertise Banner - Overlaps cover bottom */}
+        <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm py-3">
+          <div className="container max-w-4xl mx-auto px-4 flex flex-wrap items-center justify-center gap-3 text-white">
+            {profile.specialization && (
+              <span className="px-4 py-1.5 bg-white/20 rounded-md text-sm font-medium">
+                {profile.specialization}
+              </span>
+            )}
+            {profile.degrees && profile.degrees.length > 0 && (
+              <span className="px-4 py-1.5 bg-white/20 rounded-md text-sm font-medium">
+                {profile.degrees.join(", ")}
+              </span>
+            )}
+            {profile.email && (
+              <span className="text-sm opacity-90">{profile.email}</span>
+            )}
           </div>
         </div>
+
+        {/* Centered Profile Image - Overlapping */}
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-1/2 z-10">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative"
+          >
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-background border-4 border-background shadow-2xl flex items-center justify-center overflow-hidden">
+              {profile.avatar_url ? (
+                <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-4xl md:text-5xl font-bold text-primary">
+                  {profile.full_name?.charAt(0) || "D"}
+                </span>
+              )}
+            </div>
+            {profile.verified && (
+              <div className="absolute bottom-2 right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center border-2 border-background shadow-lg">
+                <Shield className="w-4 h-4 text-white" />
+              </div>
+            )}
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Social Buttons Section - Below cover */}
+      <div className="bg-background pt-20 md:pt-24 pb-4">
+        <div className="container max-w-4xl mx-auto px-4 text-center">
+          {/* Social Links */}
+          {socialLinks && Object.values(socialLinks).some(v => v) && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex justify-center"
+            >
+              <ProfileSocialLinksSection socialLinks={socialLinks} youtubeUrl={profile.youtube_url} />
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {/* Profile Info Card */}
+      <div className="container max-w-4xl mx-auto px-4 -mt-1">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="shadow-xl border-0 overflow-hidden">
+            <CardContent className="p-0">
+              {/* Main Profile Row */}
+              <div className="flex flex-col sm:flex-row gap-4 p-5 pb-4">
+                {/* Small Avatar */}
+                <div className="relative flex-shrink-0 self-center sm:self-start">
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-muted border-2 border-border shadow-md flex items-center justify-center overflow-hidden">
+                    {profile.avatar_url ? (
+                      <img src={profile.avatar_url} alt={profile.full_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-2xl font-bold text-primary">
+                        {profile.full_name?.charAt(0) || "D"}
+                      </span>
+                    )}
+                  </div>
+                  {isAvailableToday && (
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-medium rounded-full shadow whitespace-nowrap">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                      Available
+                    </div>
+                  )}
+                </div>
+
+                {/* Info + Video Side */}
+                <div className="flex-1 flex flex-col sm:flex-row gap-4">
+                  {/* Text Info */}
+                  <div className="flex-1 text-center sm:text-left space-y-1.5">
+                    {/* Name */}
+                    <h1 className="text-lg md:text-xl font-bold text-foreground">
+                      {profile.full_name}
+                    </h1>
+                    
+                    {/* Specialization & Degrees in card */}
+                    <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                      {profile.specialization && (
+                        <Badge variant="default" className="text-xs px-2.5 py-0.5">
+                          {profile.specialization}
+                        </Badge>
+                      )}
+                      {profile.degrees && profile.degrees.length > 0 && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Award className="w-3 h-3" />
+                          <span>{profile.degrees.join(", ")}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Other Info - Bio snippet or services */}
+                    {profile.bio && (
+                      <p className="text-xs text-muted-foreground line-clamp-2 max-w-md">
+                        {profile.bio}
+                      </p>
+                    )}
+
+                    {/* Small Social Links in card */}
+                    {socialLinks && Object.values(socialLinks).some(v => v) && (
+                      <div className="pt-1">
+                        <ProfileSocialLinksSection socialLinks={socialLinks} youtubeUrl={profile.youtube_url} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Intro Video Thumbnail */}
+                  {introVideo && (
+                    <div 
+                      className="w-full sm:w-32 md:w-40 flex-shrink-0 cursor-pointer group"
+                      onClick={() => setActiveTab("videos")}
+                    >
+                      <div className="relative aspect-video rounded-lg overflow-hidden bg-muted shadow-md">
+                        {getYoutubeThumbnail(introVideo.youtube_url) ? (
+                          <img 
+                            src={getYoutubeThumbnail(introVideo.youtube_url)!}
+                            alt="Intro Video"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-muted">
+                            <Video className="w-6 h-6 text-muted-foreground" />
+                          </div>
+                        )}
+                        {/* Play overlay */}
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
+                          <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                            <Video className="w-4 h-4 text-primary" />
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-center text-muted-foreground mt-1">Watch Intro</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Stats Row - Inside Card */}
+              <div className="border-t bg-muted/30">
+                <div className="grid grid-cols-3 divide-x divide-border">
+                  <div className="p-3 text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                      <Clock className="w-4 h-4 text-primary" />
+                      <span className="text-lg font-bold">{profile.experience_years || 0}+</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Years Exp.</p>
+                  </div>
+                  <div className="p-3 text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                      <Users className="w-4 h-4 text-primary" />
+                      <span className="text-lg font-bold">{profile.patient_count?.toLocaleString() || 0}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Patients</p>
+                  </div>
+                  <div className="p-3 text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                      <Star className="w-4 h-4 text-amber-500" />
+                      <span className="text-lg font-bold">{profile.rating || "N/A"}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Rating</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
 
       {/* Main Content */}
