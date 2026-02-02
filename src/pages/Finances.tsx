@@ -569,64 +569,32 @@ const Finances = () => {
 
         {/* Transactions Tab */}
         <TabsContent value="transactions">
-          <div className="grid gap-6 lg:grid-cols-3 mb-8">
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle>Period Overview</CardTitle>
-                <CardDescription>
-                  {format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d, yyyy")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="text-center p-4 rounded-lg bg-success/5">
-                    <p className="text-3xl font-bold text-success">৳{summary.totalIncome.toLocaleString()}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Total Income</p>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-destructive/5">
-                    <p className="text-3xl font-bold text-destructive">৳{summary.totalExpense.toLocaleString()}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Total Expense</p>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-primary/5">
-                    <p className="text-3xl font-bold text-primary">
-                      ৳{(summary.totalIncome - summary.totalExpense).toLocaleString()}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">Net Profit</p>
-                  </div>
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Period Overview</CardTitle>
+              <CardDescription>
+                {format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d, yyyy")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="text-center p-4 rounded-lg bg-success/5">
+                  <p className="text-3xl font-bold text-success">৳{summary.totalIncome.toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground mt-1">Total Income</p>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Add</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {[500, 800, 1000, 1500].map((fee) => (
-                  <Button
-                    key={fee}
-                    variant="outline"
-                    className="w-full justify-between"
-                    onClick={() => {
-                      addTransaction({
-                        amount: fee,
-                        type: "income",
-                        category: "Consultation Fee",
-                        payment_method: "cash",
-                        description: null,
-                        patient_id: null,
-                        visit_id: null,
-                        transaction_date: format(new Date(), "yyyy-MM-dd"),
-                      });
-                    }}
-                  >
-                    <span>Consultation Fee</span>
-                    <Badge variant="secondary">৳{fee}</Badge>
-                  </Button>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
+                <div className="text-center p-4 rounded-lg bg-destructive/5">
+                  <p className="text-3xl font-bold text-destructive">৳{summary.totalExpense.toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground mt-1">Total Expense</p>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-primary/5">
+                  <p className="text-3xl font-bold text-primary">
+                    ৳{(summary.totalIncome - summary.totalExpense).toLocaleString()}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">Net Profit</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Transactions List */}
           <Card>
