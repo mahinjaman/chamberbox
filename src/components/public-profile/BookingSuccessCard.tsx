@@ -192,15 +192,22 @@ export const BookingSuccessCard = ({
         </div>
       </div>
 
-      {/* Action Button */}
-      <Button 
-        variant="outline" 
-        onClick={downloadAsPDF}
-        className="w-full"
-      >
-        <FileText className="w-4 h-4 mr-2" />
-        Save as PDF
-      </Button>
+      {/* Action Buttons */}
+      <div className="flex gap-2">
+        <Button 
+          variant="default" 
+          onClick={downloadAsPDF}
+          className="flex-1"
+        >
+          <FileText className="w-4 h-4 mr-2" />
+          Save as PDF
+        </Button>
+        {onClose && (
+          <Button onClick={onClose} variant="outline" className="flex-1">
+            Book Another
+          </Button>
+        )}
+      </div>
       
       {/* Arrival Notice */}
       <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800">
@@ -211,12 +218,6 @@ export const BookingSuccessCard = ({
           Please arrive <span className="font-bold">15 minutes</span> before your expected time
         </p>
       </div>
-      
-      {onClose && (
-        <Button onClick={onClose} variant="outline" className="w-full">
-          Done
-        </Button>
-      )}
     </motion.div>
   );
 };
