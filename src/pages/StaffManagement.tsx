@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useStaff, StaffMember, StaffRole } from "@/hooks/useStaff";
 import { useProfile } from "@/hooks/useProfile";
-import { Plus, Users, Pencil, Trash2, Building2, Shield, Mail, KeyRound, Info } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
+import { Plus, Users, Pencil, Trash2, Building2, Shield, Mail, KeyRound, Info, AlertTriangle } from "lucide-react";
 import { AddStaffDialog } from "@/components/staff/AddStaffDialog";
 import { EditStaffDialog } from "@/components/staff/EditStaffDialog";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -26,6 +27,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Progress } from "@/components/ui/progress";
 
 const roleColors: Record<StaffRole, string> = {
   receptionist: "bg-blue-100 text-blue-800",
@@ -43,10 +45,16 @@ export default function StaffManagement() {
   const { t, language } = useLanguage();
   const { staffMembers, staffLoading, deleteStaff, isDeletingStaff, sendPasswordReset, isSendingPasswordReset } = useStaff();
   const { chambers } = useProfile();
+  const { currentPlan, canAddMore } = useSubscription();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
   const [deletingStaff, setDeletingStaff] = useState<StaffMember | null>(null);
   const [sendingResetTo, setSendingResetTo] = useState<string | null>(null);
+
+  const staffCount = staffMembers?.length || 0;
+  const maxStaff = currentPlan?.max_staff || 0;
+  const canAddStaff = canAddMore('staff', staffCount);
+  const staffLimitReached = !canAddStaff && maxStaff !== -1;
 
   const handleDelete = () => {
     if (deletingStaff) {
@@ -77,11 +85,55 @@ export default function StaffManagement() {
                 : "Add and manage staff for your chambers"}
             </p>
           </div>
-          <Button onClick={() => setAddDialogOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            {language === "bn" ? "স্টাফ যোগ করুন" : "Add Staff"}
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button 
+                    onClick={() => setAddDialogOpen(true)}
+                    disabled={staffLimitReached}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    {language === "bn" ? "স্টাফ যোগ করুন" : "Add Staff"}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {staffLimitReached && (
+                <TooltipContent>
+                  <p>
+                    {language === "bn" 
+                      ? `আপনার প্ল্যানে সর্বাধিক ${maxStaff} জন স্টাফ যোগ করা যায়। আপগ্রেড করুন।`
+                      : `Your plan allows maximum ${maxStaff} staff. Upgrade to add more.`}
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         </div>
+
+        {/* Staff Limit Warning */}
+        {staffLimitReached && (
+          <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20">
+            <CardContent className="py-3 flex items-center gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  {language === "bn" 
+                    ? `স্টাফ সীমা পূর্ণ (${staffCount}/${maxStaff})`
+                    : `Staff limit reached (${staffCount}/${maxStaff})`}
+                </p>
+                <p className="text-xs text-amber-700 dark:text-amber-300">
+                  {language === "bn" 
+                    ? "আরও স্টাফ যোগ করতে আপনার প্ল্যান আপগ্রেড করুন।"
+                    : "Upgrade your plan to add more staff members."}
+                </p>
+              </div>
+              <Button size="sm" variant="outline" className="border-amber-400">
+                {language === "bn" ? "আপগ্রেড" : "Upgrade"}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
