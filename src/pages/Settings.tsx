@@ -9,14 +9,21 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useProfile } from "@/hooks/useProfile";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useStaff } from "@/hooks/useStaff";
 import { UpgradePlanDialog } from "@/components/subscription/UpgradePlanDialog";
-import { Loader2, Save, Users, FileText, MessageSquare, Building2, Crown, AlertTriangle, CheckCircle, Clock } from "lucide-react";
+import { Loader2, Save, Users, FileText, MessageSquare, Building2, Crown, AlertTriangle, CheckCircle, Clock, UserPlus } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 
 const Settings = () => {
-  const { profile, isLoading, updateProfile, isUpdating } = useProfile();
-  const { currentPlan, usage, limits, expiresAt, isExpired, daysRemaining, isLoading: subscriptionLoading } = useSubscription();
+  const { profile, isLoading, updateProfile, isUpdating, chambers } = useProfile();
+  const { currentPlan, usage, createLimits, expiresAt, isExpired, daysRemaining, isLoading: subscriptionLoading } = useSubscription();
+  const { staffMembers } = useStaff();
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+
+  // Calculate actual limits with real staff/chamber counts
+  const staffCount = staffMembers?.length || 0;
+  const chamberCount = chambers?.length || 0;
+  const limits = createLimits(staffCount, chamberCount);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -193,6 +200,31 @@ const Settings = () => {
                     )}
                   </div>
 
+                  {/* Staff Members */}
+                  <div className="space-y-2 p-4 rounded-lg border bg-muted/30">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <UserPlus className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">Staff Members</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {staffCount} / {formatLimit(currentPlan?.max_staff || 0)}
+                      </span>
+                    </div>
+                    {!limits.staff.isUnlimited && (
+                      <Progress 
+                        value={limits.staff.percentage} 
+                        className={`h-2 ${getStatusColor(limits.staff.percentage)}`}
+                      />
+                    )}
+                    {limits.staff.isUnlimited && (
+                      <div className="flex items-center gap-1 text-xs text-green-600">
+                        <CheckCircle className="w-3 h-3" />
+                        Unlimited
+                      </div>
+                    )}
+                  </div>
+
                   {/* Chambers */}
                   <div className="space-y-2 p-4 rounded-lg border bg-muted/30">
                     <div className="flex items-center justify-between">
@@ -201,9 +233,15 @@ const Settings = () => {
                         <span className="text-sm font-medium">Chambers</span>
                       </div>
                       <span className="text-sm text-muted-foreground">
-                        Max: {formatLimit(currentPlan?.max_chambers || 0)}
+                        {chamberCount} / {formatLimit(currentPlan?.max_chambers || 0)}
                       </span>
                     </div>
+                    {!limits.chambers.isUnlimited && (
+                      <Progress 
+                        value={limits.chambers.percentage} 
+                        className={`h-2 ${getStatusColor(limits.chambers.percentage)}`}
+                      />
+                    )}
                     {limits.chambers.isUnlimited && (
                       <div className="flex items-center gap-1 text-xs text-green-600">
                         <CheckCircle className="w-3 h-3" />
