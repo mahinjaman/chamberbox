@@ -74,7 +74,7 @@ export const useStaff = () => {
     enabled: !!profile?.id,
   });
 
-  // Check if current user is a staff member
+  // Check if current user is a staff member and load their permissions
   const { data: staffInfo, isLoading: staffInfoLoading } = useQuery({
     queryKey: ["staffInfo", user?.id],
     queryFn: async () => {
@@ -90,7 +90,8 @@ export const useStaff = () => {
           ),
           doctor:profiles!staff_members_doctor_id_fkey(
             id, full_name, specialization, avatar_url, slug
-          )
+          ),
+          custom_permissions:staff_custom_permissions(*)
         `)
         .eq("user_id", user.id)
         .eq("is_active", true)
@@ -268,10 +269,32 @@ export const useStaff = () => {
     },
   });
 
-  // Get permissions for current staff member
-  const staffPermissions: StaffPermissions | null = staffInfo 
-    ? getPermissionsForRole(staffInfo.role as StaffRole)
-    : null;
+  // Get permissions for current staff member (merge custom with role defaults)
+  const staffPermissions: StaffPermissions | null = (() => {
+    if (!staffInfo) return null;
+    
+    const roleDefaults = getPermissionsForRole(staffInfo.role as StaffRole);
+    const customPerms = staffInfo.custom_permissions?.[0];
+    
+    // If no custom permissions or not using custom, return role defaults
+    if (!customPerms || !customPerms.use_custom) {
+      return roleDefaults;
+    }
+    
+    // Merge custom permissions with role defaults
+    return {
+      canManageQueue: customPerms.can_manage_queue ?? roleDefaults.canManageQueue,
+      canViewPatientList: customPerms.can_view_patient_list ?? roleDefaults.canViewPatientList,
+      canAddPatients: customPerms.can_add_patients ?? roleDefaults.canAddPatients,
+      canEditPatients: customPerms.can_edit_patients ?? roleDefaults.canEditPatients,
+      canViewPrescriptions: customPerms.can_view_prescriptions ?? roleDefaults.canViewPrescriptions,
+      canViewFinances: customPerms.can_view_finances ?? roleDefaults.canViewFinances,
+      canManageStaff: customPerms.can_manage_staff ?? roleDefaults.canManageStaff,
+      canManageIntegrations: customPerms.can_manage_integrations ?? roleDefaults.canManageIntegrations,
+      canViewSettings: customPerms.can_view_settings ?? roleDefaults.canViewSettings,
+      canManageChambers: customPerms.can_manage_chambers ?? roleDefaults.canManageChambers,
+    };
+  })();
 
   return {
     staffMembers,

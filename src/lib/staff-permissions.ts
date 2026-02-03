@@ -10,6 +10,7 @@ export interface StaffPermissions {
   canManageStaff: boolean;
   canManageIntegrations: boolean;
   canViewSettings: boolean;
+  canManageChambers: boolean;
 }
 
 /**
@@ -32,6 +33,7 @@ export function getPermissionsForRole(role: StaffRole): StaffPermissions {
         canManageStaff: false,
         canManageIntegrations: false,
         canViewSettings: false,
+        canManageChambers: false,
       };
     case "assistant":
       return {
@@ -44,6 +46,7 @@ export function getPermissionsForRole(role: StaffRole): StaffPermissions {
         canManageStaff: false,
         canManageIntegrations: false,
         canViewSettings: false,
+        canManageChambers: false,
       };
     case "manager":
       return {
@@ -56,6 +59,7 @@ export function getPermissionsForRole(role: StaffRole): StaffPermissions {
         canManageStaff: false,
         canManageIntegrations: false,
         canViewSettings: true,
+        canManageChambers: false,
       };
     default:
       return {
@@ -68,6 +72,7 @@ export function getPermissionsForRole(role: StaffRole): StaffPermissions {
         canManageStaff: false,
         canManageIntegrations: false,
         canViewSettings: false,
+        canManageChambers: false,
       };
   }
 }

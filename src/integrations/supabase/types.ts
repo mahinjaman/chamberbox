@@ -909,6 +909,68 @@ export type Database = {
           },
         ]
       }
+      staff_custom_permissions: {
+        Row: {
+          can_add_patients: boolean | null
+          can_edit_patients: boolean | null
+          can_manage_chambers: boolean | null
+          can_manage_integrations: boolean | null
+          can_manage_queue: boolean | null
+          can_manage_staff: boolean | null
+          can_view_finances: boolean | null
+          can_view_patient_list: boolean | null
+          can_view_prescriptions: boolean | null
+          can_view_settings: boolean | null
+          created_at: string
+          id: string
+          staff_id: string
+          updated_at: string
+          use_custom: boolean | null
+        }
+        Insert: {
+          can_add_patients?: boolean | null
+          can_edit_patients?: boolean | null
+          can_manage_chambers?: boolean | null
+          can_manage_integrations?: boolean | null
+          can_manage_queue?: boolean | null
+          can_manage_staff?: boolean | null
+          can_view_finances?: boolean | null
+          can_view_patient_list?: boolean | null
+          can_view_prescriptions?: boolean | null
+          can_view_settings?: boolean | null
+          created_at?: string
+          id?: string
+          staff_id: string
+          updated_at?: string
+          use_custom?: boolean | null
+        }
+        Update: {
+          can_add_patients?: boolean | null
+          can_edit_patients?: boolean | null
+          can_manage_chambers?: boolean | null
+          can_manage_integrations?: boolean | null
+          can_manage_queue?: boolean | null
+          can_manage_staff?: boolean | null
+          can_view_finances?: boolean | null
+          can_view_patient_list?: boolean | null
+          can_view_prescriptions?: boolean | null
+          can_view_settings?: boolean | null
+          created_at?: string
+          id?: string
+          staff_id?: string
+          updated_at?: string
+          use_custom?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_custom_permissions_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: true
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_members: {
         Row: {
           accepted_at: string | null
