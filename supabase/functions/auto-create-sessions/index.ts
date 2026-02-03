@@ -33,15 +33,16 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Get all active chambers
+    // Get only ACTIVE chambers - inactive chambers should not have sessions auto-created
     const { data: chambers, error: chambersError } = await supabase
       .from('chambers')
       .select('id, doctor_id, name')
+      .eq('is_active', true)
     
     if (chambersError) throw chambersError
     if (!chambers || chambers.length === 0) {
       return new Response(
-        JSON.stringify({ message: 'No chambers found', sessions_created: 0 }),
+        JSON.stringify({ message: 'No active chambers found', sessions_created: 0 }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
