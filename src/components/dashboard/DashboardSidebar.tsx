@@ -14,7 +14,9 @@ import {
   Shield,
   MessageSquare,
   UserCog,
-  Link2
+  ChevronDown,
+  History,
+  BookTemplate
 } from "lucide-react";
 import {
   Sidebar,
@@ -25,10 +27,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   SidebarHeader,
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { useProfile } from "@/hooks/useProfile";
@@ -46,7 +52,7 @@ export const DashboardSidebar = () => {
   const { isAdmin } = useAdmin();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   // Navigation items with translated titles
   const mainNavItems = [
@@ -54,9 +60,22 @@ export const DashboardSidebar = () => {
     { title: t.nav.patients, url: "/dashboard/patients", icon: Users },
     { title: t.nav.queue, url: "/dashboard/queue", icon: Clock },
     { title: t.nav.queueStatus, url: "/queue-status", icon: ListOrdered, external: true },
-    { title: t.nav.prescriptions, url: "/dashboard/prescriptions", icon: FileText },
     { title: t.nav.finances, url: "/dashboard/finances", icon: CreditCard },
     { title: t.nav.analytics, url: "/dashboard/analytics", icon: BarChart3 },
+  ];
+
+  // Prescription sub-menu items
+  const prescriptionSubItems = [
+    { 
+      title: language === "bn" ? "সাম্প্রতিক প্রেসক্রিপশন" : "Recent Prescriptions", 
+      url: "/dashboard/prescriptions", 
+      icon: History 
+    },
+    { 
+      title: language === "bn" ? "টেমপ্লেট" : "Templates", 
+      url: "/dashboard/prescriptions/templates", 
+      icon: BookTemplate 
+    },
   ];
 
   const settingsNavItems = [
@@ -120,6 +139,42 @@ export const DashboardSidebar = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              
+              {/* Prescriptions with sub-menu */}
+              <Collapsible 
+                defaultOpen={location.pathname.includes("/dashboard/prescriptions")}
+                className="group/collapsible"
+              >
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton 
+                      tooltip={t.nav.prescriptions}
+                      isActive={location.pathname.includes("/dashboard/prescriptions")}
+                    >
+                      <FileText className="w-5 h-5" />
+                      <span>{t.nav.prescriptions}</span>
+                      <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {prescriptionSubItems.map((subItem) => (
+                        <SidebarMenuSubItem key={subItem.url}>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={location.pathname === subItem.url}
+                          >
+                            <Link to={subItem.url}>
+                              <subItem.icon className="w-4 h-4" />
+                              <span>{subItem.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
