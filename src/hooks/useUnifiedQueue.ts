@@ -244,18 +244,21 @@ export const useCreateQueueBooking = () => {
         patientId = newPatient.id;
       }
 
-      // Ensure a session exists for this slot (create if needed for public bookings)
+      // Ensure a session exists for this slot (find matching session for public bookings)
       let activeSessionId = session_id;
 
       if (!activeSessionId) {
-        // Check if session exists (include paused sessions - they still accept bookings)
+        // Find any open/running/paused session for this doctor, chamber, and date
+        // This ensures public bookings get linked to the right session
         const { data: existingSession } = await supabase
           .from("queue_sessions")
-          .select("id")
+          .select("id, start_time, end_time")
           .eq("doctor_id", doctor_id)
           .eq("chamber_id", chamber_id)
           .eq("session_date", queue_date)
           .in("status", ["open", "running", "paused"])
+          .order("start_time", { ascending: true })
+          .limit(1)
           .maybeSingle();
 
         if (existingSession) {
