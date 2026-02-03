@@ -53,8 +53,8 @@ export function getPermissionsForRole(role: StaffRole): StaffPermissions {
         canEditPatients: true,
         canViewPrescriptions: true,
         canViewFinances: true,
-        canManageStaff: true,
-        canManageIntegrations: true,
+        canManageStaff: false,
+        canManageIntegrations: false,
         canViewSettings: true,
       };
     default:
@@ -92,8 +92,6 @@ export const permissionDescriptions = {
       "Full patient management",
       "View prescriptions",
       "View financial data",
-      "Manage other staff",
-      "Integration settings",
       "Subscription & settings",
     ],
   },
@@ -113,8 +111,6 @@ export const permissionDescriptions = {
       "সম্পূর্ণ রোগী ম্যানেজমেন্ট",
       "প্রেসক্রিপশন দেখুন",
       "আর্থিক তথ্য দেখুন",
-      "অন্যান্য স্টাফ ম্যানেজ করুন",
-      "ইন্টিগ্রেশন সেটিংস",
       "সাবস্ক্রিপশন ও সেটিংস",
     ],
   },
