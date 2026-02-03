@@ -107,12 +107,6 @@ const Settings = () => {
                     </Badge>
                   )}
                 </div>
-                {expiresAt && !isExpired && (
-                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {daysRemaining} days remaining
-                  </p>
-                )}
               </div>
             </div>
           </CardHeader>
