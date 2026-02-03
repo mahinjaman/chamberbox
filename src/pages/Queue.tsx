@@ -429,45 +429,72 @@ const Queue = () => {
         </div>
       }
     >
-      <div className="grid gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-3">
-          <SessionManager sessions={sessions} selectedSession={selectedSession} onSelectSession={setSelectedSession} onCreateSession={createSession} onUpdateStatus={(id, status) => updateSessionStatus({ id, status })} onToggleBooking={(id, booking_open) => toggleBookingOpen({ id, booking_open })} onDeleteSession={deleteSession} isCreating={isCreatingSession} sessionDate={sessionDate} />
+      <div className="space-y-6">
+        {/* Sessions Section */}
+        <SessionManager 
+          sessions={sessions} 
+          selectedSession={selectedSession} 
+          onSelectSession={setSelectedSession} 
+          onCreateSession={createSession} 
+          onUpdateStatus={(id, status) => updateSessionStatus({ id, status })} 
+          onToggleBooking={(id, booking_open) => toggleBookingOpen({ id, booking_open })} 
+          onDeleteSession={deleteSession} 
+          isCreating={isCreatingSession} 
+          sessionDate={sessionDate} 
+        />
+
+        {/* Stats Cards - Horizontal scroll on mobile */}
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 lg:mx-0 lg:px-0 lg:grid lg:grid-cols-3 lg:overflow-visible">
+          <Card className="border-l-4 border-l-success min-w-[140px] flex-shrink-0 lg:min-w-0">
+            <CardContent className="py-3 px-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4 text-success" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-foreground">{completedCount}</p>
+                  <p className="text-xs text-muted-foreground">Completed</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-warning min-w-[140px] flex-shrink-0 lg:min-w-0">
+            <CardContent className="py-3 px-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-warning/10 flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-warning" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-foreground">{waitingCount}</p>
+                  <p className="text-xs text-muted-foreground">Waiting</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-primary min-w-[140px] flex-shrink-0 lg:min-w-0">
+            <CardContent className="py-3 px-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Play className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-foreground">{currentToken ? `#${currentToken.token_number}` : "—"}</p>
+                  <p className="text-xs text-muted-foreground">Current</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="lg:col-span-9 space-y-6">
-          <div className="grid gap-4 grid-cols-3">
-            <Card className="border-l-4 border-l-success">
-              <CardContent className="py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center"><CheckCircle2 className="w-5 h-5 text-success" /></div>
-                  <div><p className="text-2xl font-bold text-foreground">{completedCount}</p><p className="text-xs text-muted-foreground">Completed</p></div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-l-4 border-l-warning">
-              <CardContent className="py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center"><Clock className="w-5 h-5 text-warning" /></div>
-                  <div><p className="text-2xl font-bold text-foreground">{waitingCount}</p><p className="text-xs text-muted-foreground">Waiting</p></div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-l-4 border-l-primary">
-              <CardContent className="py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Play className="w-5 h-5 text-primary" /></div>
-                  <div><p className="text-2xl font-bold text-foreground">{currentToken ? `#${currentToken.token_number}` : "—"}</p><p className="text-xs text-muted-foreground">Current</p></div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        {/* Main Content */}
+        <div className="space-y-6">
 
           {!selectedSession ? (
             <Card className="border-dashed">
-              <CardContent className="text-center py-16">
-                <CalendarClock className="w-16 h-16 mx-auto mb-4 text-muted-foreground/30" />
-                <h3 className="text-xl font-semibold text-foreground mb-2">Select a Session</h3>
-                <p className="text-muted-foreground mb-6 max-w-sm mx-auto">Create or select a session from the left panel to start managing patients</p>
+              <CardContent className="text-center py-10 sm:py-16 px-4">
+                <CalendarClock className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-muted-foreground/30" />
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">Select a Session</h3>
+                <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 max-w-sm mx-auto">Tap on a session above to start managing your queue</p>
               </CardContent>
             </Card>
           ) : isLoading ? (
