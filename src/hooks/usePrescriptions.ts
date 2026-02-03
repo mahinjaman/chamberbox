@@ -192,6 +192,24 @@ export const usePrescriptions = (patientId?: string) => {
     },
   });
 
+  const deletePrescription = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("prescriptions")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["prescriptions"] });
+      toast.success("Prescription deleted successfully");
+    },
+    onError: (error) => {
+      toast.error(mapDatabaseError(error));
+    },
+  });
+
   return {
     prescriptions,
     templates,
@@ -200,6 +218,8 @@ export const usePrescriptions = (patientId?: string) => {
     createPrescriptionAsync: createPrescription.mutateAsync,
     saveTemplate: saveTemplate.mutate,
     deleteTemplate: deleteTemplate.mutate,
+    deletePrescription: deletePrescription.mutate,
     isCreating: createPrescription.isPending,
+    isDeleting: deletePrescription.isPending,
   };
 };
