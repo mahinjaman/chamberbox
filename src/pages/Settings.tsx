@@ -254,6 +254,34 @@ const Settings = () => {
                       </div>
                     )}
                   </div>
+
+                  {/* Plan Countdown */}
+                  <div className="space-y-2 p-4 rounded-lg border bg-muted/30">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">Plan Validity</span>
+                      </div>
+                    </div>
+                    {expiresAt ? (
+                      <div className="flex flex-col items-center justify-center py-2">
+                        <div className={`text-3xl font-bold ${isExpired ? 'text-destructive' : daysRemaining && daysRemaining <= 7 ? 'text-yellow-500' : 'text-primary'}`}>
+                          {isExpired ? 0 : daysRemaining}
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {isExpired ? 'Plan Expired' : 'days remaining'}
+                        </span>
+                        <span className="text-xs text-muted-foreground mt-1">
+                          Expires: {format(expiresAt, 'dd MMM yyyy')}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-xs text-green-600 py-2">
+                        <CheckCircle className="w-3 h-3" />
+                        No expiry set
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Features */}
