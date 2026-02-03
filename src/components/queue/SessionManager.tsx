@@ -320,178 +320,178 @@ export const SessionManager = ({
               )}
               onClick={() => onSelectSession(session)}
             >
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                  {/* Left section - Time and Info */}
-                  <div className="flex-1 min-w-0">
-                    {/* Time display - more prominent */}
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="text-lg font-bold text-foreground">
-                        {formatTime12Hour(session.start_time.slice(0, 5))}
-                        <span className="text-muted-foreground font-normal mx-1">-</span>
-                        {formatTime12Hour(session.end_time.slice(0, 5))}
-                      </div>
-                    </div>
-                    
-                    {/* Status badges row */}
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <Badge className={cn(
-                        "font-medium",
-                        getStatusColor(session.status)
-                      )}>
-                        {getStatusIcon(session.status)}
-                        <span className="ml-1.5 capitalize">{session.status}</span>
-                      </Badge>
-                      
-                      {session.is_custom && (
-                        <Badge variant="outline" className="text-xs">Custom</Badge>
-                      )}
-                      
-                      {session.booking_open === false && (
-                        <Badge 
-                          variant="secondary" 
-                          className="bg-destructive/10 text-destructive border-destructive/20 text-xs"
-                        >
-                          <Lock className="w-3 h-3 mr-1" />
-                          Booking Closed
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    {/* Chamber and patient info */}
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1.5">
-                        <MapPin className="w-4 h-4" />
-                        <span className="font-medium">{session.chamber?.name}</span>
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <Users className="w-4 h-4" />
-                        <span>
-                          <span className="font-semibold text-foreground">{session.tokens_count || 0}</span>
-                          <span className="text-muted-foreground">/{session.max_patients}</span>
-                        </span>
-                      </span>
-                    </div>
+              <CardContent className="p-4">
+                {/* Top row - Time and Status */}
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="text-base sm:text-lg font-bold text-foreground">
+                    {formatTime12Hour(session.start_time.slice(0, 5))}
+                    <span className="text-muted-foreground font-normal mx-1">-</span>
+                    {formatTime12Hour(session.end_time.slice(0, 5))}
                   </div>
                   
-                  {/* Right section - Action buttons */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {/* Booking Toggle Button */}
-                    {session.status !== "closed" && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button 
-                              size="icon" 
-                              variant={session.booking_open !== false ? "outline" : "secondary"}
-                              className={cn(
-                                "h-9 w-9",
-                                session.booking_open === false && "bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/30"
-                              )}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onToggleBooking(session.id, session.booking_open === false);
-                              }}
-                            >
-                              {session.booking_open === false ? (
-                                <Lock className="w-4 h-4" />
-                              ) : (
-                                <LockOpen className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{session.booking_open === false ? "Enable public booking" : "Disable public booking"}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
-                    
-                    {session.status === "open" && (
-                      <Button 
-                        size="sm" 
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onUpdateStatus(session.id, "running");
-                        }}
-                      >
-                        <Play className="w-4 h-4 mr-1.5" />
-                        Start
-                      </Button>
-                    )}
-                    
-                    {session.status === "running" && (
-                      <>
-                        <Button 
-                          size="icon" 
-                          variant="outline"
-                          className="h-9 w-9 text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onUpdateStatus(session.id, "paused");
-                          }}
-                        >
-                          <Pause className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          size="icon" 
-                          variant="outline"
-                          className="h-9 w-9"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onUpdateStatus(session.id, "closed");
-                          }}
-                        >
-                          <Square className="w-4 h-4" />
-                        </Button>
-                      </>
-                    )}
-                    
-                    {session.status === "paused" && (
-                      <Button 
-                        size="sm" 
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onUpdateStatus(session.id, "running");
-                        }}
-                      >
-                        <Play className="w-4 h-4 mr-1.5" />
-                        Resume
-                      </Button>
-                    )}
-                    
-                    {session.status === "closed" && (
+                  <Badge className={cn("font-medium text-xs", getStatusColor(session.status))}>
+                    {getStatusIcon(session.status)}
+                    <span className="ml-1 capitalize">{session.status}</span>
+                  </Badge>
+                </div>
+                
+                {/* Status badges row */}
+                <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                  {session.is_custom && (
+                    <Badge variant="outline" className="text-[10px] h-5">Custom</Badge>
+                  )}
+                  {session.booking_open === false && (
+                    <Badge 
+                      variant="secondary" 
+                      className="bg-destructive/10 text-destructive border-destructive/20 text-[10px] h-5"
+                    >
+                      <Lock className="w-2.5 h-2.5 mr-0.5" />
+                      Closed
+                    </Badge>
+                  )}
+                </div>
+                
+                {/* Chamber and patient info */}
+                <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span className="font-medium truncate max-w-[100px]">{session.chamber?.name}</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Users className="w-3.5 h-3.5" />
+                    <span>
+                      <span className="font-semibold text-foreground">{session.tokens_count || 0}</span>
+                      <span>/{session.max_patients}</span>
+                    </span>
+                  </span>
+                </div>
+                
+                {/* Action buttons - Always visible */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Booking Toggle Button */}
+                  {session.status !== "closed" && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            size="sm" 
+                            variant={session.booking_open !== false ? "outline" : "secondary"}
+                            className={cn(
+                              "h-8 text-xs",
+                              session.booking_open === false && "bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/30"
+                            )}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onToggleBooking(session.id, session.booking_open === false);
+                            }}
+                          >
+                            {session.booking_open === false ? (
+                              <>
+                                <Lock className="w-3.5 h-3.5 mr-1" />
+                                <span className="hidden sm:inline">Open</span>
+                              </>
+                            ) : (
+                              <>
+                                <LockOpen className="w-3.5 h-3.5 mr-1" />
+                                <span className="hidden sm:inline">Close</span>
+                              </>
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{session.booking_open === false ? "Enable public booking" : "Disable public booking"}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  
+                  {session.status === "open" && (
+                    <Button 
+                      size="sm" 
+                      className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onUpdateStatus(session.id, "running");
+                      }}
+                    >
+                      <Play className="w-3.5 h-3.5 mr-1" />
+                      Start
+                    </Button>
+                  )}
+                  
+                  {session.status === "running" && (
+                    <>
                       <Button 
                         size="sm" 
                         variant="outline"
+                        className="h-8 text-xs text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onUpdateStatus(session.id, "running");
+                          onUpdateStatus(session.id, "paused");
                         }}
                       >
-                        <Play className="w-4 h-4 mr-1.5" />
-                        Restart
+                        <Pause className="w-3.5 h-3.5 mr-1" />
+                        <span className="hidden sm:inline">Pause</span>
                       </Button>
-                    )}
-                    
-                    {(session.status === "open" || session.status === "closed") && (
                       <Button 
-                        size="icon" 
-                        variant="ghost"
-                        className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        size="sm" 
+                        variant="outline"
+                        className="h-8 text-xs"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (confirm("Delete this session and all its tokens?")) {
-                            onDeleteSession(session.id);
-                          }
+                          onUpdateStatus(session.id, "closed");
                         }}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Square className="w-3.5 h-3.5 mr-1" />
+                        <span className="hidden sm:inline">End</span>
                       </Button>
-                    )}
-                  </div>
+                    </>
+                  )}
+                  
+                  {session.status === "paused" && (
+                    <Button 
+                      size="sm" 
+                      className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onUpdateStatus(session.id, "running");
+                      }}
+                    >
+                      <Play className="w-3.5 h-3.5 mr-1" />
+                      Resume
+                    </Button>
+                  )}
+                  
+                  {session.status === "closed" && (
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className="h-8 text-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onUpdateStatus(session.id, "running");
+                      }}
+                    >
+                      <Play className="w-3.5 h-3.5 mr-1" />
+                      Restart
+                    </Button>
+                  )}
+                  
+                  {(session.status === "open" || session.status === "closed") && (
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      className="h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 ml-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm("Delete this session and all its tokens?")) {
+                          onDeleteSession(session.id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
