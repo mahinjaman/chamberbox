@@ -110,7 +110,7 @@ export const useAvailableSlots = (doctorId: string, startDate?: Date, days: numb
       // Include open, running, paused, and closed sessions to properly filter availability
       const { data: sessions } = await supabase
         .from("queue_sessions")
-        .select("id, chamber_id, session_date, start_time, end_time, status, max_patients, current_token, booking_open")
+        .select("id, chamber_id, session_date, start_time, end_time, status, max_patients, current_token, booking_open, is_custom, avg_consultation_minutes")
         .eq("doctor_id", doctorId)
         .gte("session_date", dateFrom)
         .lte("session_date", dateTo);
@@ -185,6 +185,45 @@ export const useAvailableSlots = (doctorId: string, startDate?: Date, days: numb
               session_id: existingSession?.id,
               booking_open: existingSession?.booking_open ?? true,
               session_status: existingSession?.status,
+            });
+          });
+
+          // Also include CUSTOM sessions that don't match any availability slot
+          const customSessions = sessions?.filter(
+            s => s.chamber_id === chamber.id &&
+                 s.session_date === dateStr &&
+                 s.is_custom === true &&
+                 s.status !== "closed"
+          ) || [];
+
+          customSessions.forEach(session => {
+            // Check if this custom session's time already matches an availability slot (avoid duplicates)
+            const alreadyAdded = result.some(
+              r => r.date === dateStr && 
+                   r.chamber_id === chamber.id && 
+                   r.start_time === session.start_time.slice(0, 5)
+            );
+            if (alreadyAdded) return;
+
+            const currentBookings = tokenCounts[session.id] || 0;
+            const isBookingClosed = session.booking_open === false;
+
+            result.push({
+              date: dateStr,
+              chamber_id: chamber.id,
+              chamber_name: chamber.name,
+              chamber_address: chamber.address,
+              start_time: session.start_time.slice(0, 5),
+              end_time: session.end_time.slice(0, 5),
+              slot_duration_minutes: session.avg_consultation_minutes || 15,
+              new_patient_fee: chamber.new_patient_fee || 500,
+              return_patient_fee: chamber.return_patient_fee || 300,
+              current_bookings: currentBookings,
+              max_patients: session.max_patients || 30,
+              is_available: !isBookingClosed && currentBookings < (session.max_patients || 30),
+              session_id: session.id,
+              booking_open: session.booking_open ?? true,
+              session_status: session.status,
             });
           });
         });
