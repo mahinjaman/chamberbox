@@ -175,6 +175,9 @@ const Settings = () => {
                         Unlimited
                       </div>
                     )}
+                    <p className="text-xs text-muted-foreground">
+                      Total: {usage?.total_prescriptions || 0} prescriptions
+                    </p>
                   </div>
 
                   {/* SMS Credits */}
