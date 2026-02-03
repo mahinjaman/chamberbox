@@ -44,6 +44,17 @@ export const useQueue = (sessionId?: string, date?: string) => {
     queryFn: async () => {
       if (!profile?.id) return [];
       
+      // If we have a session, also get the session's chamber_id to match orphan tokens
+      let sessionChamberId: string | null = null;
+      if (sessionId) {
+        const { data: sessionData } = await supabase
+          .from("queue_sessions")
+          .select("chamber_id")
+          .eq("id", sessionId)
+          .single();
+        sessionChamberId = sessionData?.chamber_id || null;
+      }
+      
       let query = supabase
         .from("queue_tokens")
         .select(`
@@ -54,14 +65,37 @@ export const useQueue = (sessionId?: string, date?: string) => {
         .eq("queue_date", queueDate)
         .order("token_number", { ascending: true });
       
-      // Filter by session if provided
-      if (sessionId) {
+      // Filter by session if provided - include both session tokens AND orphan tokens for same chamber
+      if (sessionId && sessionChamberId) {
+        // Get tokens that either belong to this session OR are orphans (null session_id) for same chamber
+        query = query.or(`session_id.eq.${sessionId},and(session_id.is.null,chamber_id.eq.${sessionChamberId})`);
+      } else if (sessionId) {
         query = query.eq("session_id", sessionId);
       }
 
       const { data, error } = await query;
 
       if (error) throw error;
+      
+      // Auto-link orphan tokens to the session if they match chamber
+      if (sessionId && sessionChamberId && data) {
+        const orphanTokens = data.filter(t => t.session_id === null && t.chamber_id === sessionChamberId);
+        if (orphanTokens.length > 0) {
+          // Link orphan tokens to this session in background
+          await supabase
+            .from("queue_tokens")
+            .update({ session_id: sessionId })
+            .in("id", orphanTokens.map(t => t.id));
+          
+          // Update the returned data to reflect the link
+          data.forEach(t => {
+            if (orphanTokens.some(o => o.id === t.id)) {
+              t.session_id = sessionId;
+            }
+          });
+        }
+      }
+      
       return data as QueueToken[];
     },
     enabled: !!profile?.id,
