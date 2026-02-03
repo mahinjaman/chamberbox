@@ -8,6 +8,8 @@ export interface StaffPermissions {
   canViewPrescriptions: boolean;
   canViewFinances: boolean;
   canManageStaff: boolean;
+  canManageIntegrations: boolean;
+  canViewSettings: boolean;
 }
 
 /**
@@ -15,7 +17,7 @@ export interface StaffPermissions {
  * 
  * Receptionist: Queue management only, basic patient viewing
  * Assistant: Queue + patients + view prescriptions
- * Manager: Full access including finances and staff management
+ * Manager: Full access including finances, staff management, integrations, and settings (except doctor profile)
  */
 export function getPermissionsForRole(role: StaffRole): StaffPermissions {
   switch (role) {
@@ -28,6 +30,8 @@ export function getPermissionsForRole(role: StaffRole): StaffPermissions {
         canViewPrescriptions: false,
         canViewFinances: false,
         canManageStaff: false,
+        canManageIntegrations: false,
+        canViewSettings: false,
       };
     case "assistant":
       return {
@@ -38,6 +42,8 @@ export function getPermissionsForRole(role: StaffRole): StaffPermissions {
         canViewPrescriptions: true,
         canViewFinances: false,
         canManageStaff: false,
+        canManageIntegrations: false,
+        canViewSettings: false,
       };
     case "manager":
       return {
@@ -48,6 +54,8 @@ export function getPermissionsForRole(role: StaffRole): StaffPermissions {
         canViewPrescriptions: true,
         canViewFinances: true,
         canManageStaff: true,
+        canManageIntegrations: true,
+        canViewSettings: true,
       };
     default:
       return {
@@ -58,6 +66,8 @@ export function getPermissionsForRole(role: StaffRole): StaffPermissions {
         canViewPrescriptions: false,
         canViewFinances: false,
         canManageStaff: false,
+        canManageIntegrations: false,
+        canViewSettings: false,
       };
   }
 }
@@ -83,6 +93,8 @@ export const permissionDescriptions = {
       "View prescriptions",
       "View financial data",
       "Manage other staff",
+      "Integration settings",
+      "Subscription & settings",
     ],
   },
   bn: {
@@ -102,6 +114,8 @@ export const permissionDescriptions = {
       "প্রেসক্রিপশন দেখুন",
       "আর্থিক তথ্য দেখুন",
       "অন্যান্য স্টাফ ম্যানেজ করুন",
+      "ইন্টিগ্রেশন সেটিংস",
+      "সাবস্ক্রিপশন ও সেটিংস",
     ],
   },
 };

@@ -8,7 +8,9 @@ import {
   Home,
   Stethoscope,
   DollarSign,
-  UserPlus
+  UserPlus,
+  MessageCircle,
+  Settings
 } from "lucide-react";
 import {
   Sidebar,
@@ -84,6 +86,18 @@ export const StaffSidebar = () => {
       url: "/staff/chambers", 
       icon: Building2,
       show: true 
+    },
+    { 
+      title: language === "bn" ? "ইন্টিগ্রেশন" : "Integrations", 
+      url: "/staff/integrations", 
+      icon: MessageCircle,
+      show: staffPermissions?.canManageIntegrations 
+    },
+    { 
+      title: language === "bn" ? "সেটিংস" : "Settings", 
+      url: "/staff/settings", 
+      icon: Settings,
+      show: staffPermissions?.canViewSettings 
     },
   ].filter(item => item.show);
 
