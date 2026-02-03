@@ -43,13 +43,14 @@ export const useQueueSessions = (date?: string) => {
   const queryClient = useQueryClient();
   const sessionDate = date || new Date().toISOString().split("T")[0];
 
-  // Get all sessions for a date
+  // Get all sessions for a date - auto-create from schedule if needed
   const { data: sessions = [], isLoading, error } = useQuery({
     queryKey: ["queue_sessions", profile?.id, sessionDate],
     queryFn: async () => {
       if (!profile?.id) return [];
       
-      const { data, error } = await supabase
+      // First, check if sessions exist for this date
+      const { data: existingSessions, error: fetchError } = await supabase
         .from("queue_sessions")
         .select(`
           *,
@@ -59,10 +60,98 @@ export const useQueueSessions = (date?: string) => {
         .eq("session_date", sessionDate)
         .order("start_time", { ascending: true });
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
+      
+      // Get the day of week for this date
+      const dateObj = new Date(sessionDate + "T00:00:00");
+      const dayOfWeek = dateObj.getDay();
+      
+      // Get all chambers and their availability slots for this day
+      const { data: chambers } = await supabase
+        .from("chambers")
+        .select(`
+          id, name, address,
+          availability_slots!inner(
+            day_of_week, start_time, end_time, slot_duration_minutes, is_active
+          )
+        `)
+        .eq("doctor_id", profile.id);
+      
+      // Filter slots for this day of week
+      const scheduledSlots: Array<{
+        chamber_id: string;
+        start_time: string;
+        end_time: string;
+        slot_duration_minutes: number;
+      }> = [];
+      
+      chambers?.forEach(chamber => {
+        const slots = (chamber.availability_slots as Array<{
+          day_of_week: number;
+          start_time: string;
+          end_time: string;
+          slot_duration_minutes: number | null;
+          is_active: boolean | null;
+        }>)?.filter(slot => 
+          slot.day_of_week === dayOfWeek && slot.is_active !== false
+        ) || [];
+        
+        slots.forEach(slot => {
+          scheduledSlots.push({
+            chamber_id: chamber.id,
+            start_time: slot.start_time.slice(0, 5),
+            end_time: slot.end_time.slice(0, 5),
+            slot_duration_minutes: slot.slot_duration_minutes || 5,
+          });
+        });
+      });
+      
+      // Check which scheduled slots don't have sessions yet
+      const existingKeys = new Set(
+        existingSessions?.map(s => `${s.chamber_id}-${s.start_time.slice(0, 5)}`) || []
+      );
+      
+      const missingSessions = scheduledSlots.filter(
+        slot => !existingKeys.has(`${slot.chamber_id}-${slot.start_time}`)
+      );
+      
+      // Auto-create missing sessions
+      if (missingSessions.length > 0) {
+        const newSessions = missingSessions.map(slot => ({
+          doctor_id: profile.id,
+          chamber_id: slot.chamber_id,
+          session_date: sessionDate,
+          start_time: slot.start_time,
+          end_time: slot.end_time,
+          status: "open",
+          current_token: 0,
+          max_patients: 30,
+          avg_consultation_minutes: slot.slot_duration_minutes,
+          is_custom: false,
+          booking_open: true,
+        }));
+        
+        await supabase.from("queue_sessions").insert(newSessions);
+        
+        // Re-fetch to get the newly created sessions with chamber data
+        const { data: updatedSessions, error: refetchError } = await supabase
+          .from("queue_sessions")
+          .select(`
+            *,
+            chamber:chambers(name, address)
+          `)
+          .eq("doctor_id", profile.id)
+          .eq("session_date", sessionDate)
+          .order("start_time", { ascending: true });
+        
+        if (refetchError) throw refetchError;
+        existingSessions?.splice(0, existingSessions.length, ...(updatedSessions || []));
+      }
+      
+      const finalSessions = existingSessions || [];
       
       // Get token counts for each session
-      const sessionIds = data?.map(s => s.id) || [];
+      const sessionIds = finalSessions.map(s => s.id);
       if (sessionIds.length > 0) {
         const { data: tokenCounts } = await supabase
           .from("queue_tokens")
@@ -76,13 +165,13 @@ export const useQueueSessions = (date?: string) => {
           }
         });
         
-        return data?.map(s => ({
+        return finalSessions.map(s => ({
           ...s,
           tokens_count: countMap[s.id] || 0
         })) as QueueSession[];
       }
       
-      return data as QueueSession[];
+      return finalSessions as QueueSession[];
     },
     enabled: !!profile?.id,
   });
