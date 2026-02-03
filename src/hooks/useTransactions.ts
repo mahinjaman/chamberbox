@@ -50,7 +50,8 @@ export const useTransactions = (dateRange?: { from: Date; to: Date }) => {
         .eq("doctor_id", profile.id)
         .gte("transaction_date", format(from, "yyyy-MM-dd"))
         .lte("transaction_date", format(to, "yyyy-MM-dd"))
-        .order("transaction_date", { ascending: false });
+        .order("transaction_date", { ascending: false })
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data as Transaction[];
