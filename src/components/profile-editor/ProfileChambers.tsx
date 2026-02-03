@@ -10,6 +10,7 @@ import { useDoctorProfile, DoctorProfile, Chamber, AvailabilitySlot } from "@/ho
 import { useSubscription } from "@/hooks/useSubscription";
 import { DAYS_OF_WEEK, formatPhoneNumber, formatTime12Hour } from "@/lib/doctor-profile-utils";
 import { Loader2, Plus, Trash2, MapPin, Clock, Phone, Building2, AlertTriangle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -31,6 +32,9 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
   const maxChambers = currentPlan?.max_chambers || 1;
   const canAddChamber = canAddMore('chambers', chamberCount);
   const chamberLimitReached = !canAddChamber && maxChambers !== -1;
+  
+  // Determine which chambers are within limit (first N chambers stay active)
+  const isWithinLimit = (index: number) => maxChambers === -1 || index < maxChambers;
 
   const [chamberForm, setChamberForm] = useState({
     name: "",
@@ -208,6 +212,7 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
             {chambers.map((chamber, index) => {
               const slots = getChamberSlots(chamber.id);
               const days = [...new Set(slots.map(s => s.day_of_week))].sort();
+              const chamberActive = isWithinLimit(index);
               
               return (
                 <motion.div
@@ -217,7 +222,10 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className={chamber.is_primary ? "ring-2 ring-primary" : ""}>
+                  <Card className={cn(
+                    chamber.is_primary ? "ring-2 ring-primary" : "",
+                    !chamberActive && "opacity-60 bg-muted/50"
+                  )}>
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <div>
@@ -226,7 +234,15 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
                             {chamber.is_primary && (
                               <Badge variant="default" className="text-xs">Primary</Badge>
                             )}
+                            {!chamberActive && (
+                              <Badge variant="destructive" className="text-xs">Inactive</Badge>
+                            )}
                           </CardTitle>
+                          {!chamberActive && (
+                            <p className="text-xs text-destructive mt-1">
+                              Exceeds plan limit. Upgrade or delete other chambers.
+                            </p>
+                          )}
                         </div>
                         <div className="flex gap-1">
                           <Button variant="ghost" size="icon" onClick={() => openEditChamber(chamber)}>
