@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
@@ -53,6 +54,21 @@ export const DashboardSidebar = () => {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { t, language } = useLanguage();
+  
+  // Controlled state for prescriptions submenu
+  const isPrescriptionRoute = location.pathname.includes("/dashboard/prescriptions");
+  const [prescriptionMenuOpen, setPrescriptionMenuOpen] = useState(false);
+  
+  // Open submenu with animation when navigating to prescription routes
+  useEffect(() => {
+    if (isPrescriptionRoute && !prescriptionMenuOpen) {
+      // Small delay to trigger animation after mount
+      const timer = setTimeout(() => setPrescriptionMenuOpen(true), 50);
+      return () => clearTimeout(timer);
+    } else if (!isPrescriptionRoute && prescriptionMenuOpen) {
+      setPrescriptionMenuOpen(false);
+    }
+  }, [isPrescriptionRoute]);
 
   // Navigation items with translated titles
   const mainNavItems = [
@@ -142,7 +158,8 @@ export const DashboardSidebar = () => {
               
               {/* Prescriptions with sub-menu */}
               <Collapsible 
-                defaultOpen={location.pathname.includes("/dashboard/prescriptions")}
+                open={prescriptionMenuOpen}
+                onOpenChange={setPrescriptionMenuOpen}
                 className="group/collapsible"
               >
                 <SidebarMenuItem>
