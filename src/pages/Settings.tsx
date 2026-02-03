@@ -125,25 +125,25 @@ const Settings = () => {
               <>
                 {/* Usage Stats */}
                 <div className="grid gap-4 md:grid-cols-2">
-                  {/* Patients */}
+                  {/* Patients This Month */}
                   <div className="space-y-2 p-4 rounded-lg border bg-muted/30">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-medium">Patients</span>
+                        <span className="text-sm font-medium">Patients/Month</span>
                       </div>
                       <span className="text-sm text-muted-foreground">
-                        {usage?.total_patients || 0} / {formatLimit(currentPlan?.max_patients || 0)}
+                        {usage?.patients_added_this_month || 0} / {formatLimit(currentPlan?.max_patients || 0)}
                       </span>
                     </div>
-                    {!limits.patients.isUnlimited && (
+                    {!limits.patientsMonthly.isUnlimited && (
                       <Progress 
-                        value={limits.patients.percentage} 
+                        value={limits.patientsMonthly.percentage} 
                         className="h-2"
-                        indicatorClassName={getStatusColor(limits.patients.percentage)}
+                        indicatorClassName={getStatusColor(limits.patientsMonthly.percentage)}
                       />
                     )}
-                    {limits.patients.isUnlimited && (
+                    {limits.patientsMonthly.isUnlimited && (
                       <div className="flex items-center gap-1 text-xs text-green-600">
                         <CheckCircle className="w-3 h-3" />
                         Unlimited
