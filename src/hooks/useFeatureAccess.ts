@@ -9,14 +9,25 @@ export type Feature =
   | "export"
   | "branding";
 
+export type LimitType = "patients" | "prescriptions";
+
 export interface FeatureAccessResult {
   hasAccess: boolean;
   planRequired: string | null;
   message: string;
 }
 
+export interface LimitCheckResult {
+  withinLimit: boolean;
+  current: number;
+  max: number;
+  remaining: number;
+  isUnlimited: boolean;
+  message: string;
+}
+
 export const useFeatureAccess = () => {
-  const { currentPlan, isExpired, isLoading } = useSubscription();
+  const { currentPlan, usage, isExpired, isLoading } = useSubscription();
   const { profile } = useProfile();
 
   const checkFeatureAccess = (feature: Feature): FeatureAccessResult => {
@@ -64,6 +75,82 @@ export const useFeatureAccess = () => {
     };
   };
 
+  // Check if within subscription limits for patients/prescriptions
+  const checkLimit = (limitType: LimitType): LimitCheckResult => {
+    if (isExpired) {
+      return {
+        withinLimit: false,
+        current: 0,
+        max: 0,
+        remaining: 0,
+        isUnlimited: false,
+        message: "Your subscription has expired. Please renew to continue.",
+      };
+    }
+
+    if (!currentPlan || !usage) {
+      return {
+        withinLimit: true, // Allow while loading
+        current: 0,
+        max: 0,
+        remaining: 0,
+        isUnlimited: false,
+        message: "Loading...",
+      };
+    }
+
+    if (limitType === "patients") {
+      const current = usage.total_patients || 0;
+      const max = currentPlan.max_patients || 0;
+      const isUnlimited = max === -1;
+      const remaining = isUnlimited ? Infinity : Math.max(max - current, 0);
+      const withinLimit = isUnlimited || current < max;
+
+      return {
+        withinLimit,
+        current,
+        max,
+        remaining: isUnlimited ? -1 : remaining,
+        isUnlimited,
+        message: withinLimit 
+          ? "" 
+          : `Patient limit reached (${current}/${max}). Please upgrade your plan to add more patients.`,
+      };
+    }
+
+    if (limitType === "prescriptions") {
+      const current = usage.prescriptions_this_month || 0;
+      const max = currentPlan.max_prescriptions_per_month || 0;
+      const isUnlimited = max === -1;
+      const remaining = isUnlimited ? Infinity : Math.max(max - current, 0);
+      const withinLimit = isUnlimited || current < max;
+
+      return {
+        withinLimit,
+        current,
+        max,
+        remaining: isUnlimited ? -1 : remaining,
+        isUnlimited,
+        message: withinLimit 
+          ? "" 
+          : `Monthly prescription limit reached (${current}/${max}). Please upgrade your plan to create more prescriptions.`,
+      };
+    }
+
+    return {
+      withinLimit: true,
+      current: 0,
+      max: 0,
+      remaining: 0,
+      isUnlimited: false,
+      message: "",
+    };
+  };
+
+  // Quick check helpers
+  const canAddPatient = () => checkLimit("patients").withinLimit;
+  const canCreatePrescription = () => checkLimit("prescriptions").withinLimit;
+
   const canUsePublicProfile = () => checkFeatureAccess("public_profile").hasAccess;
   const canUseQueueBooking = () => checkFeatureAccess("queue_booking").hasAccess;
   const canUseWhatsApp = () => checkFeatureAccess("whatsapp").hasAccess;
@@ -73,6 +160,9 @@ export const useFeatureAccess = () => {
 
   return {
     checkFeatureAccess,
+    checkLimit,
+    canAddPatient,
+    canCreatePrescription,
     canUsePublicProfile,
     canUseQueueBooking,
     canUseWhatsApp,

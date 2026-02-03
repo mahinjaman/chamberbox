@@ -7,13 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-import { usePublicBookingSlots, useCreateQueueBooking, BookingSlot } from "@/hooks/useUnifiedQueue";
+import { usePublicBookingSlots, useCreateQueueBooking, useDoctorBookingStatus, BookingSlot } from "@/hooks/useUnifiedQueue";
 import { DoctorProfile, Chamber } from "@/hooks/useDoctorProfile";
 import { formatTime12Hour, formatCurrency } from "@/lib/doctor-profile-utils";
 import { format, parseISO, isToday, isTomorrow } from "date-fns";
 import { 
   Calendar, Clock, Users, MapPin, Loader2, 
-  AlertCircle, ArrowLeft, ArrowRight, Lock
+  AlertCircle, ArrowLeft, ArrowRight, Lock, UserX
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -44,6 +44,7 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
   });
 
   const { slots, isLoading } = usePublicBookingSlots(profile.id);
+  const { data: bookingStatus, isLoading: statusLoading } = useDoctorBookingStatus(profile.id);
   const createBooking = useCreateQueueBooking();
 
   // Group slots by date
@@ -141,10 +142,23 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
     return format(date, "EEE, MMM d");
   };
 
-  if (isLoading) {
+  if (isLoading || statusLoading) {
     return (
       <div className="py-8 flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Check if doctor can accept new bookings (patient limit or subscription)
+  if (bookingStatus && !bookingStatus.canBook) {
+    return (
+      <div className="py-8 text-center">
+        <UserX className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+        <h4 className="font-medium mb-1">Booking Unavailable</h4>
+        <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+          {bookingStatus.message}
+        </p>
       </div>
     );
   }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ import {
 import { usePrescriptions, PrescriptionMedicine, PrescriptionInvestigation } from "@/hooks/usePrescriptions";
 import { useMedicines } from "@/hooks/useMedicines";
 import { useProfile } from "@/hooks/useProfile";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { InvestigationSelector } from "@/components/prescription/InvestigationSelector";
 import {
   Search,
@@ -33,6 +35,8 @@ import {
   X,
   Loader2,
   Pill,
+  AlertTriangle,
+  Crown,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -80,6 +84,8 @@ export const PrescriptionModal = ({
   const { profile } = useProfile();
   const { templates, createPrescription, isCreating } = usePrescriptions();
   const { searchMedicines } = useMedicines();
+  const { checkLimit, isExpired } = useFeatureAccess();
+  const prescriptionLimit = checkLimit("prescriptions");
 
   const [medicineSearch, setMedicineSearch] = useState("");
   const [selectedMedicines, setSelectedMedicines] = useState<PrescriptionMedicine[]>([]);
@@ -169,6 +175,39 @@ export const PrescriptionModal = ({
   };
 
   if (!patient) return null;
+
+  // If prescription limit reached, show upgrade prompt
+  if (!prescriptionLimit.withinLimit) {
+    return (
+      <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create Prescription</DialogTitle>
+            <DialogDescription>
+              For {patient.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+              <AlertTriangle className="w-8 h-8 text-destructive" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">
+              {isExpired ? "Subscription Expired" : "Prescription Limit Reached"}
+            </h3>
+            <p className="text-muted-foreground mb-4 max-w-md text-sm">
+              {prescriptionLimit.message}
+            </p>
+            <Button asChild>
+              <Link to="/dashboard/settings">
+                <Crown className="w-4 h-4 mr-2" />
+                {isExpired ? "Renew Subscription" : "Upgrade Plan"}
+              </Link>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>

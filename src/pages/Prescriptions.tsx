@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,10 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { usePrescriptions, PrescriptionMedicine, Prescription, PrescriptionInvestigation } from "@/hooks/usePrescriptions";
 import { useMedicines } from "@/hooks/useMedicines";
 import { usePatients } from "@/hooks/usePatients";
 import { useProfile } from "@/hooks/useProfile";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { PrescriptionView } from "@/components/prescription/PrescriptionView";
 import { InvestigationSelector } from "@/components/prescription/InvestigationSelector";
 import { 
@@ -28,7 +31,9 @@ import {
   Loader2,
   Pill,
   Calendar,
-  Eye
+  Eye,
+  Lock,
+  Crown
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -65,6 +70,8 @@ const Prescriptions = () => {
   const { patients } = usePatients();
   const { prescriptions, templates, createPrescription, saveTemplate, isCreating } = usePrescriptions();
   const { medicines, searchMedicines } = useMedicines();
+  const { checkLimit, isExpired } = useFeatureAccess();
+  const prescriptionLimit = checkLimit("prescriptions");
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState<string>("");
@@ -159,389 +166,388 @@ const Prescriptions = () => {
   };
 
   return (
+    <TooltipProvider>
     <DashboardLayout
       title="Prescriptions"
       description="Create and manage digital prescriptions"
       actions={
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Prescription
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create Prescription</DialogTitle>
-              <DialogDescription>
-                Create a digital prescription for your patient
-              </DialogDescription>
-            </DialogHeader>
+        prescriptionLimit.withinLimit ? (
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Prescription
+          </Button>
+        ) : (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button disabled className="opacity-60">
+                <Lock className="mr-2 h-4 w-4" />
+                New Prescription
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p className="text-sm">{prescriptionLimit.message}</p>
+              <Link to="/dashboard/settings" className="text-xs text-primary hover:underline flex items-center gap-1 mt-1">
+                <Crown className="w-3 h-3" /> Upgrade Plan
+              </Link>
+            </TooltipContent>
+          </Tooltip>
+        )
+      }
+    >
+      {/* New Prescription Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Prescription</DialogTitle>
+            <DialogDescription>
+              Create a digital prescription for your patient
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="grid gap-6 lg:grid-cols-2">
-              {/* Left Side - Builder */}
-              <div className="space-y-4">
-                {/* Patient Selection */}
-                <div className="space-y-2">
-                  <Label>Select Patient</Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search by name or phone..."
-                      className="pl-10"
-                      value={patientSearch}
-                      onChange={(e) => setPatientSearch(e.target.value)}
-                    />
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Left Side - Builder */}
+            <div className="space-y-4">
+              {/* Patient Selection */}
+              <div className="space-y-2">
+                <Label>Select Patient</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name or phone..."
+                    className="pl-10"
+                    value={patientSearch}
+                    onChange={(e) => setPatientSearch(e.target.value)}
+                  />
+                </div>
+                {patientSearch && !selectedPatient && (
+                  <div className="border rounded-md max-h-32 overflow-y-auto">
+                    {filteredPatients.slice(0, 5).map((p) => (
+                      <button
+                        key={p.id}
+                        className="w-full text-left px-3 py-2 hover:bg-muted flex justify-between items-center"
+                        onClick={() => {
+                          setSelectedPatientId(p.id);
+                          setPatientSearch("");
+                        }}
+                      >
+                        <span className="font-medium">{p.name}</span>
+                        <span className="text-sm text-muted-foreground">{p.phone}</span>
+                      </button>
+                    ))}
                   </div>
-                  {patientSearch && !selectedPatient && (
-                    <div className="border rounded-md max-h-32 overflow-y-auto">
-                      {filteredPatients.slice(0, 5).map((p) => (
-                        <button
-                          key={p.id}
-                          className="w-full text-left px-3 py-2 hover:bg-muted flex justify-between items-center"
-                          onClick={() => {
-                            setSelectedPatientId(p.id);
-                            setPatientSearch("");
-                          }}
-                        >
-                          <span className="font-medium">{p.name}</span>
-                          <span className="text-sm text-muted-foreground">{p.phone}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {selectedPatient && (
-                    <Card className="bg-primary/5 border-primary/20">
-                      <CardContent className="py-3 flex justify-between items-center">
+                )}
+                {selectedPatient && (
+                  <Card className="bg-primary/5 border-primary/20">
+                    <CardContent className="py-3 flex justify-between items-center">
+                      <div>
+                        <p className="font-medium">{selectedPatient.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedPatient.phone} • {selectedPatient.age && `${selectedPatient.age} yrs`} • {selectedPatient.gender}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedPatientId("")}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
+              {/* Symptoms & Diagnosis */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Symptoms (Chief Complaints)</Label>
+                  <Input
+                    placeholder="e.g., Fever, headache, cough"
+                    value={symptoms}
+                    onChange={(e) => setSymptoms(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Diagnosis</Label>
+                  <Input
+                    placeholder="e.g., Viral fever"
+                    value={diagnosis}
+                    onChange={(e) => setDiagnosis(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Medicine Search */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Medicines</Label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setLanguage(language === "english" ? "bangla" : "english")}
+                  >
+                    <Languages className="mr-1 h-4 w-4" />
+                    {language === "english" ? "EN" : "বাং"}
+                  </Button>
+                </div>
+                <div className="relative">
+                  <Pill className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search medicine (Napa, Seclo...)"
+                    className="pl-10"
+                    value={medicineSearch}
+                    onChange={(e) => setMedicineSearch(e.target.value)}
+                  />
+                </div>
+                {medicineSearch && searchResults.length > 0 && (
+                  <div className="border rounded-md max-h-40 overflow-y-auto">
+                    {searchResults.map((m) => (
+                      <button
+                        key={m.id}
+                        className="w-full text-left px-3 py-2 hover:bg-muted flex justify-between items-center"
+                        onClick={() => addMedicine(m)}
+                      >
                         <div>
-                          <p className="font-medium">{selectedPatient.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {selectedPatient.phone} • {selectedPatient.age && `${selectedPatient.age} yrs`} • {selectedPatient.gender}
-                          </p>
+                          <span className="font-medium">{m.brand_name}</span>
+                          {m.strength && <span className="text-sm text-muted-foreground ml-1">{m.strength}</span>}
+                          {language === "bangla" && m.brand_name_bn && (
+                            <span className="text-sm text-muted-foreground ml-2">({m.brand_name_bn})</span>
+                          )}
+                        </div>
+                        <Badge variant="outline">{m.generic_name}</Badge>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Medicines */}
+              <div className="space-y-2">
+                {selectedMedicines.map((med, index) => (
+                  <Card key={index} className="bg-muted/30">
+                    <CardContent className="py-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 space-y-2">
+                          <div className="font-medium">
+                            {language === "bangla" && med.name_bn ? med.name_bn : med.name}
+                          </div>
+                          <div className="flex gap-2">
+                            <Input
+                              className="w-24"
+                              placeholder="Dosage"
+                              value={med.dosage}
+                              onChange={(e) => updateMedicine(index, { dosage: e.target.value })}
+                            />
+                            <Select
+                              value={med.duration}
+                              onValueChange={(v) => updateMedicine(index, { duration: v })}
+                            >
+                              <SelectTrigger className="w-28">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {DURATION_PRESETS.map((d) => (
+                                  <SelectItem key={d.value} value={d.value}>
+                                    {language === "bangla" ? d.label_bn : d.label_en}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Input
+                              className="flex-1"
+                              placeholder="Special instructions"
+                              value={med.instructions || ""}
+                              onChange={(e) => updateMedicine(index, { instructions: e.target.value })}
+                            />
+                          </div>
                         </div>
                         <Button
                           variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedPatientId("")}
+                          size="icon"
+                          onClick={() => removeMedicine(index)}
                         >
-                          <X className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                {selectedMedicines.length === 0 && (
+                  <p className="text-center py-4 text-muted-foreground">
+                    Search and add medicines above
+                  </p>
+                )}
+              </div>
 
-                {/* Symptoms & Diagnosis */}
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Symptoms (Chief Complaints)</Label>
-                    <Input
-                      placeholder="e.g., Fever, headache, cough"
-                      value={symptoms}
-                      onChange={(e) => setSymptoms(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Diagnosis</Label>
-                    <Input
-                      placeholder="e.g., Viral fever"
-                      value={diagnosis}
-                      onChange={(e) => setDiagnosis(e.target.value)}
-                    />
-                  </div>
-                </div>
+              {/* Investigations */}
+              <InvestigationSelector
+                selected={selectedInvestigations}
+                onSelect={setSelectedInvestigations}
+                language={language}
+              />
 
-                {/* Medicine Search */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label>Medicines</Label>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setLanguage(language === "english" ? "bangla" : "english")}
-                    >
-                      <Languages className="mr-1 h-4 w-4" />
-                      {language === "english" ? "EN" : "বাং"}
-                    </Button>
-                  </div>
-                  <div className="relative">
-                    <Pill className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search medicine (Napa, Seclo...)"
-                      className="pl-10"
-                      value={medicineSearch}
-                      onChange={(e) => setMedicineSearch(e.target.value)}
-                    />
-                  </div>
-                  {medicineSearch && searchResults.length > 0 && (
-                    <div className="border rounded-md max-h-40 overflow-y-auto">
-                      {searchResults.map((m) => (
-                        <button
-                          key={m.id}
-                          className="w-full text-left px-3 py-2 hover:bg-muted flex justify-between items-center"
-                          onClick={() => addMedicine(m)}
-                        >
-                          <div>
-                            <span className="font-medium">{m.brand_name}</span>
-                            {m.strength && <span className="text-sm text-muted-foreground ml-1">{m.strength}</span>}
-                            {language === "bangla" && m.brand_name_bn && (
-                              <span className="text-sm text-muted-foreground ml-2">({m.brand_name_bn})</span>
-                            )}
-                          </div>
-                          <Badge variant="outline">{m.generic_name}</Badge>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Selected Medicines */}
-                <div className="space-y-2">
-                  {selectedMedicines.map((med, index) => (
-                    <Card key={index} className="bg-muted/30">
-                      <CardContent className="py-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 space-y-2">
-                            <div className="font-medium">
-                              {language === "bangla" && med.name_bn ? med.name_bn : med.name}
-                            </div>
-                            <div className="flex gap-2">
-                              <Input
-                                className="w-24"
-                                placeholder="Dosage"
-                                value={med.dosage}
-                                onChange={(e) => updateMedicine(index, { dosage: e.target.value })}
-                              />
-                              <Select
-                                value={med.duration}
-                                onValueChange={(v) => updateMedicine(index, { duration: v })}
-                              >
-                                <SelectTrigger className="w-28">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {DURATION_PRESETS.map((d) => (
-                                    <SelectItem key={d.value} value={d.value}>
-                                      {language === "bangla" ? d.label_bn : d.label_en}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <Input
-                                className="flex-1"
-                                placeholder="Special instructions"
-                                value={med.instructions || ""}
-                                onChange={(e) => updateMedicine(index, { instructions: e.target.value })}
-                              />
-                            </div>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeMedicine(index)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                  {selectedMedicines.length === 0 && (
-                    <p className="text-center py-4 text-muted-foreground">
-                      Search and add medicines above
-                    </p>
-                  )}
-                </div>
-
-                {/* Investigations */}
-                <InvestigationSelector
-                  selected={selectedInvestigations}
-                  onSelect={setSelectedInvestigations}
-                  language={language}
+              {/* Advice */}
+              <div className="space-y-2">
+                <Label>Advice</Label>
+                <Textarea
+                  placeholder="General advice for the patient..."
+                  value={advice}
+                  onChange={(e) => setAdvice(e.target.value)}
+                  rows={2}
                 />
+                <div className="flex flex-wrap gap-1">
+                  {ADVICE_SHORTCUTS.map((shortcut) => (
+                    <Button
+                      key={shortcut}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => setAdvice(advice ? `${advice}\n${shortcut}` : shortcut)}
+                    >
+                      {shortcut}
+                    </Button>
+                  ))}
+                </div>
+              </div>
 
-                {/* Advice */}
+              {/* Next Visit */}
+              <div className="space-y-2">
+                <Label>Next Visit Date</Label>
+                <Input
+                  type="date"
+                  value={nextVisit}
+                  onChange={(e) => setNextVisit(e.target.value)}
+                  min={format(new Date(), "yyyy-MM-dd")}
+                />
+              </div>
+
+              {/* Templates */}
+              {templates.length > 0 && (
                 <div className="space-y-2">
-                  <Label>Advice</Label>
-                  <Textarea
-                    placeholder="General advice for the patient..."
-                    value={advice}
-                    onChange={(e) => setAdvice(e.target.value)}
-                    rows={2}
-                  />
-                  <div className="flex flex-wrap gap-1">
-                    {ADVICE_SHORTCUTS.map((shortcut) => (
+                  <Label>Quick Templates</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {templates.map((t) => (
                       <Button
-                        key={shortcut}
+                        key={t.id}
                         variant="outline"
                         size="sm"
-                        className="text-xs"
-                        onClick={() => setAdvice(advice ? `${advice}\n${shortcut}` : shortcut)}
+                        onClick={() => applyTemplate(t)}
                       >
-                        {shortcut}
+                        <Copy className="mr-1 h-3 w-3" />
+                        {t.name}
                       </Button>
                     ))}
                   </div>
                 </div>
+              )}
+            </div>
 
-                {/* Next Visit */}
-                <div className="space-y-2">
-                  <Label>Next Visit Date</Label>
-                  <Input
-                    type="date"
-                    value={nextVisit}
-                    onChange={(e) => setNextVisit(e.target.value)}
-                    min={format(new Date(), "yyyy-MM-dd")}
-                  />
-                </div>
-
-                {/* Templates */}
-                {templates.length > 0 && (
-                  <div className="space-y-2">
-                    <Label>Quick Templates</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {templates.map((t) => (
-                        <Button
-                          key={t.id}
-                          variant="outline"
-                          size="sm"
-                          onClick={() => applyTemplate(t)}
-                        >
-                          <Copy className="mr-1 h-3 w-3" />
-                          {t.name}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+            {/* Right Side - Preview */}
+            <div className="border rounded-lg p-6 bg-card text-card-foreground print:border-0 print:bg-white print:text-black">
+              <div className="text-center mb-6 border-b pb-4">
+                <h2 className="text-xl font-bold">{profile?.full_name || "Doctor Name"}</h2>
+                <p className="text-sm text-muted-foreground">{profile?.specialization}</p>
+                <p className="text-sm text-muted-foreground">BMDC Reg: {profile?.bmdc_number}</p>
+                <p className="text-xs text-muted-foreground mt-1">{profile?.chamber_address}</p>
               </div>
 
-              {/* Right Side - Preview */}
-              <div className="border rounded-lg p-6 bg-card text-card-foreground print:border-0 print:bg-white print:text-black">
-                <div className="text-center mb-6 border-b pb-4">
-                  <h2 className="text-xl font-bold">{profile?.full_name || "Doctor Name"}</h2>
-                  <p className="text-sm text-muted-foreground">{profile?.specialization}</p>
-                  <p className="text-sm text-muted-foreground">BMDC Reg: {profile?.bmdc_number}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{profile?.chamber_address}</p>
+              {selectedPatient && (
+                <div className="mb-4 pb-4 border-b">
+                  <div className="flex justify-between text-sm">
+                    <div><span className="text-muted-foreground">Patient: </span><span className="font-medium">{selectedPatient.name}</span></div>
+                    <div><span className="text-muted-foreground">Date: </span>{format(new Date(), "dd/MM/yyyy")}</div>
+                  </div>
+                  <div className="flex justify-between text-sm mt-1">
+                    <div>{selectedPatient.age && <><span className="text-muted-foreground">Age: </span><span>{selectedPatient.age} yrs</span></>}</div>
+                    {selectedPatient.gender && <div><span className="text-muted-foreground">Gender: </span><span className="capitalize">{selectedPatient.gender}</span></div>}
+                  </div>
                 </div>
+              )}
 
-                {selectedPatient && (
-                  <div className="mb-4 pb-4 border-b">
-                    <div className="flex justify-between text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Patient: </span>
-                        <span className="font-medium">{selectedPatient.name}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Date: </span>
-                        {format(new Date(), "dd/MM/yyyy")}
-                      </div>
-                    </div>
-                    <div className="flex gap-4 text-sm text-muted-foreground">
-                      {selectedPatient.age && <span>Age: {selectedPatient.age} yrs</span>}
-                      {selectedPatient.gender && <span>Sex: {selectedPatient.gender}</span>}
-                      {selectedPatient.blood_group && <span>BG: {selectedPatient.blood_group}</span>}
-                    </div>
-                  </div>
-                )}
+              {(symptoms || diagnosis) && (
+                <div className="mb-4 pb-4 border-b text-sm">
+                  {symptoms && <div><span className="text-muted-foreground">C/C: </span>{symptoms}</div>}
+                  {diagnosis && <div><span className="text-muted-foreground">Diagnosis: </span>{diagnosis}</div>}
+                </div>
+              )}
 
-                {(symptoms || diagnosis) && (
-                  <div className="mb-4 text-sm">
-                    {symptoms && <p><span className="font-medium">C/C:</span> {symptoms}</p>}
-                    {diagnosis && <p><span className="font-medium">Diagnosis:</span> {diagnosis}</p>}
-                  </div>
-                )}
-
-                {/* Investigations Preview */}
-                {selectedInvestigations.length > 0 && (
-                  <div className="mb-4 pb-3 border-b">
-                    <h4 className="font-medium text-sm mb-2">🔬 Investigations:</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedInvestigations.map((inv, i) => (
-                        <span key={i} className="bg-muted px-2 py-0.5 rounded text-xs">
-                          {language === "bangla" && inv.name_bn ? inv.name_bn : inv.name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="mb-4">
-                  <h3 className="text-lg font-bold mb-2 flex items-center">
-                    <span className="text-2xl mr-2">℞</span>
-                  </h3>
-                  <div className="space-y-2">
-                    {selectedMedicines.map((med, i) => (
-                      <div key={i} className="flex justify-between items-start text-sm">
-                        <div>
-                          <span className="font-medium">{i + 1}. </span>
-                          {language === "bangla" && med.name_bn ? med.name_bn : med.name}
-                          {med.instructions && (
-                            <span className="text-muted-foreground italic ml-2">({med.instructions})</span>
-                          )}
-                        </div>
-                        <div className="text-right text-muted-foreground">
-                          <div>{med.dosage}</div>
-                          <div className="text-xs">{getDurationLabel(med.duration, language)}</div>
-                        </div>
-                      </div>
+              {selectedInvestigations.length > 0 && (
+                <div className="mb-4 pb-4 border-b">
+                  <h3 className="font-bold mb-2">🔬 Investigations</h3>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedInvestigations.map((inv, i) => (
+                      <span key={i} className="bg-muted px-2 py-1 rounded text-xs">
+                        {language === "bangla" && inv.name_bn ? inv.name_bn : inv.name}
+                      </span>
                     ))}
                   </div>
                 </div>
+              )}
 
-                {advice && (
-                  <div className="mb-4 pt-4 border-t">
-                    <h4 className="font-medium text-sm mb-1">Advice:</h4>
-                    <p className="text-sm text-muted-foreground whitespace-pre-line">{advice}</p>
-                  </div>
-                )}
-
-                {nextVisit && (
-                  <div className="text-sm text-muted-foreground">
-                    <Calendar className="inline h-4 w-4 mr-1" />
-                    Next visit: {format(new Date(nextVisit), "dd/MM/yyyy")}
-                  </div>
-                )}
-
-                <div className="mt-8 pt-4 border-t text-right">
-                  <div className="inline-block border-t border-border pt-1">
-                    <p className="font-medium">{profile?.full_name}</p>
-                    <p className="text-xs text-muted-foreground">Signature</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-between pt-4 border-t">
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowTemplateDialog(true)}
-                  disabled={selectedMedicines.length === 0}
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  Save as Template
-                </Button>
-                <Button variant="outline" onClick={handlePrint}>
-                  <Printer className="mr-2 h-4 w-4" />
-                  Print
-                </Button>
-              </div>
-              <Button
-                onClick={handleCreatePrescription}
-                disabled={!selectedPatientId || selectedMedicines.length === 0 || isCreating}
-              >
-                {isCreating ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
+              <div className="mb-4">
+                <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+                  <span className="text-2xl">℞</span> Medicines
+                </h3>
+                {selectedMedicines.length > 0 ? (
+                  <ol className="list-decimal list-inside space-y-2">
+                    {selectedMedicines.map((med, i) => (
+                      <li key={i} className="text-sm">
+                        <span className="font-medium">{language === "bangla" && med.name_bn ? med.name_bn : med.name}</span>
+                        <div className="ml-5 text-muted-foreground">
+                          {med.dosage} — {getDurationLabel(med.duration, language)}
+                          {med.instructions && <span className="italic"> ({med.instructions})</span>}
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
                 ) : (
-                  <><FileText className="mr-2 h-4 w-4" /> Create Prescription</>
+                  <p className="text-muted-foreground text-sm italic">No medicines added yet</p>
                 )}
-              </Button>
+              </div>
+
+              {advice && (
+                <div className="mb-4 pt-4 border-t">
+                  <h4 className="font-semibold mb-2">Advice:</h4>
+                  <p className="text-sm whitespace-pre-line">{advice}</p>
+                </div>
+              )}
+
+              {nextVisit && (
+                <div className="pt-4 border-t">
+                  <p className="text-sm flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Next Visit:</span>
+                    <span className="font-medium">{format(new Date(nextVisit), "PPP")}</span>
+                  </p>
+                </div>
+              )}
             </div>
-          </DialogContent>
-        </Dialog>
-      }
-    >
+          </div>
+
+          <div className="flex gap-3 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowTemplateDialog(true)}
+              disabled={selectedMedicines.length === 0}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              Save Template
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={handleCreatePrescription}
+              disabled={!selectedPatientId || selectedMedicines.length === 0 || isCreating}
+            >
+              {isCreating ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
+              ) : (
+                <><FileText className="mr-2 h-4 w-4" /> Create Prescription</>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Template Save Dialog */}
       <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
         <DialogContent>
@@ -719,6 +725,7 @@ const Prescriptions = () => {
         onClose={() => setViewPrescription(null)}
       />
     </DashboardLayout>
+    </TooltipProvider>
   );
 };
 
