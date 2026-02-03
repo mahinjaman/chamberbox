@@ -159,36 +159,6 @@ const AdminLogin = () => {
                 language === "bn" ? "লগইন" : "Sign In"
               )}
             </Button>
-
-            <div className="relative w-full">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-600" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-slate-800/80 px-2 text-slate-500">
-                  {language === "bn" ? "অন্যান্য লগইন" : "Other logins"}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex gap-2 w-full">
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
-                onClick={() => navigate("/login")}
-              >
-                {language === "bn" ? "ডাক্তার" : "Doctor"}
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
-                onClick={() => navigate("/staff/login")}
-              >
-                {language === "bn" ? "স্টাফ" : "Staff"}
-              </Button>
-            </div>
           </CardFooter>
         </form>
       </Card>
