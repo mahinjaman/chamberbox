@@ -23,11 +23,13 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { permissionDescriptions } from "@/lib/staff-permissions";
 import { Building2, Info, Copy, Check, ExternalLink, Mail, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 interface Chamber {
   id: string;
   name: string;
   address: string;
+  is_active?: boolean;
 }
 
 interface AddStaffDialogProps {
@@ -297,19 +299,30 @@ export function AddStaffDialog({ open, onOpenChange, chambers }: AddStaffDialogP
               </p>
             ) : (
               <div className="grid sm:grid-cols-2 gap-2 max-h-28 overflow-y-auto border rounded-md p-2">
-                {chambers.map((chamber) => (
-                  <label
-                    key={chamber.id}
-                    className="flex items-center gap-2 p-1.5 rounded hover:bg-muted cursor-pointer text-sm"
-                  >
-                    <Checkbox
-                      checked={formData.chamber_ids.includes(chamber.id)}
-                      onCheckedChange={() => toggleChamber(chamber.id)}
-                    />
-                    <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
-                    <span className="truncate">{chamber.name}</span>
-                  </label>
-                ))}
+                {chambers.map((chamber) => {
+                  const isInactive = chamber.is_active === false;
+                  return (
+                    <label
+                      key={chamber.id}
+                      className={`flex items-center gap-2 p-1.5 rounded text-sm ${
+                        isInactive 
+                          ? "opacity-50 cursor-not-allowed bg-muted" 
+                          : "hover:bg-muted cursor-pointer"
+                      }`}
+                    >
+                      <Checkbox
+                        checked={formData.chamber_ids.includes(chamber.id)}
+                        onCheckedChange={() => !isInactive && toggleChamber(chamber.id)}
+                        disabled={isInactive}
+                      />
+                      <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
+                      <span className="truncate">{chamber.name}</span>
+                      {isInactive && (
+                        <Badge variant="secondary" className="text-[10px] ml-auto">Inactive</Badge>
+                      )}
+                    </label>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -66,16 +66,17 @@ export const useQueueSessions = (date?: string) => {
       const dateObj = new Date(sessionDate + "T00:00:00");
       const dayOfWeek = dateObj.getDay();
       
-      // Get all chambers and their availability slots for this day
+      // Get only ACTIVE chambers and their availability slots for this day
       const { data: chambers } = await supabase
         .from("chambers")
         .select(`
-          id, name, address,
+          id, name, address, is_active,
           availability_slots!inner(
             day_of_week, start_time, end_time, slot_duration_minutes, is_active
           )
         `)
-        .eq("doctor_id", profile.id);
+        .eq("doctor_id", profile.id)
+        .eq("is_active", true);  // Only active chambers can have sessions
       
       // Filter slots for this day of week
       const scheduledSlots: Array<{

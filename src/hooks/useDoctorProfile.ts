@@ -14,6 +14,7 @@ export interface Chamber {
   new_patient_fee: number;
   return_patient_fee: number;
   is_primary: boolean;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -268,6 +269,7 @@ export const usePublicDoctorProfile = (slug: string) => {
         .from("chambers")
         .select("*")
         .eq("doctor_id", profile.id)
+        .eq("is_active", true)  // Only show active chambers in public profile
         .order("is_primary", { ascending: false });
       
       if (error) throw error;

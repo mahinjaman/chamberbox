@@ -83,11 +83,12 @@ export const useAvailableSlots = (doctorId: string, startDate?: Date, days: numb
     queryFn: async (): Promise<BookingSlot[]> => {
       if (!doctorId) return [];
 
-      // Get chambers
+      // Get ACTIVE chambers only
       const { data: chambers, error: chambersError } = await supabase
         .from("chambers")
-        .select(`id, name, address, new_patient_fee, return_patient_fee`)
-        .eq("doctor_id", doctorId);
+        .select(`id, name, address, new_patient_fee, return_patient_fee, is_active`)
+        .eq("doctor_id", doctorId)
+        .eq("is_active", true);  // Only fetch active chambers for booking
 
       if (chambersError) throw chambersError;
       if (!chambers || chambers.length === 0) return [];

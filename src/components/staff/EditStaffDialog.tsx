@@ -21,11 +21,13 @@ import { useStaff, StaffMember, StaffRole } from "@/hooks/useStaff";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { permissionDescriptions } from "@/lib/staff-permissions";
 import { Building2, Info } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface Chamber {
   id: string;
   name: string;
   address: string;
+  is_active?: boolean;
 }
 
 interface EditStaffDialogProps {
@@ -187,19 +189,26 @@ export function EditStaffDialog({ open, onOpenChange, staff, chambers }: EditSta
               <div className="flex flex-wrap gap-2">
                 {chambers.map((chamber) => {
                   const isSelected = formData.chamber_ids.includes(chamber.id);
+                  const isInactive = chamber.is_active === false;
                   return (
                     <button
                       key={chamber.id}
                       type="button"
-                      onClick={() => toggleChamber(chamber.id)}
+                      onClick={() => !isInactive && toggleChamber(chamber.id)}
+                      disabled={isInactive}
                       className={`inline-flex items-center gap-1.5 px-3 h-7 rounded-full border text-xs font-medium transition-colors ${
-                        isSelected
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-background border-input text-muted-foreground hover:bg-muted hover:text-foreground"
+                        isInactive
+                          ? "opacity-50 cursor-not-allowed bg-muted border-muted"
+                          : isSelected
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background border-input text-muted-foreground hover:bg-muted hover:text-foreground"
                       }`}
                     >
                       <Building2 className="h-3 w-3" />
                       {chamber.name}
+                      {isInactive && (
+                        <Badge variant="secondary" className="text-[10px] ml-1 px-1 py-0">Inactive</Badge>
+                      )}
                     </button>
                   );
                 })}
