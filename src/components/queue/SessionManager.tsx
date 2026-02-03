@@ -305,61 +305,89 @@ export const SessionManager = ({
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {sessions.map(session => (
             <Card 
               key={session.id}
               className={cn(
-                "cursor-pointer transition-all hover:shadow-md",
-                selectedSession?.id === session.id && "ring-2 ring-primary"
+                "cursor-pointer transition-all hover:shadow-lg border-l-4",
+                selectedSession?.id === session.id 
+                  ? "ring-2 ring-primary border-l-primary bg-primary/5" 
+                  : "border-l-transparent hover:border-l-muted-foreground/30",
+                session.status === "running" && "border-l-emerald-500",
+                session.status === "paused" && "border-l-amber-500",
+                session.status === "closed" && "border-l-muted-foreground"
               )}
               onClick={() => onSelectSession(session)}
             >
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">
-                          {formatTime12Hour(session.start_time.slice(0, 5))} - {formatTime12Hour(session.end_time.slice(0, 5))}
-                        </span>
-                        <Badge className={getStatusColor(session.status)}>
-                          {getStatusIcon(session.status)}
-                          <span className="ml-1 capitalize">{session.status}</span>
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between gap-4">
+                  {/* Left section - Time and Info */}
+                  <div className="flex-1 min-w-0">
+                    {/* Time display - more prominent */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="text-lg font-bold text-foreground">
+                        {formatTime12Hour(session.start_time.slice(0, 5))}
+                        <span className="text-muted-foreground font-normal mx-1">-</span>
+                        {formatTime12Hour(session.end_time.slice(0, 5))}
+                      </div>
+                    </div>
+                    
+                    {/* Status badges row */}
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <Badge className={cn(
+                        "font-medium",
+                        getStatusColor(session.status)
+                      )}>
+                        {getStatusIcon(session.status)}
+                        <span className="ml-1.5 capitalize">{session.status}</span>
+                      </Badge>
+                      
+                      {session.is_custom && (
+                        <Badge variant="outline" className="text-xs">Custom</Badge>
+                      )}
+                      
+                      {session.booking_open === false && (
+                        <Badge 
+                          variant="secondary" 
+                          className="bg-destructive/10 text-destructive border-destructive/20 text-xs"
+                        >
+                          <Lock className="w-3 h-3 mr-1" />
+                          Booking Closed
                         </Badge>
-                        {session.is_custom && (
-                          <Badge variant="outline">Custom</Badge>
-                        )}
-                        {session.booking_open === false && (
-                          <Badge variant="secondary" className="bg-destructive/10 text-destructive border-0">
-                            <Lock className="w-3 h-3 mr-1" />
-                            Booking Closed
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {session.chamber?.name}
+                      )}
+                    </div>
+                    
+                    {/* Chamber and patient info */}
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4" />
+                        <span className="font-medium">{session.chamber?.name}</span>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-4 h-4" />
+                        <span>
+                          <span className="font-semibold text-foreground">{session.tokens_count || 0}</span>
+                          <span className="text-muted-foreground">/{session.max_patients}</span>
                         </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="w-3 h-3" />
-                          {session.tokens_count || 0}/{session.max_patients}
-                        </span>
-                      </div>
+                      </span>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  {/* Right section - Action buttons */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     {/* Booking Toggle Button */}
                     {session.status !== "closed" && (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button 
-                              size="sm" 
+                              size="icon" 
                               variant={session.booking_open !== false ? "outline" : "secondary"}
-                              className={session.booking_open === false ? "bg-destructive/10 hover:bg-destructive/20 text-destructive" : ""}
+                              className={cn(
+                                "h-9 w-9",
+                                session.booking_open === false && "bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/30"
+                              )}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onToggleBooking(session.id, session.booking_open === false);
@@ -378,24 +406,27 @@ export const SessionManager = ({
                         </Tooltip>
                       </TooltipProvider>
                     )}
+                    
                     {session.status === "open" && (
                       <Button 
                         size="sm" 
-                        variant="outline"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
                         onClick={(e) => {
                           e.stopPropagation();
                           onUpdateStatus(session.id, "running");
                         }}
                       >
-                        <Play className="w-4 h-4 mr-1" />
+                        <Play className="w-4 h-4 mr-1.5" />
                         Start
                       </Button>
                     )}
+                    
                     {session.status === "running" && (
                       <>
                         <Button 
-                          size="sm" 
+                          size="icon" 
                           variant="outline"
+                          className="h-9 w-9 text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700"
                           onClick={(e) => {
                             e.stopPropagation();
                             onUpdateStatus(session.id, "paused");
@@ -404,8 +435,9 @@ export const SessionManager = ({
                           <Pause className="w-4 h-4" />
                         </Button>
                         <Button 
-                          size="sm" 
+                          size="icon" 
                           variant="outline"
+                          className="h-9 w-9"
                           onClick={(e) => {
                             e.stopPropagation();
                             onUpdateStatus(session.id, "closed");
@@ -415,19 +447,21 @@ export const SessionManager = ({
                         </Button>
                       </>
                     )}
+                    
                     {session.status === "paused" && (
                       <Button 
                         size="sm" 
-                        variant="outline"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
                         onClick={(e) => {
                           e.stopPropagation();
                           onUpdateStatus(session.id, "running");
                         }}
                       >
-                        <Play className="w-4 h-4 mr-1" />
+                        <Play className="w-4 h-4 mr-1.5" />
                         Resume
                       </Button>
                     )}
+                    
                     {session.status === "closed" && (
                       <Button 
                         size="sm" 
@@ -437,15 +471,16 @@ export const SessionManager = ({
                           onUpdateStatus(session.id, "running");
                         }}
                       >
-                        <Play className="w-4 h-4 mr-1" />
+                        <Play className="w-4 h-4 mr-1.5" />
                         Restart
                       </Button>
                     )}
+                    
                     {(session.status === "open" || session.status === "closed") && (
                       <Button 
-                        size="sm" 
+                        size="icon" 
                         variant="ghost"
-                        className="text-destructive hover:text-destructive"
+                        className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={(e) => {
                           e.stopPropagation();
                           if (confirm("Delete this session and all its tokens?")) {
