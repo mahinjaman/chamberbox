@@ -152,6 +152,7 @@ export type Database = {
           created_at: string
           doctor_id: string
           id: string
+          is_active: boolean | null
           is_primary: boolean | null
           location_lat: number | null
           location_lng: number | null
@@ -166,6 +167,7 @@ export type Database = {
           created_at?: string
           doctor_id: string
           id?: string
+          is_active?: boolean | null
           is_primary?: boolean | null
           location_lat?: number | null
           location_lng?: number | null
@@ -180,6 +182,7 @@ export type Database = {
           created_at?: string
           doctor_id?: string
           id?: string
+          is_active?: boolean | null
           is_primary?: boolean | null
           location_lat?: number | null
           location_lng?: number | null

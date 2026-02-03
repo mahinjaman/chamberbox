@@ -9,12 +9,13 @@ import { TimeSelect } from "@/components/ui/time-select";
 import { useDoctorProfile, DoctorProfile, Chamber, AvailabilitySlot } from "@/hooks/useDoctorProfile";
 import { useSubscription } from "@/hooks/useSubscription";
 import { DAYS_OF_WEEK, formatPhoneNumber, formatTime12Hour } from "@/lib/doctor-profile-utils";
-import { Loader2, Plus, Trash2, MapPin, Clock, Phone, Building2, AlertTriangle } from "lucide-react";
+import { Loader2, Plus, Trash2, MapPin, Clock, Phone, Building2, AlertTriangle, Power } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 interface ProfileChambersProps {
   profile: DoctorProfile | null | undefined;
@@ -28,13 +29,11 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
   const [editingChamber, setEditingChamber] = useState<Partial<Chamber> | null>(null);
   const [showChamberDialog, setShowChamberDialog] = useState(false);
 
-  const chamberCount = chambers.length;
+  // Count active chambers for limit checking
+  const activeChamberCount = chambers.filter(c => c.is_active).length;
   const maxChambers = currentPlan?.max_chambers || 1;
-  const canAddChamber = canAddMore('chambers', chamberCount);
-  const chamberLimitReached = !canAddChamber && maxChambers !== -1;
-  
-  // Determine which chambers are within limit (first N chambers stay active)
-  const isWithinLimit = (index: number) => maxChambers === -1 || index < maxChambers;
+  const canActivateMore = maxChambers === -1 || activeChamberCount < maxChambers;
+  const chamberLimitReached = !canActivateMore;
 
   const [chamberForm, setChamberForm] = useState({
     name: "",
@@ -49,6 +48,11 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
   });
 
   const openNewChamber = () => {
+    // Check if can add more active chambers
+    if (!canActivateMore) {
+      toast.error(`Your plan allows maximum ${maxChambers} active chambers.`);
+      return;
+    }
     setChamberForm({
       name: "",
       address: "",
@@ -62,6 +66,23 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
     });
     setEditingChamber(null);
     setShowChamberDialog(true);
+  };
+
+  const toggleChamberActive = async (chamber: Chamber) => {
+    // If trying to activate and limit reached, show error
+    if (!chamber.is_active && !canActivateMore) {
+      toast.error(`Your plan allows maximum ${maxChambers} active chambers. Deactivate another chamber first.`);
+      return;
+    }
+    
+    await upsertChamber.mutateAsync({
+      id: chamber.id,
+      doctor_id: chamber.doctor_id,
+      name: chamber.name,
+      address: chamber.address,
+      is_active: !chamber.is_active,
+    });
+    toast.success(chamber.is_active ? "Chamber deactivated" : "Chamber activated");
   };
 
   const openEditChamber = (chamber: Chamber) => {
@@ -142,7 +163,7 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
           <p className="text-muted-foreground text-sm">
             Manage your practice locations and schedules 
             {maxChambers !== -1 && (
-              <span className="ml-1">({chamberCount}/{maxChambers} used)</span>
+              <span className="ml-1">({activeChamberCount}/{maxChambers} active)</span>
             )}
           </p>
         </div>
@@ -176,10 +197,10 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
             <AlertTriangle className="w-5 h-5 text-amber-600" />
             <div className="flex-1">
               <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                Chamber limit reached ({chamberCount}/{maxChambers})
+                Active chamber limit reached ({activeChamberCount}/{maxChambers})
               </p>
               <p className="text-xs text-amber-700 dark:text-amber-300">
-                Upgrade your plan to add more chambers.
+                Deactivate a chamber or upgrade your plan to activate more.
               </p>
             </div>
           </CardContent>
@@ -212,7 +233,7 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
             {chambers.map((chamber, index) => {
               const slots = getChamberSlots(chamber.id);
               const days = [...new Set(slots.map(s => s.day_of_week))].sort();
-              const chamberActive = isWithinLimit(index);
+              const isActive = chamber.is_active;
               
               return (
                 <motion.div
@@ -224,27 +245,47 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
                 >
                   <Card className={cn(
                     chamber.is_primary ? "ring-2 ring-primary" : "",
-                    !chamberActive && "opacity-60 bg-muted/50"
+                    !isActive && "opacity-60 bg-muted/50"
                   )}>
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg flex items-center gap-2 flex-wrap">
                             {chamber.name}
                             {chamber.is_primary && (
                               <Badge variant="default" className="text-xs">Primary</Badge>
                             )}
-                            {!chamberActive && (
-                              <Badge variant="destructive" className="text-xs">Inactive</Badge>
+                            {!isActive && (
+                              <Badge variant="secondary" className="text-xs bg-muted-foreground/20">Inactive</Badge>
                             )}
                           </CardTitle>
-                          {!chamberActive && (
-                            <p className="text-xs text-destructive mt-1">
-                              Exceeds plan limit. Upgrade or delete other chambers.
+                          {!isActive && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              This chamber is hidden from public booking and profile
                             </p>
                           )}
                         </div>
-                        <div className="flex gap-1">
+                        <div className="flex items-center gap-1">
+                          {/* Active toggle */}
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => toggleChamberActive(chamber)}
+                                  className={cn(
+                                    isActive ? "text-green-600 hover:text-green-700" : "text-muted-foreground"
+                                  )}
+                                >
+                                  <Power className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{isActive ? "Deactivate chamber" : "Activate chamber"}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                           <Button variant="ghost" size="icon" onClick={() => openEditChamber(chamber)}>
                             <Clock className="w-4 h-4" />
                           </Button>
