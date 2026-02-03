@@ -88,44 +88,40 @@ export const useAvailableSlots = (doctorId: string, startDate?: Date, days: numb
         .from("chambers")
         .select(`id, name, address, new_patient_fee, return_patient_fee, is_active`)
         .eq("doctor_id", doctorId)
-        .eq("is_active", true);  // Only fetch active chambers for booking
+        .eq("is_active", true);
 
       if (chambersError) throw chambersError;
       if (!chambers || chambers.length === 0) return [];
 
-      // Get availability slots for these chambers
       const chamberIds = chambers.map(c => c.id);
-      const { data: availabilitySlots, error: slotsError } = await supabase
-        .from("availability_slots")
-        .select("*")
-        .in("chamber_id", chamberIds)
-        .eq("is_active", true);
-
-      if (slotsError) throw slotsError;
-
-      // Get existing sessions for the date range
+      
+      // Get date range
       const dateFrom = format(start, "yyyy-MM-dd");
       const dateTo = format(addDays(start, days - 1), "yyyy-MM-dd");
 
-      // Include open, running, paused, and closed sessions to properly filter availability
-      const { data: sessions } = await supabase
+      // Fetch sessions directly - this is now the source of truth for booking
+      const { data: sessions, error: sessionsError } = await supabase
         .from("queue_sessions")
         .select("id, chamber_id, session_date, start_time, end_time, status, max_patients, current_token, booking_open, is_custom, avg_consultation_minutes")
         .eq("doctor_id", doctorId)
+        .in("chamber_id", chamberIds)
         .gte("session_date", dateFrom)
-        .lte("session_date", dateTo);
+        .lte("session_date", dateTo)
+        .in("status", ["open", "running", "paused"]); // Only active sessions
+
+      if (sessionsError) throw sessionsError;
+      if (!sessions || sessions.length === 0) return [];
 
       // Get token counts for sessions (only count waiting/current, NOT completed/cancelled)
-      // Only count tokens from open/running/paused sessions
-      const activeSessionIds = sessions?.filter(s => s.status !== "closed").map(s => s.id) || [];
+      const sessionIds = sessions.map(s => s.id);
       let tokenCounts: Record<string, number> = {};
 
-      if (activeSessionIds.length > 0) {
+      if (sessionIds.length > 0) {
         const { data: tokens } = await supabase
           .from("queue_tokens")
           .select("session_id")
-          .in("session_id", activeSessionIds)
-          .in("status", ["waiting", "current"]); // Only count active tokens
+          .in("session_id", sessionIds)
+          .in("status", ["waiting", "current"]);
 
         tokens?.forEach(t => {
           if (t.session_id) {
@@ -134,100 +130,45 @@ export const useAvailableSlots = (doctorId: string, startDate?: Date, days: numb
         });
       }
 
-      // Generate available slots for each day
+      // Build chamber lookup
+      const chamberMap: Record<string, typeof chambers[0]> = {};
+      chambers.forEach(c => { chamberMap[c.id] = c; });
+
+      // Generate slots from sessions
       const result: BookingSlot[] = [];
       const today = startOfDay(new Date());
 
-      for (let i = 0; i < days; i++) {
-        const date = addDays(start, i);
-        const dateStr = format(date, "yyyy-MM-dd");
-        const dayOfWeek = date.getDay();
-
+      sessions.forEach(session => {
+        const sessionDate = new Date(session.session_date);
+        
         // Skip past dates (except today)
-        if (!isAfter(date, today) && !isSameDay(date, today)) continue;
+        if (!isAfter(sessionDate, today) && !isSameDay(sessionDate, today)) return;
 
-        // Check each chamber's availability for this day
-        chambers.forEach(chamber => {
-          const daySlots = availabilitySlots?.filter(
-            (s) => s.chamber_id === chamber.id && s.day_of_week === dayOfWeek
-          ) || [];
+        const chamber = chamberMap[session.chamber_id];
+        if (!chamber) return;
 
-          daySlots.forEach((slot) => {
-            // Check if session already exists for this slot
-            const existingSession = sessions?.find(
-              s => s.chamber_id === chamber.id &&
-                   s.session_date === dateStr &&
-                   s.start_time.slice(0, 5) === slot.start_time.slice(0, 5)
-            );
+        const currentBookings = tokenCounts[session.id] || 0;
+        const maxPatients = session.max_patients || 30;
+        const isBookingClosed = session.booking_open === false;
 
-            const currentBookings = existingSession ? (tokenCounts[existingSession.id] || 0) : 0;
-            const maxPatients = existingSession?.max_patients || 30;
-            const isSessionClosed = existingSession?.status === "closed";
-            // Check if booking is manually closed by doctor
-            const isBookingClosed = existingSession?.booking_open === false;
-            
-            // Skip closed sessions entirely - don't show them as available slots
-            if (isSessionClosed) return;
-
-            result.push({
-              date: dateStr,
-              chamber_id: chamber.id,
-              chamber_name: chamber.name,
-              chamber_address: chamber.address,
-              start_time: slot.start_time.slice(0, 5),
-              end_time: slot.end_time.slice(0, 5),
-              slot_duration_minutes: slot.slot_duration_minutes || 15,
-              new_patient_fee: chamber.new_patient_fee || 500,
-              return_patient_fee: chamber.return_patient_fee || 300,
-              current_bookings: currentBookings,
-              max_patients: maxPatients,
-              is_available: !isSessionClosed && !isBookingClosed && currentBookings < maxPatients,
-              session_id: existingSession?.id,
-              booking_open: existingSession?.booking_open ?? true,
-              session_status: existingSession?.status,
-            });
-          });
-
-          // Also include CUSTOM sessions that don't match any availability slot
-          const customSessions = sessions?.filter(
-            s => s.chamber_id === chamber.id &&
-                 s.session_date === dateStr &&
-                 s.is_custom === true &&
-                 s.status !== "closed"
-          ) || [];
-
-          customSessions.forEach(session => {
-            // Check if this custom session's time already matches an availability slot (avoid duplicates)
-            const alreadyAdded = result.some(
-              r => r.date === dateStr && 
-                   r.chamber_id === chamber.id && 
-                   r.start_time === session.start_time.slice(0, 5)
-            );
-            if (alreadyAdded) return;
-
-            const currentBookings = tokenCounts[session.id] || 0;
-            const isBookingClosed = session.booking_open === false;
-
-            result.push({
-              date: dateStr,
-              chamber_id: chamber.id,
-              chamber_name: chamber.name,
-              chamber_address: chamber.address,
-              start_time: session.start_time.slice(0, 5),
-              end_time: session.end_time.slice(0, 5),
-              slot_duration_minutes: session.avg_consultation_minutes || 15,
-              new_patient_fee: chamber.new_patient_fee || 500,
-              return_patient_fee: chamber.return_patient_fee || 300,
-              current_bookings: currentBookings,
-              max_patients: session.max_patients || 30,
-              is_available: !isBookingClosed && currentBookings < (session.max_patients || 30),
-              session_id: session.id,
-              booking_open: session.booking_open ?? true,
-              session_status: session.status,
-            });
-          });
+        result.push({
+          date: session.session_date,
+          chamber_id: session.chamber_id,
+          chamber_name: chamber.name,
+          chamber_address: chamber.address,
+          start_time: session.start_time.slice(0, 5),
+          end_time: session.end_time.slice(0, 5),
+          slot_duration_minutes: session.avg_consultation_minutes || 15,
+          new_patient_fee: chamber.new_patient_fee || 500,
+          return_patient_fee: chamber.return_patient_fee || 300,
+          current_bookings: currentBookings,
+          max_patients: maxPatients,
+          is_available: !isBookingClosed && currentBookings < maxPatients,
+          session_id: session.id,
+          booking_open: session.booking_open ?? true,
+          session_status: session.status,
         });
-      }
+      });
 
       // Sort by date, then by start time
       return result.sort((a, b) => {
@@ -237,7 +178,7 @@ export const useAvailableSlots = (doctorId: string, startDate?: Date, days: numb
       });
     },
     enabled: !!doctorId,
-    staleTime: 30000, // Cache for 30 seconds
+    staleTime: 30000,
   });
 
   return { slots, isLoading };
