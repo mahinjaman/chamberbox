@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Button } from "@/components/ui/button";
@@ -6,69 +5,56 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { usePatients } from "@/hooks/usePatients";
 import { useQueue } from "@/hooks/useQueue";
 import { useProfile } from "@/hooks/useProfile";
+import { useTransactions } from "@/hooks/useTransactions";
+import { useQueueSessions } from "@/hooks/useQueueSessions";
+import { useSupportTickets } from "@/hooks/useSupportTickets";
 import { 
   Users, 
   Clock, 
   CreditCard, 
   UserPlus,
   ArrowRight,
-  FileText,
-  SkipForward,
-  Banknote
+  Banknote,
+  Calendar,
+  MessageSquare,
+  TrendingDown,
+  MapPin
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { PrescriptionModal } from "@/components/queue/PrescriptionModal";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { format } from "date-fns";
+import { bn } from "date-fns/locale";
 
 const Dashboard = () => {
   const { profile } = useProfile();
   const { patients } = usePatients();
-  const { queue, currentToken, waitingCount, completedCount, callNext } = useQueue();
-  const [isPrescriptionPromptOpen, setIsPrescriptionPromptOpen] = useState(false);
-  const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false);
-  const { t } = useLanguage();
+  const { currentToken, waitingCount, completedCount } = useQueue();
+  const { todayStats } = useTransactions();
+  const { sessions } = useQueueSessions();
+  const { tickets } = useSupportTickets();
+  const { t, language } = useLanguage();
 
   const todaysPatients = completedCount + (currentToken ? 1 : 0);
-  const estimatedEarnings = todaysPatients * 500; // Placeholder: ৳500 per visit
+  const today = new Date();
+  const formattedDate = format(today, language === "bn" ? "dd MMMM, yyyy (EEEE)" : "MMMM dd, yyyy (EEEE)", {
+    locale: language === "bn" ? bn : undefined
+  });
 
-  const handleCallNextClick = () => {
-    if (currentToken) {
-      setIsPrescriptionPromptOpen(true);
-    } else {
-      callNext();
-    }
-  };
+  // Filter user's own tickets
+  const userTickets = tickets?.filter(t => t.user_id === profile?.user_id) || [];
+  const openTickets = userTickets.filter(t => t.status === "open" || t.status === "in_progress");
+  const resolvedTickets = userTickets.filter(t => t.status === "resolved");
 
-  const handleMakePrescriptionAndCallNext = () => {
-    setIsPrescriptionPromptOpen(false);
-    if (currentToken) {
-      setIsPrescriptionModalOpen(true);
-    }
-  };
-
-  const handleSkipPrescription = async () => {
-    setIsPrescriptionPromptOpen(false);
-    await callNext();
-  };
-
-  const handlePrescriptionSuccess = async () => {
-    setIsPrescriptionModalOpen(false);
-    await callNext();
-  };
+  // Session stats
+  const runningSessions = sessions.filter(s => s.status === "running");
+  const openSessions = sessions.filter(s => s.status === "open");
+  const totalTokensToday = sessions.reduce((acc, s) => acc + (s.tokens_count || 0), 0);
 
   return (
     <DashboardLayout
       title={`${t.dashboard.welcome}, ${profile?.full_name?.split(" ")[0] || "Doctor"}!`}
-      description={t.landing.heroSubtitle.split('.')[0]}
+      description={formattedDate}
     >
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -87,18 +73,18 @@ const Dashboard = () => {
           variant="success"
         />
         <StatsCard
-          title={t.dashboard.totalPatients}
-          value={patients.length}
-          description={t.patients.title}
-          icon={<Users className="w-6 h-6" />}
-          variant="default"
-        />
-        <StatsCard
-          title={t.dashboard.totalRevenue}
-          value={`৳${estimatedEarnings.toLocaleString()}`}
+          title={language === "bn" ? "আজকের আয়" : "Today's Revenue"}
+          value={`৳${todayStats.income.toLocaleString()}`}
           description={t.finances.income}
           icon={<CreditCard className="w-6 h-6" />}
           variant="accent"
+        />
+        <StatsCard
+          title={language === "bn" ? "আজকের খরচ" : "Today's Expense"}
+          value={`৳${todayStats.expense.toLocaleString()}`}
+          description={t.finances.expense}
+          icon={<TrendingDown className="w-6 h-6" />}
+          variant="default"
         />
       </div>
 
@@ -149,12 +135,17 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Today's Queue */}
+        {/* Today's Sessions */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg">{t.queue.currentQueue}</CardTitle>
-              <CardDescription>{queue.length} {t.patients.title.toLowerCase()}</CardDescription>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-primary" />
+                {language === "bn" ? "আজকের সেশন" : "Today's Sessions"}
+              </CardTitle>
+              <CardDescription>
+                {sessions.length} {language === "bn" ? "সেশন" : "sessions"} • {totalTokensToday} {language === "bn" ? "রোগী" : "patients"}
+              </CardDescription>
             </div>
             <Button variant="ghost" size="sm" asChild>
               <Link to="/dashboard/queue">
@@ -163,101 +154,169 @@ const Dashboard = () => {
             </Button>
           </CardHeader>
           <CardContent>
-            {queue.length === 0 ? (
+            {sessions.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>{t.queue.queueEmpty}</p>
+                <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>{language === "bn" ? "আজকে কোনো সেশন নেই" : "No sessions today"}</p>
                 <Button variant="link" asChild className="mt-2">
-                  <Link to="/dashboard/patients">{t.queue.addToQueue}</Link>
+                  <Link to="/dashboard/queue">{language === "bn" ? "সেশন তৈরি করুন" : "Create session"}</Link>
                 </Button>
               </div>
             ) : (
-              <div className="space-y-2">
-                {queue.slice(0, 5).map((token) => (
+              <div className="space-y-3">
+                {sessions.slice(0, 4).map((session) => (
                   <div
-                    key={token.id}
-                    className={cn(
-                      "flex items-center justify-between p-3 rounded-lg border transition-colors",
-                      token.status === "current" && "bg-success/5 border-success/30",
-                      token.status === "waiting" && "bg-muted/50 border-border",
-                      token.status === "completed" && "bg-muted/30 border-border opacity-60"
-                    )}
+                    key={session.id}
+                    className="flex items-center justify-between p-3 rounded-lg border bg-muted/30"
                   >
                     <div className="flex items-center gap-3">
-                      <div
-                        className={cn(
-                          "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm",
-                          token.status === "current" && "bg-success text-success-foreground",
-                          token.status === "waiting" && "bg-warning text-warning-foreground",
-                          token.status === "completed" && "bg-muted text-muted-foreground"
-                        )}
-                      >
-                        #{token.token_number}
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <MapPin className="w-5 h-5 text-primary" />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">
-                          {token.patient?.name || "Unknown"}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {token.patient?.phone}
+                        <p className="font-medium text-sm">{session.chamber?.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {session.start_time.slice(0, 5)} - {session.end_time.slice(0, 5)} • {session.tokens_count || 0} {language === "bn" ? "রোগী" : "patients"}
                         </p>
                       </div>
                     </div>
                     <Badge
                       variant={
-                        token.status === "current"
+                        session.status === "running"
                           ? "default"
-                          : token.status === "completed"
+                          : session.status === "closed"
                           ? "secondary"
                           : "outline"
                       }
+                      className={session.status === "running" ? "bg-success text-success-foreground" : ""}
                     >
-                      {token.status}
+                      {session.status === "running" 
+                        ? (language === "bn" ? "চলমান" : "Running")
+                        : session.status === "open" 
+                        ? (language === "bn" ? "খোলা" : "Open")
+                        : session.status === "closed"
+                        ? (language === "bn" ? "বন্ধ" : "Closed")
+                        : session.status
+                      }
                     </Badge>
                   </div>
                 ))}
+                {sessions.length > 4 && (
+                  <p className="text-center text-sm text-muted-foreground">
+                    +{sessions.length - 4} {language === "bn" ? "আরো সেশন" : "more sessions"}
+                  </p>
+                )}
               </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Support Ticket Status */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-primary" />
+                {language === "bn" ? "সাপোর্ট টিকেট" : "Support Tickets"}
+              </CardTitle>
+              <CardDescription>
+                {language === "bn" ? "আপনার টিকেটের অবস্থা" : "Your ticket status"}
+              </CardDescription>
+            </div>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/dashboard/tickets">
+                {t.common.view} <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {userTickets.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>{language === "bn" ? "কোনো টিকেট নেই" : "No tickets yet"}</p>
+                <Button variant="link" asChild className="mt-2">
+                  <Link to="/dashboard/tickets">{language === "bn" ? "টিকেট তৈরি করুন" : "Create a ticket"}</Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-lg bg-warning/10 border border-warning/20">
+                    <div className="text-2xl font-bold text-warning">{openTickets.length}</div>
+                    <p className="text-sm text-muted-foreground">
+                      {language === "bn" ? "চলমান টিকেট" : "Open Tickets"}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-success/10 border border-success/20">
+                    <div className="text-2xl font-bold text-success">{resolvedTickets.length}</div>
+                    <p className="text-sm text-muted-foreground">
+                      {language === "bn" ? "সমাধান হয়েছে" : "Resolved"}
+                    </p>
+                  </div>
+                </div>
+                {openTickets.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase">
+                      {language === "bn" ? "সাম্প্রতিক" : "Recent"}
+                    </p>
+                    {openTickets.slice(0, 2).map((ticket) => (
+                      <div key={ticket.id} className="flex items-center justify-between p-2 rounded border bg-muted/30">
+                        <span className="text-sm truncate max-w-[180px]">{ticket.subject}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {ticket.status === "open" 
+                            ? (language === "bn" ? "খোলা" : "Open")
+                            : (language === "bn" ? "চলমান" : "In Progress")
+                          }
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Total Stats Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">{language === "bn" ? "সারসংক্ষেপ" : "Summary"}</CardTitle>
+            <CardDescription>{language === "bn" ? "সামগ্রিক পরিসংখ্যান" : "Overall statistics"}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-3">
+                <Users className="w-5 h-5 text-primary" />
+                <span className="text-sm font-medium">{t.dashboard.totalPatients}</span>
+              </div>
+              <span className="text-lg font-bold">{patients.length}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-3">
+                <Calendar className="w-5 h-5 text-success" />
+                <span className="text-sm font-medium">{language === "bn" ? "আজকের সেশন" : "Today's Sessions"}</span>
+              </div>
+              <span className="text-lg font-bold">{sessions.length}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-3">
+                <Clock className="w-5 h-5 text-warning" />
+                <span className="text-sm font-medium">{language === "bn" ? "অপেক্ষারত" : "Waiting"}</span>
+              </div>
+              <span className="text-lg font-bold">{waitingCount}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-success/10">
+              <div className="flex items-center gap-3">
+                <CreditCard className="w-5 h-5 text-success" />
+                <span className="text-sm font-medium">{language === "bn" ? "আজকের নেট আয়" : "Today's Net"}</span>
+              </div>
+              <span className="text-lg font-bold text-success">
+                ৳{(todayStats.income - todayStats.expense).toLocaleString()}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-
-      {/* Prescription Prompt Dialog */}
-      <Dialog open={isPrescriptionPromptOpen} onOpenChange={setIsPrescriptionPromptOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Create Prescription?</DialogTitle>
-            <DialogDescription>
-              {currentToken?.patient?.name} is currently being served. Would you like to create a prescription before calling the next patient?
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-3 pt-4">
-            <Button onClick={handleMakePrescriptionAndCallNext} className="w-full">
-              <FileText className="mr-2 h-4 w-4" />
-              Make Prescription
-            </Button>
-            <Button variant="outline" onClick={handleSkipPrescription} className="w-full">
-              <SkipForward className="mr-2 h-4 w-4" />
-              Skip & Call Next
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Prescription Modal */}
-      <PrescriptionModal
-        isOpen={isPrescriptionModalOpen}
-        onClose={() => setIsPrescriptionModalOpen(false)}
-        patient={currentToken?.patient ? {
-          id: currentToken.patient_id,
-          name: currentToken.patient.name,
-          phone: currentToken.patient.phone,
-          age: currentToken.patient.age,
-          gender: currentToken.patient.gender,
-          blood_group: currentToken.patient.blood_group,
-        } : null}
-        onSuccess={handlePrescriptionSuccess}
-      />
     </DashboardLayout>
   );
 };
