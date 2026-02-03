@@ -87,17 +87,33 @@ export default function MyTickets() {
     return true;
   });
 
-  // Fetch tickets that have admin replies (for showing indicator)
-  const { data: ticketsWithAdminReplies } = useQuery({
-    queryKey: ["ticketsWithAdminReplies"],
+  // Fetch tickets where the LAST reply is from admin (awaiting user response)
+  const { data: ticketsAwaitingUserReply, refetch: refetchAwaitingReplies } = useQuery({
+    queryKey: ["ticketsAwaitingUserReply"],
     queryFn: async () => {
+      // Get the latest reply for each ticket
       const { data, error } = await supabase
         .from("support_ticket_replies")
-        .select("ticket_id")
-        .eq("is_admin_reply", true);
+        .select("ticket_id, is_admin_reply, created_at")
+        .order("created_at", { ascending: false });
       
       if (error) throw error;
-      return new Set(data?.map(r => r.ticket_id) || []);
+      
+      // Group by ticket and check if latest reply is from admin
+      const latestReplyByTicket = new Map<string, boolean>();
+      data?.forEach(reply => {
+        if (!latestReplyByTicket.has(reply.ticket_id)) {
+          latestReplyByTicket.set(reply.ticket_id, reply.is_admin_reply || false);
+        }
+      });
+      
+      // Return set of ticket IDs where last reply is from admin
+      const awaitingReply = new Set<string>();
+      latestReplyByTicket.forEach((isAdminReply, ticketId) => {
+        if (isAdminReply) awaitingReply.add(ticketId);
+      });
+      
+      return awaitingReply;
     },
     enabled: !!tickets && tickets.length > 0,
   });
@@ -113,7 +129,10 @@ export default function MyTickets() {
     
     addReply({ ticketId: selectedTicket.id, message: replyMessage });
     setReplyMessage("");
-    setTimeout(() => refetchReplies(), 500);
+    setTimeout(() => {
+      refetchReplies();
+      refetchAwaitingReplies(); // Refresh the badge status after user replies
+    }, 500);
   };
 
   const handleCreateTicket = () => {
@@ -194,7 +213,7 @@ export default function MyTickets() {
                     </div>
                     <div className="flex flex-col items-end gap-2 ml-4">
                       <div className="flex items-center gap-2">
-                        {ticket.status !== "resolved" && ticket.status !== "closed" && ticketsWithAdminReplies?.has(ticket.id) && (
+                        {ticket.status !== "resolved" && ticket.status !== "closed" && ticketsAwaitingUserReply?.has(ticket.id) && (
                           <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
                             <MessageCircle className="w-3 h-3 mr-1" />
                             Replied
