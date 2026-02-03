@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useQueueSessions } from "@/hooks/useQueueSessions";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
+import { AddTransactionDialog } from "@/components/finance/AddTransactionDialog";
 import { 
   Users, 
   Clock, 
@@ -34,6 +36,7 @@ const Dashboard = () => {
   const { sessions } = useQueueSessions();
   const { tickets } = useSupportTickets();
   const { t, language } = useLanguage();
+  const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
 
   const todaysPatients = completedCount + (currentToken ? 1 : 0);
   const today = new Date();
@@ -105,14 +108,17 @@ const Dashboard = () => {
                 </div>
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="justify-start h-auto py-4">
-              <Link to="/dashboard/finances">
-                <Banknote className="mr-3 h-5 w-5" />
-                <div className="text-left">
-                  <div className="font-medium">{t.finances.addTransaction}</div>
-                  <div className="text-xs opacity-80">{t.finances.income} / {t.finances.expense}</div>
-                </div>
-              </Link>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="justify-start h-auto py-4"
+              onClick={() => setIsTransactionDialogOpen(true)}
+            >
+              <Banknote className="mr-3 h-5 w-5" />
+              <div className="text-left">
+                <div className="font-medium">{t.finances.addTransaction}</div>
+                <div className="text-xs opacity-80">{t.finances.income} / {t.finances.expense}</div>
+              </div>
             </Button>
             <Button asChild size="lg" variant="outline" className="justify-start h-auto py-4">
               <Link to="/dashboard/patients">
@@ -317,6 +323,12 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Add Transaction Dialog */}
+      <AddTransactionDialog 
+        open={isTransactionDialogOpen} 
+        onOpenChange={setIsTransactionDialogOpen} 
+      />
     </DashboardLayout>
   );
 };
