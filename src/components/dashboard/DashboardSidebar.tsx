@@ -167,7 +167,7 @@ export const DashboardSidebar = () => {
                       </button>
                     </CollapsibleTrigger>
                   </div>
-                  <CollapsibleContent className="data-[state=open]:animate-none data-[state=closed]:animate-none">
+                  <CollapsibleContent className="overflow-hidden transition-all duration-300 ease-in-out data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
                     <SidebarMenuSub>
                       {prescriptionSubItems.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.url}>
