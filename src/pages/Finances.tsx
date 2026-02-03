@@ -557,12 +557,12 @@ const Finances = () => {
         <TabsList className="mb-4">
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
           <TabsTrigger value="categories">By Category</TabsTrigger>
-          <TabsTrigger value="dues" className="relative">
+          <TabsTrigger value="dues" className="relative gap-2">
             Dues
             {dueTransactions.length > 0 && (
-              <Badge variant="destructive" className="ml-2 h-5 w-5 p-0 text-xs">
+              <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-[10px] font-semibold rounded-full bg-warning text-warning-foreground shadow-sm">
                 {dueTransactions.length}
-              </Badge>
+              </span>
             )}
           </TabsTrigger>
         </TabsList>
