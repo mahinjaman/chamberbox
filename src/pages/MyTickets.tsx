@@ -12,10 +12,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useSupportTickets, SupportTicket, TicketReply } from "@/hooks/useSupportTickets";
-import { Loader2, MessageSquare, Plus, Send, Search } from "lucide-react";
+import { Loader2, MessageSquare, Plus, Send, Search, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -84,6 +85,21 @@ export default function MyTickets() {
     }
     
     return true;
+  });
+
+  // Fetch tickets that have admin replies (for showing indicator)
+  const { data: ticketsWithAdminReplies } = useQuery({
+    queryKey: ["ticketsWithAdminReplies"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("support_ticket_replies")
+        .select("ticket_id")
+        .eq("is_admin_reply", true);
+      
+      if (error) throw error;
+      return new Set(data?.map(r => r.ticket_id) || []);
+    },
+    enabled: !!tickets && tickets.length > 0,
   });
 
   const { data: replies, isLoading: repliesLoading, refetch: refetchReplies } = useQuery({
@@ -177,7 +193,15 @@ export default function MyTickets() {
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-2 ml-4">
-                      {getStatusBadge(ticket.status)}
+                      <div className="flex items-center gap-2">
+                        {ticket.status !== "resolved" && ticket.status !== "closed" && ticketsWithAdminReplies?.has(ticket.id) && (
+                          <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+                            <MessageCircle className="w-3 h-3 mr-1" />
+                            Replied
+                          </Badge>
+                        )}
+                        {getStatusBadge(ticket.status)}
+                      </div>
                       <span className="text-xs text-muted-foreground">
                         {format(new Date(ticket.created_at), "MMM d, yyyy")}
                       </span>
