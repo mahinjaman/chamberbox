@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +14,14 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePatients } from "@/hooks/usePatients";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { ArrowLeft, Loader2, AlertTriangle, Crown } from "lucide-react";
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 const NewPatient = () => {
+  const { checkLimit, isExpired } = useFeatureAccess();
+  const patientLimit = checkLimit("patients");
   const navigate = useNavigate();
   const { addPatient, isAdding } = usePatients();
 
@@ -71,6 +73,45 @@ const NewPatient = () => {
       }
     );
   };
+
+  // If limit reached, show upgrade prompt
+  if (!patientLimit.withinLimit) {
+    return (
+      <DashboardLayout
+        title="Add New Patient"
+        description="Register a new patient in your chamber"
+      >
+        <div className="max-w-2xl">
+          <Button variant="ghost" asChild className="mb-6">
+            <Link to="/dashboard/patients">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Patients
+            </Link>
+          </Button>
+
+          <Card className="border-destructive/50">
+            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+                <AlertTriangle className="w-8 h-8 text-destructive" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">
+                {isExpired ? "Subscription Expired" : "Patient Limit Reached"}
+              </h3>
+              <p className="text-muted-foreground mb-4 max-w-md">
+                {patientLimit.message}
+              </p>
+              <Button asChild>
+                <Link to="/dashboard/settings">
+                  <Crown className="w-4 h-4 mr-2" />
+                  {isExpired ? "Renew Subscription" : "Upgrade Plan"}
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout

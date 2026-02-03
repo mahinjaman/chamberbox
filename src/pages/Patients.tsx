@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { usePatients, Patient } from "@/hooks/usePatients";
 import { useQueue } from "@/hooks/useQueue";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { 
   Search, 
   UserPlus, 
@@ -37,13 +38,18 @@ import {
   Clock,
   Phone,
   Loader2,
-  Eye
+  Eye,
+  Lock,
+  Crown
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 const Patients = () => {
+  const { checkLimit, isExpired } = useFeatureAccess();
+  const patientLimit = checkLimit("patients");
   const { patients, isLoading, searchPatients, deletePatient, isDeleting } = usePatients();
   const { addToQueue, isAdding: isAddingToQueue } = useQueue();
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,16 +65,34 @@ const Patients = () => {
   };
 
   return (
+    <TooltipProvider>
     <DashboardLayout
       title="Patients"
       description="Manage your patient records"
       actions={
-        <Button asChild>
-          <Link to="/dashboard/patients/new">
-            <UserPlus className="mr-2 h-4 w-4" />
-            Add Patient
-          </Link>
-        </Button>
+        patientLimit.withinLimit ? (
+          <Button asChild>
+            <Link to="/dashboard/patients/new">
+              <UserPlus className="mr-2 h-4 w-4" />
+              Add Patient
+            </Link>
+          </Button>
+        ) : (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button disabled className="opacity-60">
+                <Lock className="mr-2 h-4 w-4" />
+                Add Patient
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p className="text-sm">{patientLimit.message}</p>
+              <Link to="/dashboard/settings" className="text-xs text-primary hover:underline flex items-center gap-1 mt-1">
+                <Crown className="w-3 h-3" /> Upgrade Plan
+              </Link>
+            </TooltipContent>
+          </Tooltip>
+        )
       }
     >
       {/* Search */}
@@ -232,6 +256,7 @@ const Patients = () => {
         </AlertDialogContent>
       </AlertDialog>
     </DashboardLayout>
+    </TooltipProvider>
   );
 };
 

@@ -316,3 +316,76 @@ export const useCreateQueueBooking = () => {
 export const usePublicBookingSlots = (doctorId: string) => {
   return useAvailableSlots(doctorId, new Date(), 16);
 };
+
+// Hook to check if a doctor can accept new patients (for public booking)
+export const useDoctorBookingStatus = (doctorId: string) => {
+  return useQuery({
+    queryKey: ["doctor_booking_status", doctorId],
+    queryFn: async () => {
+      if (!doctorId) return { canBook: true, message: "" };
+
+      // Get doctor's profile with subscription info
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("subscription_tier, subscription_expires_at")
+        .eq("id", doctorId)
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Check if subscription is expired
+      if (profile.subscription_expires_at) {
+        const expiresAt = new Date(profile.subscription_expires_at);
+        if (expiresAt < new Date()) {
+          return { 
+            canBook: false, 
+            message: "This doctor's booking system is currently unavailable.",
+            reason: "expired"
+          };
+        }
+      }
+
+      // Get subscription plan limits
+      const tier = profile.subscription_tier || "trial";
+      const { data: plan, error: planError } = await supabase
+        .from("subscription_plans")
+        .select("max_patients")
+        .eq("tier", tier)
+        .single();
+
+      if (planError) {
+        console.error("Error fetching plan:", planError);
+        return { canBook: true, message: "" }; // Allow booking if can't fetch plan
+      }
+
+      // If unlimited patients, allow booking
+      if (plan.max_patients === -1) {
+        return { canBook: true, message: "" };
+      }
+
+      // Get current patient count for this doctor
+      const { count, error: countError } = await supabase
+        .from("patients")
+        .select("*", { count: "exact", head: true })
+        .eq("doctor_id", doctorId);
+
+      if (countError) {
+        console.error("Error counting patients:", countError);
+        return { canBook: true, message: "" }; // Allow booking if can't count
+      }
+
+      // Check if limit is reached
+      if (count !== null && count >= plan.max_patients) {
+        return { 
+          canBook: false, 
+          message: "This doctor is not accepting new patients at the moment. Please try again later.",
+          reason: "limit_reached"
+        };
+      }
+
+      return { canBook: true, message: "" };
+    },
+    enabled: !!doctorId,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+};
