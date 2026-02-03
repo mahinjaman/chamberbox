@@ -55,8 +55,13 @@ export const SessionManager = ({
   const dateObj = new Date(sessionDate);
   const dayOfWeek = dateObj.getDay();
 
-  // Get schedule slots for the selected chamber and day
+  // Filter only active chambers for session creation
+  const activeChambers = chambers?.filter(c => c.is_active !== false) || [];
+
+  // Get schedule slots for the selected chamber and day (only for active chambers)
   const getScheduleSlots = (chamberId: string) => {
+    const chamber = activeChambers.find(c => c.id === chamberId);
+    if (!chamber) return [];
     return availabilitySlots?.filter(
       s => s.chamber_id === chamberId && s.day_of_week === dayOfWeek
     ) || [];
@@ -140,7 +145,7 @@ export const SessionManager = ({
               {!isCustomTime && (
                 <div className="space-y-3">
                   <Label className="text-sm text-muted-foreground">From Your Schedule</Label>
-                  {chambers?.map(chamber => {
+                  {activeChambers.map(chamber => {
                     const slots = getScheduleSlots(chamber.id);
                     if (slots.length === 0) return null;
                     
@@ -190,7 +195,7 @@ export const SessionManager = ({
                     );
                   })}
                   
-                  {chambers?.every(c => getScheduleSlots(c.id).length === 0) && (
+                  {activeChambers.every(c => getScheduleSlots(c.id).length === 0) && (
                     <p className="text-center py-4 text-muted-foreground text-sm">
                       No schedule found for {DAYS_OF_WEEK.find(d => d.value === dayOfWeek)?.label}
                     </p>
@@ -217,7 +222,7 @@ export const SessionManager = ({
                         <SelectValue placeholder="Select chamber" />
                       </SelectTrigger>
                       <SelectContent>
-                        {chambers?.map(c => (
+                        {activeChambers.map(c => (
                           <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                         ))}
                       </SelectContent>
