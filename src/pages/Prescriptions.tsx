@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { usePrescriptions, PrescriptionMedicine, Prescription, PrescriptionInvestigation } from "@/hooks/usePrescriptions";
@@ -68,7 +69,7 @@ const PRESCRIPTIONS_PER_PAGE = 9;
 const Prescriptions = () => {
   const { profile } = useProfile();
   const { patients } = usePatients();
-  const { prescriptions, templates, createPrescription, saveTemplate, isCreating } = usePrescriptions();
+  const { prescriptions, templates, createPrescription, saveTemplate, deletePrescription, isCreating, isDeleting } = usePrescriptions();
   const { medicines, searchMedicines } = useMedicines();
   const { checkLimit, isExpired } = useFeatureAccess();
   const prescriptionLimit = checkLimit("prescriptions");
@@ -88,6 +89,7 @@ const Prescriptions = () => {
   const [templateName, setTemplateName] = useState("");
   const [previewMode, setPreviewMode] = useState(false);
   const [viewPrescription, setViewPrescription] = useState<Prescription | null>(null);
+  const [prescriptionToDelete, setPrescriptionToDelete] = useState<string | null>(null);
 
   // Search and filter state for prescriptions list
   const [prescriptionSearch, setPrescriptionSearch] = useState("");
@@ -738,17 +740,30 @@ const Prescriptions = () => {
                         )}
                       </div>
                     )}
-                    <Button
-                      variant="outline"
-                      className="w-full mt-4 py-2.5 border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setViewPrescription(p);
-                      }}
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      View Details
-                    </Button>
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        variant="outline"
+                        className="flex-1 py-2.5 border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setViewPrescription(p);
+                        }}
+                      >
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Details
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPrescriptionToDelete(p.id);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -793,6 +808,32 @@ const Prescriptions = () => {
         isOpen={!!viewPrescription}
         onClose={() => setViewPrescription(null)}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!prescriptionToDelete} onOpenChange={(open) => !open && setPrescriptionToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Prescription?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the prescription record.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (prescriptionToDelete) {
+                  deletePrescription(prescriptionToDelete);
+                  setPrescriptionToDelete(null);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
     </TooltipProvider>
   );
