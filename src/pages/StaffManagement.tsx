@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { useStaff, StaffMember, StaffRole } from "@/hooks/useStaff";
 import { useProfile } from "@/hooks/useProfile";
 import { useSubscription } from "@/hooks/useSubscription";
-import { Plus, Users, Pencil, Trash2, Building2, Shield, Mail, KeyRound, Info, AlertTriangle } from "lucide-react";
+import { Plus, Users, Pencil, Trash2, Building2, Shield, Mail, KeyRound, Info, AlertTriangle, Settings2 } from "lucide-react";
 import { AddStaffDialog } from "@/components/staff/AddStaffDialog";
 import { EditStaffDialog } from "@/components/staff/EditStaffDialog";
+import { StaffPermissionsDialog } from "@/components/staff/StaffPermissionsDialog";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { permissionDescriptions } from "@/lib/staff-permissions";
 import {
@@ -49,6 +50,7 @@ export default function StaffManagement() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
   const [deletingStaff, setDeletingStaff] = useState<StaffMember | null>(null);
+  const [permissionsStaff, setPermissionsStaff] = useState<StaffMember | null>(null);
   const [sendingResetTo, setSendingResetTo] = useState<string | null>(null);
 
   const staffCount = staffMembers?.length || 0;
@@ -268,6 +270,24 @@ export default function StaffManagement() {
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => setPermissionsStaff(staff)}
+                            >
+                              <Settings2 className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {language === "bn" 
+                              ? "অনুমতি কাস্টমাইজ করুন"
+                              : "Customize Permissions"}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
                               onClick={() => handleSendPasswordReset(staff.email)}
                               disabled={sendingResetTo === staff.email}
                             >
@@ -320,6 +340,13 @@ export default function StaffManagement() {
           chambers={chambers || []}
         />
       )}
+
+      {/* Permissions Dialog */}
+      <StaffPermissionsDialog
+        staff={permissionsStaff}
+        open={!!permissionsStaff}
+        onOpenChange={(open) => !open && setPermissionsStaff(null)}
+      />
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deletingStaff} onOpenChange={() => setDeletingStaff(null)}>
