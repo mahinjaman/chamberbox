@@ -26,6 +26,7 @@ import EditPatient from "./pages/EditPatient";
 import PatientDetail from "./pages/PatientDetail";
 import Queue from "./pages/Queue";
 import Prescriptions from "./pages/Prescriptions";
+import PrescriptionTemplates from "./pages/PrescriptionTemplates";
 import Finances from "./pages/Finances";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
@@ -137,6 +138,14 @@ const App = () => (
               element={
                 <DoctorRoute>
                   <Prescriptions />
+                </DoctorRoute>
+              }
+            />
+            <Route
+              path="/dashboard/prescriptions/templates"
+              element={
+                <DoctorRoute>
+                  <PrescriptionTemplates />
                 </DoctorRoute>
               }
             />

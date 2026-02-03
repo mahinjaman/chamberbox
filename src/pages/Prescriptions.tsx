@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { usePrescriptions, PrescriptionMedicine, Prescription, PrescriptionInvestigation } from "@/hooks/usePrescriptions";
 import { useMedicines } from "@/hooks/useMedicines";
@@ -26,7 +25,6 @@ import {
   Save, 
   Printer,
   Languages,
-  Copy,
   X,
   Loader2,
   Pill,
@@ -489,7 +487,7 @@ const Prescriptions = () => {
                         size="sm"
                         onClick={() => applyTemplate(t)}
                       >
-                        <Copy className="mr-1 h-3 w-3" />
+                        <FileText className="mr-1 h-3 w-3" />
                         {t.name}
                       </Button>
                     ))}
@@ -634,213 +632,160 @@ const Prescriptions = () => {
         </DialogContent>
       </Dialog>
 
-      <Tabs defaultValue="recent">
-        <TabsList>
-          <TabsTrigger value="recent">Recent Prescriptions</TabsTrigger>
-          <TabsTrigger value="templates">Templates ({templates.length})</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="recent" className="mt-4 space-y-4">
-          {/* Search & Filters */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by patient name or phone..."
-                value={prescriptionSearch}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={dateFilter} onValueChange={handleDateFilterChange}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Date" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Time</SelectItem>
-                <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="week">This Week</SelectItem>
-                <SelectItem value="month">This Month</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="flex items-center text-sm text-muted-foreground ml-auto">
-              Total: <span className="font-semibold text-foreground ml-1">{totalPrescriptions}</span> prescriptions
-            </div>
+      {/* Prescriptions List */}
+      <div className="space-y-4">
+        {/* Search & Filters */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by patient name or phone..."
+              value={prescriptionSearch}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-10"
+            />
           </div>
+          <Select value={dateFilter} onValueChange={handleDateFilterChange}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Date" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="week">This Week</SelectItem>
+              <SelectItem value="month">This Month</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex items-center text-sm text-muted-foreground ml-auto">
+            Total: <span className="font-semibold text-foreground ml-1">{totalPrescriptions}</span> prescriptions
+          </div>
+        </div>
 
-          {prescriptions.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-16">
-                <div className="w-20 h-20 rounded-full bg-primary/10 mx-auto mb-6 flex items-center justify-center">
-                  <FileText className="w-10 h-10 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">No prescriptions yet</h3>
-                <p className="text-muted-foreground max-w-md mx-auto mb-4">
-                  Create your first digital prescription with bilingual support and smart medicine search.
-                </p>
-                <Button onClick={() => setIsDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Prescription
-                </Button>
-              </CardContent>
-            </Card>
-          ) : totalPrescriptions === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Search className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <p className="text-muted-foreground">
-                  No prescriptions found matching your search.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {paginatedPrescriptions.map((p) => (
-                  <Card 
-                    key={p.id} 
-                    className="hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => setViewPrescription(p)}
-                  >
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-base">{p.patient?.name || "Unknown"}</CardTitle>
-                          <CardDescription>
-                            {p.patient?.phone}
-                            {p.patient?.age && ` • ${p.patient.age} yrs`}
-                            {p.patient?.gender && ` • ${p.patient.gender}`}
-                            {p.patient?.blood_group && ` • ${p.patient.blood_group}`}
-                          </CardDescription>
-                        </div>
-                        <Badge variant="outline">
-                          {format(new Date(p.created_at), "dd MMM")}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-1 mb-3">
-                        {(p.medicines || []).slice(0, 3).map((m, i) => (
-                          <p key={i} className="text-sm text-muted-foreground truncate">
-                            • {m.name}
-                          </p>
-                        ))}
-                        {p.medicines.length > 3 && (
-                          <p className="text-sm text-muted-foreground">
-                            +{p.medicines.length - 3} more
-                          </p>
-                        )}
-                      </div>
-                      {(p.investigations || []).length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {(p.investigations || []).slice(0, 2).map((inv, i) => (
-                            <Badge key={i} variant="secondary" className="text-xs">
-                              {inv.name.length > 15 ? inv.name.slice(0, 15) + "..." : inv.name}
-                            </Badge>
-                          ))}
-                          {(p.investigations || []).length > 2 && (
-                            <Badge variant="secondary" className="text-xs">
-                              +{(p.investigations || []).length - 2}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                      <Button
-                        variant="outline"
-                        className="w-full mt-4 py-2.5 border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setViewPrescription(p);
-                        }}
-                      >
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Details
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
+        {prescriptions.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-16">
+              <div className="w-20 h-20 rounded-full bg-primary/10 mx-auto mb-6 flex items-center justify-center">
+                <FileText className="w-10 h-10 text-primary" />
               </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-4">
-                  <p className="text-sm text-muted-foreground">
-                    Showing {(currentPage - 1) * PRESCRIPTIONS_PER_PAGE + 1}-{Math.min(currentPage * PRESCRIPTIONS_PER_PAGE, totalPrescriptions)} of {totalPrescriptions}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                    >
-                      Previous
-                    </Button>
-                    <span className="text-sm text-muted-foreground px-2">
-                      Page {currentPage} of {totalPages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </TabsContent>
-
-        <TabsContent value="templates" className="mt-4">
-          {templates.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Copy className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <p className="text-muted-foreground">
-                  No templates yet. Save a prescription as template to reuse it quickly.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
+              <h3 className="text-xl font-semibold text-foreground mb-2">No prescriptions yet</h3>
+              <p className="text-muted-foreground max-w-md mx-auto mb-4">
+                Create your first digital prescription with bilingual support and smart medicine search.
+              </p>
+              <Button onClick={() => setIsDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Prescription
+              </Button>
+            </CardContent>
+          </Card>
+        ) : totalPrescriptions === 0 ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <Search className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <p className="text-muted-foreground">
+                No prescriptions found matching your search.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {templates.map((t) => (
-                <Card key={t.id}>
-                  <CardHeader>
-                    <CardTitle className="text-base">{t.name}</CardTitle>
-                    <CardDescription>
-                      {t.medicines.length} medicine{t.medicines.length !== 1 && "s"}
-                    </CardDescription>
+              {paginatedPrescriptions.map((p) => (
+                <Card 
+                  key={p.id} 
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => setViewPrescription(p)}
+                >
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-base">{p.patient?.name || "Unknown"}</CardTitle>
+                        <CardDescription>
+                          {p.patient?.phone}
+                          {p.patient?.age && ` • ${p.patient.age} yrs`}
+                          {p.patient?.gender && ` • ${p.patient.gender}`}
+                          {p.patient?.blood_group && ` • ${p.patient.blood_group}`}
+                        </CardDescription>
+                      </div>
+                      <Badge variant="outline">
+                        {format(new Date(p.created_at), "dd MMM")}
+                      </Badge>
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-1 mb-4">
-                      {t.medicines.slice(0, 3).map((m, i) => (
+                    <div className="space-y-1 mb-3">
+                      {(p.medicines || []).slice(0, 3).map((m, i) => (
                         <p key={i} className="text-sm text-muted-foreground truncate">
                           • {m.name}
                         </p>
                       ))}
+                      {p.medicines.length > 3 && (
+                        <p className="text-sm text-muted-foreground">
+                          +{p.medicines.length - 3} more
+                        </p>
+                      )}
                     </div>
+                    {(p.investigations || []).length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {(p.investigations || []).slice(0, 2).map((inv, i) => (
+                          <Badge key={i} variant="secondary" className="text-xs">
+                            {inv.name.length > 15 ? inv.name.slice(0, 15) + "..." : inv.name}
+                          </Badge>
+                        ))}
+                        {(p.investigations || []).length > 2 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{(p.investigations || []).length - 2}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
                     <Button
                       variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => {
-                        applyTemplate(t);
-                        setIsDialogOpen(true);
+                      className="w-full mt-4 py-2.5 border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setViewPrescription(p);
                       }}
                     >
-                      <Copy className="mr-2 h-4 w-4" />
-                      Use Template
+                      <Eye className="mr-2 h-4 w-4" />
+                      View Details
                     </Button>
                   </CardContent>
                 </Card>
               ))}
             </div>
-          )}
-        </TabsContent>
-      </Tabs>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing {(currentPage - 1) * PRESCRIPTIONS_PER_PAGE + 1}-{Math.min(currentPage * PRESCRIPTIONS_PER_PAGE, totalPrescriptions)} of {totalPrescriptions}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span className="text-sm text-muted-foreground px-2">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Prescription View Modal */}
       <PrescriptionView
