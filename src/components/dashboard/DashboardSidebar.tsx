@@ -146,17 +146,28 @@ export const DashboardSidebar = () => {
                 className="group/collapsible"
               >
                 <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
+                  <div className="flex items-center w-full">
                     <SidebarMenuButton 
+                      asChild
                       tooltip={t.nav.prescriptions}
                       isActive={location.pathname.includes("/dashboard/prescriptions")}
+                      className="flex-1"
                     >
-                      <FileText className="w-5 h-5" />
-                      <span>{t.nav.prescriptions}</span>
-                      <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                      <Link to="/dashboard/prescriptions">
+                        <FileText className="w-5 h-5" />
+                        <span>{t.nav.prescriptions}</span>
+                      </Link>
                     </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
+                    <CollapsibleTrigger asChild>
+                      <button 
+                        className="p-2 hover:bg-sidebar-accent rounded-md transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                      </button>
+                    </CollapsibleTrigger>
+                  </div>
+                  <CollapsibleContent className="data-[state=open]:animate-none data-[state=closed]:animate-none">
                     <SidebarMenuSub>
                       {prescriptionSubItems.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.url}>
