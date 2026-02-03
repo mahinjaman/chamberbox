@@ -633,11 +633,18 @@ const Finances = () => {
                         <div
                           className={cn(
                             "w-10 h-10 rounded-full flex items-center justify-center",
-                            t.type === "income" ? "bg-success/10" : "bg-destructive/10"
+                            t.payment_method === "due" 
+                              ? "bg-warning/10" 
+                              : t.type === "income" 
+                                ? "bg-success/10" 
+                                : "bg-destructive/10"
                           )}
                         >
                           {t.type === "income" ? (
-                            <TrendingUp className="w-5 h-5 text-success" />
+                            <TrendingUp className={cn(
+                              "w-5 h-5",
+                              t.payment_method === "due" ? "text-warning" : "text-success"
+                            )} />
                           ) : (
                             <TrendingDown className="w-5 h-5 text-destructive" />
                           )}
@@ -660,7 +667,11 @@ const Finances = () => {
                         <p
                           className={cn(
                             "text-lg font-bold",
-                            t.type === "income" ? "text-success" : "text-destructive"
+                            t.payment_method === "due" 
+                              ? "text-warning" 
+                              : t.type === "income" 
+                                ? "text-success" 
+                                : "text-destructive"
                           )}
                         >
                           {t.type === "income" ? "+" : "-"}৳{Number(t.amount).toLocaleString()}
