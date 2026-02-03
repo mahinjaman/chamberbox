@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useSupportTickets, SupportTicket, TicketReply } from "@/hooks/useSupportTickets";
-import { Loader2, MessageSquare, Plus, Send } from "lucide-react";
+import { Loader2, MessageSquare, Plus, Send, Search } from "lucide-react";
 import { format } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,14 @@ const CATEGORIES = [
   { value: "bug", label: "Bug Report" },
 ];
 
+const STATUS_OPTIONS = [
+  { value: "all", label: "All Status" },
+  { value: "open", label: "Open" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "resolved", label: "Resolved" },
+  { value: "closed", label: "Closed" },
+];
+
 export default function MyTickets() {
   const { profile } = useProfile();
   const { 
@@ -49,14 +57,34 @@ export default function MyTickets() {
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [replyMessage, setReplyMessage] = useState("");
   const [isNewTicketOpen, setIsNewTicketOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [newTicket, setNewTicket] = useState({
     subject: "",
     message: "",
     category: "general",
   });
 
-  // Filter to only show user's own tickets
-  const myTickets = tickets?.filter(t => t.user_email === profile?.email);
+  // Filter to only show user's own tickets with search and status filter
+  const myTickets = tickets?.filter(t => {
+    // Only user's tickets
+    if (t.user_email !== profile?.email) return false;
+    
+    // Status filter
+    if (statusFilter !== "all" && t.status !== statusFilter) return false;
+    
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      return (
+        t.subject.toLowerCase().includes(query) ||
+        t.message.toLowerCase().includes(query) ||
+        t.category.toLowerCase().includes(query)
+      );
+    }
+    
+    return true;
+  });
 
   const { data: replies, isLoading: repliesLoading, refetch: refetchReplies } = useQuery({
     queryKey: ["ticketReplies", selectedTicket?.id],
@@ -101,7 +129,32 @@ export default function MyTickets() {
     >
       <Card>
         <CardHeader>
-          <CardTitle>Your Tickets</CardTitle>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle>Your Tickets</CardTitle>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search tickets..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 w-full sm:w-[200px]"
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {ticketsLoading ? (
