@@ -96,6 +96,14 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "collapsible-down": {
+          from: { height: "0", opacity: "0", transform: "translateY(-4px)" },
+          to: { height: "var(--radix-collapsible-content-height)", opacity: "1", transform: "translateY(0)" },
+        },
+        "collapsible-up": {
+          from: { height: "var(--radix-collapsible-content-height)", opacity: "1", transform: "translateY(0)" },
+          to: { height: "0", opacity: "0", transform: "translateY(-4px)" },
+        },
         "fade-in-up": {
           from: { opacity: "0", transform: "translateY(20px)" },
           to: { opacity: "1", transform: "translateY(0)" },
@@ -112,6 +120,8 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "collapsible-down": "collapsible-down 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+        "collapsible-up": "collapsible-up 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
         "fade-in-up": "fade-in-up 0.6s ease-out forwards",
         "slide-in-right": "slide-in-right 0.5s ease-out forwards",
         float: "float 3s ease-in-out infinite",
