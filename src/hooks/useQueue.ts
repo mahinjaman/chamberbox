@@ -221,6 +221,25 @@ export const useQueue = (sessionId?: string, date?: string) => {
     },
   });
 
+  // Delete token from queue
+  const deleteToken = useMutation({
+    mutationFn: async (tokenId: string) => {
+      const { error } = await supabase
+        .from("queue_tokens")
+        .delete()
+        .eq("id", tokenId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["queue", profile?.id] });
+      toast.success("Patient removed from queue");
+    },
+    onError: (error) => {
+      toast.error(mapDatabaseError(error));
+    },
+  });
+
   // Complete current patient and call next
   const callNext = async (skipIncomplete = false) => {
     const currentPatient = queue.find((t) => t.status === "current");
@@ -278,6 +297,7 @@ export const useQueue = (sessionId?: string, date?: string) => {
     forceCompleteAndCallNext,
     linkPrescription: linkPrescription.mutate,
     updatePaymentStatus: updatePaymentStatus.mutate,
+    deleteToken: deleteToken.mutate,
     currentToken,
     waitingCount,
     completedCount,
