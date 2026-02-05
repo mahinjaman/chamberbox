@@ -9,7 +9,9 @@ import {
   Shield,
   Settings,
    CheckCircle,
-   UserCog
+   UserCog,
+   Mail,
+   Phone
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,6 +29,7 @@ import {
 import { Button } from "@/components/ui/button";
  import { useAuth } from "@/lib/auth";
  import { AdminStaffPermissions } from "@/hooks/useAdminStaff";
+import { useProfile } from "@/hooks/useProfile";
 import { cn } from "@/lib/utils";
 
 const mainNavItems = [
@@ -72,6 +75,7 @@ const mainNavItems = [
   const { signOut } = useAuth();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const { profile } = useProfile();
  
    const navItems = getNavItems(permissions);
 
@@ -86,11 +90,14 @@ const mainNavItems = [
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="p-4">
         <Link to="/admin" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-destructive flex items-center justify-center flex-shrink-0">
-            <Shield className="text-destructive-foreground w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center flex-shrink-0 shadow-md">
+            <Shield className="text-primary-foreground w-5 h-5" />
           </div>
           {!collapsed && (
-            <span className="font-bold text-lg text-sidebar-foreground">Admin Panel</span>
+            <div>
+              <span className="font-bold text-lg text-sidebar-foreground">Chamberbox</span>
+              <p className="text-xs text-sidebar-foreground/60 -mt-0.5">Crafters</p>
+            </div>
           )}
         </Link>
       </SidebarHeader>
@@ -122,6 +129,27 @@ const mainNavItems = [
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border">
+        {profile && !collapsed && (
+          <div className="mb-3 p-3 rounded-lg bg-sidebar-accent/50">
+            <p className="font-medium text-sm text-sidebar-foreground truncate">
+              {profile.full_name || "Admin User"}
+            </p>
+            <div className="mt-1.5 space-y-1">
+              {profile.email && (
+                <div className="flex items-center gap-1.5 text-xs text-sidebar-foreground/70">
+                  <Mail className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">{profile.email}</span>
+                </div>
+              )}
+              {profile.phone && (
+                <div className="flex items-center gap-1.5 text-xs text-sidebar-foreground/70">
+                  <Phone className="w-3 h-3 flex-shrink-0" />
+                  <span>{profile.phone}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         <Button
           variant="ghost"
           className="w-full justify-start text-sidebar-foreground hover:text-destructive hover:bg-destructive/10"
