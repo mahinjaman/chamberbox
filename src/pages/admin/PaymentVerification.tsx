@@ -385,12 +385,33 @@ export default function PaymentVerification() {
       description="Verify subscription payments from doctors"
     >
       <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row gap-4 justify-between">
-            <CardTitle>Subscription Payments</CardTitle>
+        <CardHeader className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-xl">Subscription Payments</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {filteredPayments.length} payment{filteredPayments.length !== 1 ? "s" : ""} found
+              </p>
+            </div>
+            <Button onClick={() => setShowAddPaymentDialog(true)} size="sm">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Manual Payment
+            </Button>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, email, phone or TxnID..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
             <div className="flex flex-wrap gap-2">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[130px]">
+                <SelectTrigger className="w-[120px] h-9">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -401,7 +422,7 @@ export default function PaymentVerification() {
                 </SelectContent>
               </Select>
               <Select value={methodFilter} onValueChange={setMethodFilter}>
-                <SelectTrigger className="w-[130px]">
+                <SelectTrigger className="w-[120px] h-9">
                   <SelectValue placeholder="Method" />
                 </SelectTrigger>
                 <SelectContent>
@@ -414,7 +435,7 @@ export default function PaymentVerification() {
                 </SelectContent>
               </Select>
               <Select value={planFilter} onValueChange={setPlanFilter}>
-                <SelectTrigger className="w-[130px]">
+                <SelectTrigger className="w-[120px] h-9">
                   <SelectValue placeholder="Plan" />
                 </SelectTrigger>
                 <SelectContent>
@@ -425,19 +446,6 @@ export default function PaymentVerification() {
                   <SelectItem value="enterprise">Enterprise</SelectItem>
                 </SelectContent>
               </Select>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search payments..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 w-[200px]"
-                />
-              </div>
-              <Button onClick={() => setShowAddPaymentDialog(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Manual Payment
-              </Button>
             </div>
           </div>
         </CardHeader>
