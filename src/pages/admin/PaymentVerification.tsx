@@ -25,7 +25,14 @@ import { Label } from "@/components/ui/label";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, Loader2, Check, X, Eye, Clock } from "lucide-react";
+import { Search, Loader2, Check, X, Eye, Clock, MoreHorizontal, StickyNote, RotateCcw } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { format, addMonths, addYears } from "date-fns";
 
 interface SubscriptionPayment {
@@ -52,6 +59,8 @@ export default function PaymentVerification() {
   const [selectedPayment, setSelectedPayment] = useState<SubscriptionPayment | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [showNotesDialog, setShowNotesDialog] = useState(false);
+  const [adminNotes, setAdminNotes] = useState("");
 
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ["admin-subscription-payments"],
@@ -156,6 +165,56 @@ export default function PaymentVerification() {
       toast.error("Failed to reject: " + error.message);
     },
   });
+
+  const updateNotes = useMutation({
+    mutationFn: async ({ paymentId, notes }: { paymentId: string; notes: string }) => {
+      const { error } = await supabase
+        .from("subscription_payments" as any)
+        .update({
+          admin_notes: notes,
+        })
+        .eq("id", paymentId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-subscription-payments"] });
+      toast.success("Notes updated successfully");
+      setShowNotesDialog(false);
+      setSelectedPayment(null);
+      setAdminNotes("");
+    },
+    onError: (error: any) => {
+      toast.error("Failed to update notes: " + error.message);
+    },
+  });
+
+  const resetToPending = useMutation({
+    mutationFn: async (paymentId: string) => {
+      const { error } = await supabase
+        .from("subscription_payments" as any)
+        .update({
+          status: "pending",
+          verified_at: null,
+        })
+        .eq("id", paymentId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-subscription-payments"] });
+      toast.success("Payment reset to pending");
+    },
+    onError: (error: any) => {
+      toast.error("Failed to reset: " + error.message);
+    },
+  });
+
+  const handleOpenNotes = (payment: SubscriptionPayment) => {
+    setSelectedPayment(payment);
+    setAdminNotes((payment as any).admin_notes || "");
+    setShowNotesDialog(true);
+  };
 
   const filteredPayments = payments.filter((payment) => {
     const searchLower = searchQuery.toLowerCase();
@@ -299,13 +358,31 @@ export default function PaymentVerification() {
                           </Button>
                         </div>
                       ) : (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setSelectedPayment(payment)}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button size="sm" variant="ghost">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setSelectedPayment(payment)}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOpenNotes(payment)}>
+                              <StickyNote className="w-4 h-4 mr-2" />
+                              {(payment as any).admin_notes ? "Edit Notes" : "Add Notes"}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => resetToPending.mutate(payment.id)}
+                              disabled={resetToPending.isPending}
+                            >
+                              <RotateCcw className="w-4 h-4 mr-2" />
+                              Reset to Pending
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
                     </TableCell>
                   </TableRow>
@@ -366,8 +443,58 @@ export default function PaymentVerification() {
         </DialogContent>
       </Dialog>
 
+      {/* Notes Dialog */}
+      <Dialog open={showNotesDialog} onOpenChange={setShowNotesDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Admin Notes</DialogTitle>
+            <DialogDescription>
+              Add or edit notes for this payment record.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {selectedPayment && (
+              <div className="bg-muted p-3 rounded-lg text-sm">
+                <p className="font-medium">{selectedPayment.doctor?.full_name}</p>
+                <p className="text-muted-foreground">
+                  {selectedPayment.plan_tier} - ৳{selectedPayment.amount.toLocaleString()}
+                </p>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                placeholder="Add admin notes about this payment..."
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNotesDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (selectedPayment) {
+                  updateNotes.mutate({
+                    paymentId: selectedPayment.id,
+                    notes: adminNotes,
+                  });
+                }
+              }}
+              disabled={updateNotes.isPending}
+            >
+              {updateNotes.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              Save Notes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* View Details Dialog */}
-      <Dialog open={!!selectedPayment && !showRejectDialog} onOpenChange={() => setSelectedPayment(null)}>
+      <Dialog open={!!selectedPayment && !showRejectDialog && !showNotesDialog} onOpenChange={() => setSelectedPayment(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Payment Details</DialogTitle>
@@ -410,8 +537,14 @@ export default function PaymentVerification() {
               </div>
               {selectedPayment.notes && (
                 <div>
-                  <Label className="text-muted-foreground">Notes</Label>
+                  <Label className="text-muted-foreground">Rejection Notes</Label>
                   <p className="mt-1">{selectedPayment.notes}</p>
+                </div>
+              )}
+              {(selectedPayment as any).admin_notes && (
+                <div>
+                  <Label className="text-muted-foreground">Admin Notes</Label>
+                  <p className="mt-1 p-2 bg-muted rounded">{(selectedPayment as any).admin_notes}</p>
                 </div>
               )}
             </div>
