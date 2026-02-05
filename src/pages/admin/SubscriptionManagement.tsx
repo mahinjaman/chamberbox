@@ -180,7 +180,7 @@ export default function SubscriptionManagement() {
     
     if (!doctor.subscription_expires_at) {
       if (isTrial) {
-        return { status: "Trial", variant: "secondary" as const };
+        return { status: "Trial Only", variant: "secondary" as const };
       }
       return { status: "Active", variant: "default" as const };
     }
@@ -197,7 +197,7 @@ export default function SubscriptionManagement() {
     }
     
     if (isTrial) {
-      return { status: "Trial", variant: "secondary" as const };
+      return { status: "Trial Only", variant: "secondary" as const };
     }
     
     return { status: "Active", variant: "default" as const };
