@@ -6,13 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Phone } from "lucide-react";
 import { mapAuthError } from "@/lib/errors";
 
 const Signup = () => {
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -21,8 +22,15 @@ const Signup = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!fullName || !email || !password || !confirmPassword) {
+    if (!fullName || !email || !phone || !password || !confirmPassword) {
       toast.error("Please fill in all fields");
+      return;
+    }
+
+    // Validate Bangladeshi phone format
+    const phoneRegex = /^01[0-9]{9}$/;
+    if (!phoneRegex.test(phone)) {
+      toast.error("Invalid phone number. Use format: 01XXXXXXXXX");
       return;
     }
 
@@ -44,6 +52,7 @@ const Signup = () => {
       options: {
         data: {
           full_name: fullName.trim(),
+          phone: phone.trim(),
         },
         emailRedirectTo: window.location.origin,
       },
@@ -105,6 +114,25 @@ const Signup = () => {
                 required
                 autoComplete="email"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="01XXXXXXXXX"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 11))}
+                  required
+                  autoComplete="tel"
+                  className="pl-10"
+                  maxLength={11}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">Bangladeshi format: 01XXXXXXXXX</p>
             </div>
 
             <div className="space-y-2">

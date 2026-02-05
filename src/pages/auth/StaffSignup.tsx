@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Users, CheckCircle2, XCircle } from "lucide-react";
+import { Eye, EyeOff, Loader2, Users, CheckCircle2, XCircle, Phone } from "lucide-react";
 import { mapAuthError } from "@/lib/errors";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { LanguageToggle } from "@/components/common/LanguageToggle";
@@ -17,6 +17,7 @@ const StaffSignup = () => {
   const inviteEmail = searchParams.get("email") || "";
   
   const [email, setEmail] = useState(inviteEmail);
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -83,8 +84,17 @@ const StaffSignup = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || !confirmPassword) {
+    if (!email || !phone || !password || !confirmPassword) {
       toast.error(language === "bn" ? "সব ফিল্ড পূরণ করুন" : "Please fill in all fields");
+      return;
+    }
+
+    // Validate Bangladeshi phone format
+    const phoneRegex = /^01[0-9]{9}$/;
+    if (!phoneRegex.test(phone)) {
+      toast.error(language === "bn" 
+        ? "সঠিক ফোন নম্বর দিন (01XXXXXXXXX)" 
+        : "Invalid phone number. Use format: 01XXXXXXXXX");
       return;
     }
 
@@ -117,6 +127,7 @@ const StaffSignup = () => {
         emailRedirectTo: `${window.location.origin}/staff/login`,
         data: {
           full_name: staffInfo?.full_name || "",
+          phone: phone.trim(),
           is_staff: true,
         },
       },
@@ -135,6 +146,7 @@ const StaffSignup = () => {
         .update({
           user_id: authData.user.id,
           accepted_at: new Date().toISOString(),
+          phone: phone.trim(),
         })
         .ilike("email", email.trim());
 
@@ -248,6 +260,30 @@ const StaffSignup = () => {
                 {language === "bn" ? "আমন্ত্রণ যাচাই করা হচ্ছে..." : "Checking invitation..."}
               </div>
             )}
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">
+                {language === "bn" ? "ফোন নম্বর" : "Phone Number"}
+              </Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="01XXXXXXXXX"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 11))}
+                  required
+                  autoComplete="tel"
+                  className="pl-10"
+                  maxLength={11}
+                  disabled={!inviteValid}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {language === "bn" ? "বাংলাদেশী ফরম্যাট: 01XXXXXXXXX" : "Bangladeshi format: 01XXXXXXXXX"}
+              </p>
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">
