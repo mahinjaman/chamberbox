@@ -54,10 +54,11 @@ export const useQueueSessions = (date?: string) => {
         .from("queue_sessions")
         .select(`
           *,
-          chamber:chambers(name, address)
+          chamber:chambers!inner(name, address)
         `)
         .eq("doctor_id", profile.id)
         .eq("session_date", sessionDate)
+        .eq("chamber.is_active", true)
         .order("start_time", { ascending: true });
 
       if (fetchError) throw fetchError;
@@ -141,10 +142,11 @@ export const useQueueSessions = (date?: string) => {
           .from("queue_sessions")
           .select(`
             *,
-            chamber:chambers(name, address)
+            chamber:chambers!inner(name, address)
           `)
           .eq("doctor_id", profile.id)
           .eq("session_date", sessionDate)
+          .eq("chamber.is_active", true)
           .order("start_time", { ascending: true });
         
         if (refetchError) throw refetchError;
