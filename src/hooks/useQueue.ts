@@ -25,6 +25,7 @@ export interface QueueToken {
   payment_amount: number | null;
   payment_method: string | null;
   visiting_reason: string | null;
+  notes: string | null;
   patient?: {
     name: string;
     phone: string;
@@ -240,6 +241,25 @@ export const useQueue = (sessionId?: string, date?: string) => {
     },
   });
 
+  // Update notes on token
+  const updateNotes = useMutation({
+    mutationFn: async ({ tokenId, notes }: { tokenId: string; notes: string }) => {
+      const { error } = await supabase
+        .from("queue_tokens")
+        .update({ notes })
+        .eq("id", tokenId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["queue", profile?.id] });
+      toast.success("Note saved");
+    },
+    onError: (error) => {
+      toast.error(mapDatabaseError(error));
+    },
+  });
+
   // Complete current patient and call next
   const callNext = async (skipIncomplete = false) => {
     const currentPatient = queue.find((t) => t.status === "current");
@@ -298,6 +318,7 @@ export const useQueue = (sessionId?: string, date?: string) => {
     linkPrescription: linkPrescription.mutate,
     updatePaymentStatus: updatePaymentStatus.mutate,
     deleteToken: deleteToken.mutate,
+    updateNotes: updateNotes.mutate,
     currentToken,
     waitingCount,
     completedCount,

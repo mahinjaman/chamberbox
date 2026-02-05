@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { QueueToken } from "@/hooks/useQueue";
-import { User, Phone, Calendar, Clock, FileText, Hash } from "lucide-react";
+import { User, Phone, Calendar, Clock, FileText, Hash, StickyNote } from "lucide-react";
 
 interface PatientDetailDialogProps {
   token: QueueToken | null;
@@ -95,6 +95,17 @@ export const PatientDetailDialog = ({
                 <span className="font-medium">Visiting Reason</span>
               </div>
               <p className="text-foreground">{token.visiting_reason}</p>
+            </div>
+          )}
+
+          {/* Internal Notes */}
+          {token.notes && (
+            <div className="p-3 rounded-lg border bg-purple-500/5 border-purple-500/20">
+              <div className="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400 mb-2">
+                <StickyNote className="w-4 h-4" />
+                <span className="font-medium">Internal Note</span>
+              </div>
+              <p className="text-foreground">{token.notes}</p>
             </div>
           )}
 

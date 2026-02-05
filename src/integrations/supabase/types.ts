@@ -733,6 +733,7 @@ export type Database = {
           doctor_id: string
           estimated_time: string | null
           id: string
+          notes: string | null
           patient_id: string
           payment_amount: number | null
           payment_collected: boolean | null
@@ -754,6 +755,7 @@ export type Database = {
           doctor_id: string
           estimated_time?: string | null
           id?: string
+          notes?: string | null
           patient_id: string
           payment_amount?: number | null
           payment_collected?: boolean | null
@@ -775,6 +777,7 @@ export type Database = {
           doctor_id?: string
           estimated_time?: string | null
           id?: string
+          notes?: string | null
           patient_id?: string
           payment_amount?: number | null
           payment_collected?: boolean | null

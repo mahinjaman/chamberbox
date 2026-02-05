@@ -23,10 +23,12 @@ import {
   ChevronRight,
   Calendar as CalendarIcon,
   Globe,
-  Trash2
+  Trash2,
+  StickyNote
 } from "lucide-react";
 import { PrescriptionModal } from "@/components/queue/PrescriptionModal";
 import { PaymentCollectionModal } from "@/components/queue/PaymentCollectionModal";
+import { NoteDialog } from "@/components/queue/NoteDialog";
 import { cn } from "@/lib/utils";
 import { format, addDays, subDays, isToday, isFuture } from "date-fns";
 import {
@@ -78,6 +80,8 @@ const Queue = () => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedPatientToken, setSelectedPatientToken] = useState<QueueToken | null>(null);
   const [isPatientDetailOpen, setIsPatientDetailOpen] = useState(false);
+  const [noteDialogToken, setNoteDialogToken] = useState<QueueToken | null>(null);
+  const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
   
   const sessionDate = format(selectedDate, "yyyy-MM-dd");
   
@@ -102,7 +106,8 @@ const Queue = () => {
     linkPrescription,
     updatePaymentStatus,
     isAdding,
-    deleteToken
+    deleteToken,
+    updateNotes
   } = useQueue(selectedSession?.id, sessionDate);
   
   const { patients, addPatientAsync } = usePatients();
@@ -217,6 +222,18 @@ const Queue = () => {
     e.stopPropagation();
     if (window.confirm("Are you sure you want to remove this patient from queue?")) {
       deleteToken(id);
+    }
+  };
+
+  const handleOpenNoteDialog = (token: QueueToken, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setNoteDialogToken(token);
+    setIsNoteDialogOpen(true);
+  };
+
+  const handleSaveNote = (note: string) => {
+    if (noteDialogToken) {
+      updateNotes({ tokenId: noteDialogToken.id, notes: note });
     }
   };
 
@@ -601,6 +618,12 @@ const Queue = () => {
                                       Has Reason
                                     </Badge>
                                   )}
+                                  {token.notes && (
+                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30">
+                                      <StickyNote className="w-2.5 h-2.5 mr-0.5" />
+                                      Note
+                                    </Badge>
+                                  )}
                                   {index === 0 && !currentToken && (
                                     <Button
                                       size="sm"
@@ -616,6 +639,18 @@ const Queue = () => {
                                     </Button>
                                   )}
                                   {index === 0 && currentToken && <Badge className="bg-warning/20 text-warning border-0 text-xs">Next</Badge>}
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className={cn(
+                                      "h-7 w-7 p-0 text-muted-foreground hover:text-purple-600 hover:bg-purple-500/10",
+                                      token.notes && "text-purple-500"
+                                    )}
+                                    onClick={(e) => handleOpenNoteDialog(token, e)}
+                                    title={token.notes ? "Edit note" : "Add note"}
+                                  >
+                                    <StickyNote className="w-3.5 h-3.5" />
+                                  </Button>
                                   <Button
                                     size="sm"
                                     variant="ghost"
@@ -704,6 +739,14 @@ const Queue = () => {
         token={selectedPatientToken}
         open={isPatientDetailOpen}
         onOpenChange={setIsPatientDetailOpen}
+      />
+
+      <NoteDialog
+        open={isNoteDialogOpen}
+        onOpenChange={setIsNoteDialogOpen}
+        currentNote={noteDialogToken?.notes || null}
+        patientName={noteDialogToken?.patient?.name || "Patient"}
+        onSave={handleSaveNote}
       />
     </DashboardLayout>
   );
