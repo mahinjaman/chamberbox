@@ -176,8 +176,12 @@ export default function SubscriptionManagement() {
 
   const getSubscriptionStatus = (doctor: DoctorProfile) => {
     const now = new Date();
+    const isTrial = !doctor.subscription_tier || doctor.subscription_tier === "trial";
     
     if (!doctor.subscription_expires_at) {
+      if (isTrial) {
+        return { status: "Trial", variant: "secondary" as const };
+      }
       return { status: "Active", variant: "default" as const };
     }
 
@@ -185,11 +189,15 @@ export default function SubscriptionManagement() {
     const daysUntilExpiry = differenceInDays(expiryDate, now);
     
     if (expiryDate < now) {
-      return { status: "Expired", variant: "destructive" as const };
+      return { status: isTrial ? "Trial Expired" : "Expired", variant: "destructive" as const };
     }
     
     if (daysUntilExpiry <= 7) {
-      return { status: "Expiring Soon", variant: "warning" as const };
+      return { status: isTrial ? "Trial Expiring" : "Expiring Soon", variant: "warning" as const };
+    }
+    
+    if (isTrial) {
+      return { status: "Trial", variant: "secondary" as const };
     }
     
     return { status: "Active", variant: "default" as const };
