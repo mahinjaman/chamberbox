@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { 
   Calendar, Clock, Users, MapPin, 
-  CheckCircle2, FileText, Info
+  CheckCircle2, FileText, Info, Copy
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { formatTime12Hour, formatCurrency } from "@/lib/doctor-profile-utils";
@@ -128,7 +128,19 @@ export const BookingSuccessCard = ({
           {/* Booking Reference (Serial Number) */}
           <div className="text-center py-2">
             <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Booking Reference</p>
-            <p className="text-lg font-bold text-primary font-mono">{timeDetails?.serialNumber}</p>
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-lg font-bold text-primary font-mono">{timeDetails?.serialNumber}</p>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(timeDetails?.serialNumber || "");
+                  toast.success("Reference copied!");
+                }}
+                className="p-1.5 rounded-md hover:bg-muted transition-colors"
+                title="Copy reference"
+              >
+                <Copy className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
           </div>
 
           {/* Queue Position (Token Number) */}
