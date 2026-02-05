@@ -34,7 +34,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { usePatients, Patient } from "@/hooks/usePatients";
-import { useQueue } from "@/hooks/useQueue";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { 
   Search, 
@@ -42,7 +41,6 @@ import {
   MoreHorizontal, 
   Edit, 
   Trash2, 
-  Clock,
   Phone,
   Loader2,
   Eye,
@@ -60,7 +58,6 @@ const Patients = () => {
   const { checkLimit, isExpired } = useFeatureAccess();
   const patientLimit = checkLimit("patients");
   const { patients, isLoading, searchPatients, deletePatient, isDeleting } = usePatients();
-  const { addToQueue, isAdding: isAddingToQueue } = useQueue();
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<Patient | null>(null);
   const [genderFilter, setGenderFilter] = useState<string>("all");
@@ -260,13 +257,6 @@ const Patients = () => {
                             <Eye className="mr-2 h-4 w-4" />
                             View
                           </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => addToQueue(patient.id)}
-                          disabled={isAddingToQueue}
-                        >
-                          <Clock className="mr-2 h-4 w-4" />
-                          Add to Queue
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link to={`/dashboard/patients/${patient.id}/edit`}>
