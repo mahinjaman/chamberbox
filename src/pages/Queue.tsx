@@ -21,7 +21,8 @@ import {
   CalendarClock,
   ChevronLeft,
   ChevronRight,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  Globe
 } from "lucide-react";
 import { PrescriptionModal } from "@/components/queue/PrescriptionModal";
 import { PaymentCollectionModal } from "@/components/queue/PaymentCollectionModal";
@@ -580,6 +581,12 @@ const Queue = () => {
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
+                                  {token.booked_by === "public" && (
+                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30">
+                                      <Globe className="w-2.5 h-2.5 mr-0.5" />
+                                      Online
+                                    </Badge>
+                                  )}
                                   {token.visiting_reason && (
                                     <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30">
                                       Has Reason
@@ -638,7 +645,15 @@ const Queue = () => {
                                     )}
                                   </div>
                                 </div>
-                                <Badge variant={token.status === "completed" ? "secondary" : "destructive"} className="text-xs">{token.status === "completed" ? "Done" : "Cancelled"}</Badge>
+                                <div className="flex items-center gap-2">
+                                  {token.booked_by === "public" && (
+                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30">
+                                      <Globe className="w-2.5 h-2.5 mr-0.5" />
+                                      Online
+                                    </Badge>
+                                  )}
+                                  <Badge variant={token.status === "completed" ? "secondary" : "destructive"} className="text-xs">{token.status === "completed" ? "Done" : "Cancelled"}</Badge>
+                                </div>
                               </button>
                             ))}
                           </div>
