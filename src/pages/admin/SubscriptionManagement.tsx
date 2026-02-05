@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,13 +26,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAdmin, DoctorProfile } from "@/hooks/useAdmin";
-import { Search, Loader2, Edit, CalendarIcon } from "lucide-react";
-import { format, addMonths, addDays } from "date-fns";
+import { Search, Loader2, Edit, CalendarIcon, Filter } from "lucide-react";
+import { format, addMonths, addDays, isAfter, isBefore, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useSearchParams } from "react-router-dom";
 
 const SUBSCRIPTION_TIERS = [
   { value: "trial", label: "Trial", color: "outline" },
@@ -51,7 +58,17 @@ const TRIAL_DAYS_OPTIONS = [
   { value: "custom", label: "Custom date" },
 ];
 
+const FILTER_OPTIONS = [
+  { value: "all", label: "All" },
+  { value: "active", label: "Active" },
+  { value: "expired", label: "Expired" },
+  { value: "expiring", label: "Expiring in 7 days" },
+  { value: "trial", label: "Trial Only" },
+  { value: "paid", label: "Paid Only" },
+];
+
 export default function SubscriptionManagement() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { 
     doctors, 
     doctorsLoading, 
@@ -59,17 +76,62 @@ export default function SubscriptionManagement() {
     isUpdatingSubscription 
   } = useAdmin();
   const [searchQuery, setSearchQuery] = useState("");
+  const [filter, setFilter] = useState<string>(searchParams.get("filter") || "all");
   const [editingDoctor, setEditingDoctor] = useState<DoctorProfile | null>(null);
   const [selectedTier, setSelectedTier] = useState<string>("");
   const [expiryMonths, setExpiryMonths] = useState<string>("1");
   const [trialDays, setTrialDays] = useState<string>("14");
   const [customTrialDate, setCustomTrialDate] = useState<Date | undefined>(undefined);
 
+  // Sync filter from URL params
+  useEffect(() => {
+    const urlFilter = searchParams.get("filter");
+    if (urlFilter && FILTER_OPTIONS.some(opt => opt.value === urlFilter)) {
+      setFilter(urlFilter);
+    }
+  }, [searchParams]);
+
+  const handleFilterChange = (newFilter: string) => {
+    setFilter(newFilter);
+    if (newFilter === "all") {
+      searchParams.delete("filter");
+    } else {
+      searchParams.set("filter", newFilter);
+    }
+    setSearchParams(searchParams);
+  };
+
+  const now = startOfDay(new Date());
+  const sevenDaysFromNow = addDays(now, 7);
+
   const filteredDoctors = doctors?.filter((doctor) => {
-    return (
+    const matchesSearch = 
       doctor.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doctor.email?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+      doctor.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
+    const expiryDate = doctor.subscription_expires_at ? new Date(doctor.subscription_expires_at) : null;
+    const isExpired = expiryDate ? isBefore(expiryDate, now) : false;
+    const isExpiringSoon = expiryDate ? isAfter(expiryDate, now) && isBefore(expiryDate, sevenDaysFromNow) : false;
+    const isTrial = !doctor.subscription_tier || doctor.subscription_tier === "trial";
+    const isPaid = doctor.subscription_tier && doctor.subscription_tier !== "trial";
+    const isActive = !isExpired;
+
+    switch (filter) {
+      case "active":
+        return isActive;
+      case "expired":
+        return isExpired;
+      case "expiring":
+        return isExpiringSoon;
+      case "trial":
+        return isTrial;
+      case "paid":
+        return isPaid;
+      default:
+        return true;
+    }
   });
 
   const handleEditSubscription = (doctor: DoctorProfile) => {
@@ -145,14 +207,35 @@ export default function SubscriptionManagement() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row gap-4 justify-between">
             <CardTitle>Subscriptions</CardTitle>
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search doctors..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 w-[200px]"
-              />
+            <div className="flex gap-2">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search doctors..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 w-[200px]"
+                />
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant={filter !== "all" ? "default" : "outline"} className="gap-2">
+                    <Filter className="h-4 w-4" />
+                    {FILTER_OPTIONS.find(opt => opt.value === filter)?.label || "All"}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {FILTER_OPTIONS.map((option) => (
+                    <DropdownMenuItem 
+                      key={option.value} 
+                      onClick={() => handleFilterChange(option.value)}
+                      className={filter === option.value ? "bg-muted" : ""}
+                    >
+                      {option.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </CardHeader>
