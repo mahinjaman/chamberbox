@@ -632,7 +632,6 @@
                  <SelectContent>
                    <SelectItem value="support">Support</SelectItem>
                    <SelectItem value="manager">Manager</SelectItem>
-                   <SelectItem value="super">Super</SelectItem>
                  </SelectContent>
                </Select>
              </div>
@@ -646,12 +645,6 @@
                    <>
                      <p>• Support Tickets, Doctor Management</p>
                      <p>• Subscriptions, Payments, Tutorials</p>
-                   </>
-                 )}
-                 {staffForm.role === "super" && (
-                   <>
-                     <p>• Full access to all admin features</p>
-                     <p>• Including Plan Config & Admin Management</p>
                    </>
                  )}
                </div>
