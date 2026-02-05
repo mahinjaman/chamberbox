@@ -93,6 +93,7 @@ const Queue = () => {
     updateSessionStatus,
     toggleBookingOpen,
     deleteSession,
+    updateMaxPatients,
     isCreating: isCreatingSession,
   } = useQueueSessions(sessionDate);
 
@@ -533,6 +534,7 @@ const Queue = () => {
           onUpdateStatus={(id, status) => updateSessionStatus({ id, status })} 
           onToggleBooking={(id, booking_open) => toggleBookingOpen({ id, booking_open })} 
           onDeleteSession={deleteSession} 
+          onUpdateMaxPatients={(id, max_patients) => updateMaxPatients({ id, max_patients })}
           isCreating={isCreatingSession} 
           sessionDate={sessionDate} 
         />

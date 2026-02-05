@@ -13,7 +13,7 @@ import { formatTime12Hour, DAYS_OF_WEEK } from "@/lib/doctor-profile-utils";
 import { format } from "date-fns";
 import { 
   Plus, Clock, MapPin, Users, Play, Pause, Square, 
-  Loader2, Trash2, CalendarClock, ChevronRight, LockOpen, Lock
+  Loader2, Trash2, CalendarClock, ChevronRight, LockOpen, Lock, Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -26,6 +26,7 @@ interface SessionManagerProps {
   onUpdateStatus: (id: string, status: QueueSession["status"]) => void;
   onToggleBooking: (id: string, booking_open: boolean) => void;
   onDeleteSession: (id: string) => void;
+  onUpdateMaxPatients?: (id: string, max_patients: number) => void;
   isCreating: boolean;
   sessionDate: string;
 }
@@ -38,6 +39,7 @@ export const SessionManager = ({
   onUpdateStatus,
   onToggleBooking,
   onDeleteSession,
+  onUpdateMaxPatients,
   isCreating,
   sessionDate,
 }: SessionManagerProps) => {
@@ -50,6 +52,8 @@ export const SessionManager = ({
   const [customEndTime, setCustomEndTime] = useState("14:00");
   const [maxPatients, setMaxPatients] = useState("30");
   const [avgConsultationMinutes, setAvgConsultationMinutes] = useState("5");
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editMaxPatients, setEditMaxPatients] = useState("30");
 
   // Get day of week for the session date
   const dateObj = new Date(sessionDate);
@@ -94,6 +98,13 @@ export const SessionManager = ({
     });
     setIsCreateDialogOpen(false);
     setIsCustomTime(false);
+  };
+
+  const handleSaveMaxPatients = (sessionId: string) => {
+    if (onUpdateMaxPatients) {
+      onUpdateMaxPatients(sessionId, parseInt(editMaxPatients) || 30);
+    }
+    setEditingSessionId(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -367,8 +378,62 @@ export const SessionManager = ({
                   )}
                 </div>
                 
+                {/* Edit Max Patients Inline */}
+                {editingSessionId === session.id ? (
+                  <div className="flex items-center gap-2 mb-2" onClick={e => e.stopPropagation()}>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="200"
+                      value={editMaxPatients}
+                      onChange={e => setEditMaxPatients(e.target.value)}
+                      className="h-7 w-20 text-xs"
+                    />
+                    <Button 
+                      size="sm" 
+                      className="h-7 text-[10px] px-2"
+                      onClick={() => handleSaveMaxPatients(session.id)}
+                    >
+                      Save
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      className="h-7 text-[10px] px-2"
+                      onClick={() => setEditingSessionId(null)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : null}
+                
                 {/* Action buttons */}
                 <div className="flex items-center gap-1.5 flex-wrap">
+                  {/* Edit Max Patients */}
+                  {session.status !== "closed" && onUpdateMaxPatients && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="h-7 text-[10px] px-2"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditMaxPatients(String(session.max_patients));
+                              setEditingSessionId(session.id);
+                            }}
+                          >
+                            <Settings className="w-3 h-3" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Edit max patients ({session.max_patients})</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  
                   {/* Booking Toggle Button */}
                   {session.status !== "closed" && (
                     <TooltipProvider>

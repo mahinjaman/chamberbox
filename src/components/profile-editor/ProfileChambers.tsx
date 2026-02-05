@@ -42,6 +42,7 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
     new_patient_fee: 500,
     return_patient_fee: 300,
     is_primary: false,
+    max_patients_per_session: 30,
     selectedDays: [] as number[],
     start_time: "18:00",
     end_time: "21:00",
@@ -60,6 +61,7 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
       new_patient_fee: 500,
       return_patient_fee: 300,
       is_primary: chambers.length === 0,
+      max_patients_per_session: 30,
       selectedDays: [],
       start_time: "18:00",
       end_time: "21:00",
@@ -98,6 +100,7 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
       new_patient_fee: chamber.new_patient_fee,
       return_patient_fee: chamber.return_patient_fee,
       is_primary: chamber.is_primary,
+      max_patients_per_session: (chamber as any).max_patients_per_session || 30,
       selectedDays,
       start_time: startTime,
       end_time: endTime,
@@ -118,6 +121,7 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
       new_patient_fee: chamberForm.new_patient_fee,
       return_patient_fee: chamberForm.return_patient_fee,
       is_primary: chamberForm.is_primary,
+      max_patients_per_session: chamberForm.max_patients_per_session,
     };
 
     await upsertChamber.mutateAsync(chamberData);
@@ -355,6 +359,10 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
                           <span className="text-muted-foreground">Follow-up:</span>
                           <span className="font-medium ml-2">৳{chamber.return_patient_fee}</span>
                         </div>
+                        <div>
+                          <span className="text-muted-foreground">Max/Session:</span>
+                          <span className="font-medium ml-2">{(chamber as any).max_patients_per_session || 30}</span>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -423,6 +431,21 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
                   onChange={(e) => setChamberForm(prev => ({ ...prev, return_patient_fee: Number(e.target.value) }))}
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Max Patients Per Session</Label>
+              <Input
+                type="number"
+                min="1"
+                max="200"
+                value={chamberForm.max_patients_per_session}
+                onChange={(e) => setChamberForm(prev => ({ ...prev, max_patients_per_session: Number(e.target.value) || 30 }))}
+                placeholder="30"
+              />
+              <p className="text-xs text-muted-foreground">
+                Default patient limit for each session in this chamber
+              </p>
             </div>
 
             <div className="space-y-2">
