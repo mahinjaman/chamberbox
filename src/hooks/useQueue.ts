@@ -103,10 +103,11 @@ export const useQueue = (sessionId?: string, date?: string) => {
   });
 
   const addToQueue = useMutation({
-    mutationFn: async ({ patientId, sessionId: sid, chamberId }: { 
+    mutationFn: async ({ patientId, sessionId: sid, chamberId, visitingReason }: { 
       patientId: string; 
       sessionId?: string; 
       chamberId?: string;
+      visitingReason?: string;
     }) => {
       if (!profile?.id) throw new Error("Profile not loaded");
       
@@ -131,6 +132,7 @@ export const useQueue = (sessionId?: string, date?: string) => {
           queue_date: queueDate,
           status: "waiting",
           booked_by: "internal",
+          visiting_reason: visitingReason || null,
         })
         .select()
         .single();
@@ -310,8 +312,8 @@ export const useQueue = (sessionId?: string, date?: string) => {
     queue,
     isLoading,
     error,
-    addToQueue: (patientId: string, sessionId?: string, chamberId?: string) => 
-      addToQueue.mutate({ patientId, sessionId, chamberId }),
+    addToQueue: (patientId: string, sessionId?: string, chamberId?: string, visitingReason?: string) => 
+      addToQueue.mutate({ patientId, sessionId, chamberId, visitingReason }),
     updateTokenStatus: updateTokenStatus.mutate,
     callNext,
     forceCompleteAndCallNext,
