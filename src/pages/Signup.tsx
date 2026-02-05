@@ -84,7 +84,7 @@ const Signup = () => {
           </Link>
           <CardTitle className="text-2xl">Create your account</CardTitle>
           <CardDescription>
-            Start your 90-day free trial
+            Start your 30-day free trial
           </CardDescription>
         </CardHeader>
 

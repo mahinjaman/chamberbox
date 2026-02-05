@@ -33,7 +33,7 @@ const plans = [
       "WhatsApp support",
       "Logo on prescriptions",
     ],
-    cta: "Start 90-Day Trial",
+    cta: "Start 30-Day Trial",
     popular: true,
   },
   {
@@ -66,7 +66,7 @@ const Pricing = () => {
             Simple, Transparent Pricing
           </h2>
           <p className="text-lg text-muted-foreground">
-            Start with a 90-day free trial. No credit card required. 
+            Start with a 30-day free trial. No credit card required. 
             Cancel anytime.
           </p>
         </div>
