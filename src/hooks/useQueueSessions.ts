@@ -70,7 +70,7 @@ export const useQueueSessions = (date?: string) => {
       const { data: chambers } = await supabase
         .from("chambers")
         .select(`
-          id, name, address, is_active,
+          id, name, address, is_active, max_patients_per_session,
           availability_slots!inner(
             day_of_week, start_time, end_time, slot_duration_minutes, is_active
           )
@@ -84,6 +84,7 @@ export const useQueueSessions = (date?: string) => {
         start_time: string;
         end_time: string;
         slot_duration_minutes: number;
+        max_patients: number;
       }> = [];
       
       chambers?.forEach(chamber => {
@@ -103,6 +104,7 @@ export const useQueueSessions = (date?: string) => {
             start_time: slot.start_time.slice(0, 5),
             end_time: slot.end_time.slice(0, 5),
             slot_duration_minutes: slot.slot_duration_minutes || 5,
+            max_patients: (chamber as any).max_patients_per_session || 30,
           });
         });
       });
@@ -126,7 +128,7 @@ export const useQueueSessions = (date?: string) => {
           end_time: slot.end_time,
           status: "open",
           current_token: 0,
-          max_patients: 30,
+          max_patients: slot.max_patients,
           avg_consultation_minutes: slot.slot_duration_minutes,
           is_custom: false,
           booking_open: true,
@@ -256,6 +258,26 @@ export const useQueueSessions = (date?: string) => {
       toast.error(mapDatabaseError(error));
     },
   });
+
+  // Update max patients for a session
+  const updateMaxPatients = useMutation({
+    mutationFn: async ({ id, max_patients }: { id: string; max_patients: number }) => {
+      const { error } = await supabase
+        .from("queue_sessions")
+        .update({ max_patients, updated_at: new Date().toISOString() })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["queue_sessions", profile?.id, sessionDate] });
+      toast.success("Max patients updated");
+    },
+    onError: (error) => {
+      toast.error(mapDatabaseError(error));
+    },
+  });
+
   const deleteSession = useMutation({
     mutationFn: async (id: string) => {
       // First delete all tokens in this session
@@ -294,6 +316,7 @@ export const useQueueSessions = (date?: string) => {
     updateSessionStatus: updateSessionStatus.mutate,
     updateCurrentToken: updateCurrentToken.mutate,
     toggleBookingOpen: toggleBookingOpen.mutate,
+    updateMaxPatients: updateMaxPatients.mutate,
     deleteSession: deleteSession.mutate,
     isCreating: createSession.isPending,
   };

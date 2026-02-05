@@ -156,6 +156,7 @@ export type Database = {
           is_primary: boolean | null
           location_lat: number | null
           location_lng: number | null
+          max_patients_per_session: number | null
           name: string
           new_patient_fee: number | null
           return_patient_fee: number | null
@@ -171,6 +172,7 @@ export type Database = {
           is_primary?: boolean | null
           location_lat?: number | null
           location_lng?: number | null
+          max_patients_per_session?: number | null
           name: string
           new_patient_fee?: number | null
           return_patient_fee?: number | null
@@ -186,6 +188,7 @@ export type Database = {
           is_primary?: boolean | null
           location_lat?: number | null
           location_lng?: number | null
+          max_patients_per_session?: number | null
           name?: string
           new_patient_fee?: number | null
           return_patient_fee?: number | null
