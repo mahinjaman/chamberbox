@@ -22,7 +22,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Calendar as CalendarIcon,
-  Globe
+  Globe,
+  Trash2
 } from "lucide-react";
 import { PrescriptionModal } from "@/components/queue/PrescriptionModal";
 import { PaymentCollectionModal } from "@/components/queue/PaymentCollectionModal";
@@ -100,7 +101,8 @@ const Queue = () => {
     addToQueue,
     linkPrescription,
     updatePaymentStatus,
-    isAdding
+    isAdding,
+    deleteToken
   } = useQueue(selectedSession?.id, sessionDate);
   
   const { patients, addPatientAsync } = usePatients();
@@ -209,6 +211,13 @@ const Queue = () => {
 
   const handleViewPrescription = (prescriptionId: string) => {
     navigate(`/dashboard/prescriptions?highlight=${prescriptionId}`);
+  };
+
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm("Are you sure you want to remove this patient from queue?")) {
+      deleteToken(id);
+    }
   };
 
   const handleCancel = (id: string) => {
@@ -607,6 +616,14 @@ const Queue = () => {
                                     </Button>
                                   )}
                                   {index === 0 && currentToken && <Badge className="bg-warning/20 text-warning border-0 text-xs">Next</Badge>}
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                    onClick={(e) => handleDelete(token.id, e)}
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </Button>
                                 </div>
                               </button>
                             ))}
