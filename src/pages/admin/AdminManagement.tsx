@@ -85,6 +85,9 @@
      phone: "",
      role: "support",
    });
+
+  const [editingAdmin, setEditingAdmin] = useState<AdminRole | null>(null);
+  const [editAdminRole, setEditAdminRole] = useState<"admin" | "super_admin">("admin");
  
    // Fetch admin roles with user emails
    const { data: admins, isLoading: adminsLoading } = useQuery({
@@ -92,10 +95,7 @@
      queryFn: async () => {
        const { data, error } = await supabase
          .from("user_roles")
-         .select(`
-           *,
-           profile:profiles!user_roles_user_id_fkey(full_name, email, phone)
-         `)
+        .select("*")
          .order("created_at", { ascending: false });
  
        if (error) throw error;
@@ -107,7 +107,7 @@
              .from("profiles")
              .select("full_name, email, phone")
              .eq("user_id", role.user_id)
-             .single();
+            .maybeSingle();
            
            return { ...role, profile };
          })
@@ -192,6 +192,26 @@
      },
    });
  
+  // Update admin role
+  const updateAdmin = useMutation({
+    mutationFn: async ({ roleId, newRole }: { roleId: string; newRole: "admin" | "super_admin" }) => {
+      const { error } = await supabase
+        .from("user_roles")
+        .update({ role: newRole })
+        .eq("id", roleId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-roles"] });
+      toast.success("Admin role updated");
+      setEditingAdmin(null);
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to update admin: " + error.message);
+    },
+  });
+
    // Add admin staff
    const addStaff = useMutation({
      mutationFn: async (data: typeof staffForm) => {
@@ -359,6 +379,16 @@
                            {format(new Date(admin.created_at), "MMM d, yyyy")}
                          </TableCell>
                          <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setEditingAdmin(admin);
+                              setEditAdminRole(admin.role);
+                            }}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
                            <Button
                              variant="ghost"
                              size="sm"
@@ -638,6 +668,48 @@
          </DialogContent>
        </Dialog>
  
+      {/* Edit Admin Dialog */}
+      <Dialog open={!!editingAdmin} onOpenChange={() => setEditingAdmin(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Admin Role</DialogTitle>
+          </DialogHeader>
+          {editingAdmin && (
+            <div className="space-y-4">
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="font-medium">{editingAdmin.profile?.full_name || "Unknown"}</p>
+                <p className="text-sm text-muted-foreground">{editingAdmin.profile?.email}</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-admin-role">Admin Role</Label>
+                <Select value={editAdminRole} onValueChange={(v) => setEditAdminRole(v as "admin" | "super_admin")}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="super_admin">Super Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" onClick={() => setEditingAdmin(null)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={() => updateAdmin.mutate({ roleId: editingAdmin.id, newRole: editAdminRole })}
+                  disabled={updateAdmin.isPending || editAdminRole === editingAdmin.role}
+                >
+                  {updateAdmin.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
        {/* Delete Confirmation Dialog */}
        <AlertDialog open={!!showDeleteDialog} onOpenChange={() => setShowDeleteDialog(null)}>
          <AlertDialogContent>
