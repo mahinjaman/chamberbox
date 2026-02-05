@@ -37,7 +37,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAdmin, DoctorProfile } from "@/hooks/useAdmin";
 import { Search, Loader2, Edit, CalendarIcon, Filter } from "lucide-react";
-import { format, addMonths, addDays, isAfter, isBefore, startOfDay } from "date-fns";
+import { format, addMonths, addDays, isAfter, isBefore, startOfDay, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "react-router-dom";
 
@@ -175,27 +175,24 @@ export default function SubscriptionManagement() {
   };
 
   const getSubscriptionStatus = (doctor: DoctorProfile) => {
-    if (!doctor.subscription_tier || doctor.subscription_tier === "trial") {
-      if (doctor.subscription_expires_at) {
-        const expiryDate = new Date(doctor.subscription_expires_at);
-        if (expiryDate < new Date()) {
-          return { status: "Trial Expired", isActive: false };
-        }
-        return { status: "Trial", isActive: true };
-      }
-      return { status: "Trial", isActive: true };
-    }
+    const now = new Date();
     
     if (!doctor.subscription_expires_at) {
-      return { status: "Active", isActive: true };
+      return { status: "Active", variant: "default" as const };
     }
 
     const expiryDate = new Date(doctor.subscription_expires_at);
-    if (expiryDate < new Date()) {
-      return { status: "Expired", isActive: false };
+    const daysUntilExpiry = differenceInDays(expiryDate, now);
+    
+    if (expiryDate < now) {
+      return { status: "Expired", variant: "destructive" as const };
     }
-
-    return { status: "Active", isActive: true };
+    
+    if (daysUntilExpiry <= 7) {
+      return { status: "Expiring Soon", variant: "warning" as const };
+    }
+    
+    return { status: "Active", variant: "default" as const };
   };
 
   return (
@@ -257,7 +254,7 @@ export default function SubscriptionManagement() {
               </TableHeader>
               <TableBody>
                 {filteredDoctors?.map((doctor) => {
-                  const { status, isActive } = getSubscriptionStatus(doctor);
+                  const { status, variant } = getSubscriptionStatus(doctor);
                   return (
                     <TableRow key={doctor.id}>
                       <TableCell>
@@ -277,7 +274,12 @@ export default function SubscriptionManagement() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={isActive ? "default" : "destructive"}>
+                        <Badge 
+                          variant={variant === "warning" ? "outline" : variant}
+                          className={cn(
+                            variant === "warning" && "border-yellow-500 bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400"
+                          )}
+                        >
                           {status}
                         </Badge>
                       </TableCell>
