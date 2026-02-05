@@ -27,6 +27,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Search, Loader2, Check, X, Eye, Clock, MoreHorizontal, StickyNote, RotateCcw, Plus, Filter } from "lucide-react";
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -72,6 +85,8 @@ export default function PaymentVerification() {
   const [showNotesDialog, setShowNotesDialog] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
   const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
+  const [doctorSearchOpen, setDoctorSearchOpen] = useState(false);
+  const [doctorSearchQuery, setDoctorSearchQuery] = useState("");
   const [newPayment, setNewPayment] = useState({
     doctor_id: "",
     plan_tier: "basic",
@@ -89,12 +104,23 @@ export default function PaymentVerification() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, email")
+        .select("id, full_name, email, phone")
         .order("full_name");
       if (error) throw error;
       return data;
     },
   });
+
+  const filteredDoctors = doctors.filter((doctor) => {
+    const query = doctorSearchQuery.toLowerCase();
+    return (
+      doctor.full_name?.toLowerCase().includes(query) ||
+      doctor.email?.toLowerCase().includes(query) ||
+      doctor.phone?.includes(doctorSearchQuery)
+    );
+  });
+
+  const selectedDoctor = doctors.find((d) => d.id === newPayment.doctor_id);
 
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ["admin-subscription-payments"],
@@ -710,21 +736,53 @@ export default function PaymentVerification() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Doctor</Label>
-              <Select
-                value={newPayment.doctor_id}
-                onValueChange={(value) => setNewPayment({ ...newPayment, doctor_id: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select doctor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {doctors.map((doctor) => (
-                    <SelectItem key={doctor.id} value={doctor.id}>
-                      {doctor.full_name} ({doctor.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={doctorSearchOpen} onOpenChange={setDoctorSearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={doctorSearchOpen}
+                    className="w-full justify-between font-normal"
+                  >
+                    {selectedDoctor
+                      ? `${selectedDoctor.full_name} (${selectedDoctor.email})`
+                      : "Search doctor..."}
+                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0" align="start">
+                  <Command shouldFilter={false}>
+                    <CommandInput
+                      placeholder="Search by name, phone or email..."
+                      value={doctorSearchQuery}
+                      onValueChange={setDoctorSearchQuery}
+                    />
+                    <CommandList>
+                      <CommandEmpty>No doctor found.</CommandEmpty>
+                      <CommandGroup>
+                        {filteredDoctors.slice(0, 10).map((doctor) => (
+                          <CommandItem
+                            key={doctor.id}
+                            value={doctor.id}
+                            onSelect={() => {
+                              setNewPayment({ ...newPayment, doctor_id: doctor.id });
+                              setDoctorSearchOpen(false);
+                              setDoctorSearchQuery("");
+                            }}
+                          >
+                            <div className="flex flex-col">
+                              <span className="font-medium">{doctor.full_name}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {doctor.email} {doctor.phone && `• ${doctor.phone}`}
+                              </span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
