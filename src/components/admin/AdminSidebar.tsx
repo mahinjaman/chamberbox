@@ -11,7 +11,8 @@ import {
    CheckCircle,
    UserCog,
    Mail,
-   Phone
+   Phone,
+   BarChart3
 } from "lucide-react";
 import {
   Sidebar,
@@ -49,6 +50,7 @@ const mainNavItems = [
    }
    if (permissions.canVerifyPayments) {
      items.push({ title: "Payments", url: "/admin/payments", icon: CheckCircle });
+      items.push({ title: "Analytics", url: "/admin/analytics", icon: BarChart3 });
    }
    if (permissions.canConfigurePlans) {
      items.push({ title: "Plan Config", url: "/admin/plans", icon: Settings });
