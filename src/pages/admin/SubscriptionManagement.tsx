@@ -189,11 +189,11 @@ export default function SubscriptionManagement() {
     const daysUntilExpiry = differenceInDays(expiryDate, now);
     
     if (expiryDate < now) {
-      return { status: isTrial ? "Trial Expired" : "Expired", variant: "destructive" as const };
+      return { status: isTrial ? "Trial" : "Expired", variant: "destructive" as const };
     }
     
     if (daysUntilExpiry <= 7) {
-      return { status: isTrial ? "Trial Expiring" : "Expiring Soon", variant: "warning" as const };
+      return { status: isTrial ? "Trial" : "Expiring Soon", variant: "warning" as const };
     }
     
     if (isTrial) {
