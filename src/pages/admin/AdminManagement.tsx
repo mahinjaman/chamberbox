@@ -49,7 +49,11 @@
    user_id: string;
    role: "admin" | "super_admin";
    created_at: string;
-   user_email?: string;
+   profile?: {
+     full_name: string;
+     email: string | null;
+     phone: string | null;
+   };
  }
  
  interface AdminStaff {
@@ -88,11 +92,28 @@
      queryFn: async () => {
        const { data, error } = await supabase
          .from("user_roles")
-         .select("*")
+         .select(`
+           *,
+           profile:profiles!user_roles_user_id_fkey(full_name, email, phone)
+         `)
          .order("created_at", { ascending: false });
  
        if (error) throw error;
-       return data as AdminRole[];
+       
+       // Fetch profiles separately since there's no FK relationship
+       const rolesWithProfiles = await Promise.all(
+         (data || []).map(async (role) => {
+           const { data: profile } = await supabase
+             .from("profiles")
+             .select("full_name, email, phone")
+             .eq("user_id", role.user_id)
+             .single();
+           
+           return { ...role, profile };
+         })
+       );
+       
+       return rolesWithProfiles as AdminRole[];
      },
    });
  
@@ -304,7 +325,8 @@
                  <Table>
                    <TableHeader>
                      <TableRow>
-                       <TableHead>User ID</TableHead>
+                         <TableHead>Name</TableHead>
+                         <TableHead>Contact</TableHead>
                        <TableHead>Role</TableHead>
                        <TableHead>Added</TableHead>
                        <TableHead className="text-right">Actions</TableHead>
@@ -313,8 +335,24 @@
                    <TableBody>
                      {admins.map((admin) => (
                        <TableRow key={admin.id}>
-                         <TableCell className="font-mono text-sm">
-                           {admin.user_id.substring(0, 8)}...
+                           <TableCell className="font-medium">
+                             {admin.profile?.full_name || "Unknown"}
+                           </TableCell>
+                           <TableCell>
+                             <div className="space-y-1">
+                               {admin.profile?.email && (
+                                 <div className="flex items-center gap-1 text-sm">
+                                   <Mail className="w-3 h-3 text-muted-foreground" />
+                                   {admin.profile.email}
+                                 </div>
+                               )}
+                               {admin.profile?.phone && (
+                                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                   <Phone className="w-3 h-3" />
+                                   {admin.profile.phone}
+                                 </div>
+                               )}
+                             </div>
                          </TableCell>
                          <TableCell>{getRoleBadge(admin.role)}</TableCell>
                          <TableCell>
