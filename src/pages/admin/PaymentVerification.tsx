@@ -179,7 +179,7 @@ export default function PaymentVerification() {
         .from("subscription_payments" as any)
         .update({
           status: "rejected",
-          notes: reason,
+          admin_notes: reason,
         })
         .eq("id", paymentId);
 
@@ -639,10 +639,10 @@ export default function PaymentVerification() {
               {selectedPayment.notes && (
                 <div>
                   <Label className="text-muted-foreground">Rejection Notes</Label>
-                  <p className="mt-1">{selectedPayment.notes}</p>
+                  <p className="mt-1">{(selectedPayment as any).admin_notes}</p>
                 </div>
               )}
-              {(selectedPayment as any).admin_notes && (
+              {(selectedPayment as any).admin_notes && selectedPayment.status !== "rejected" && (
                 <div>
                   <Label className="text-muted-foreground">Admin Notes</Label>
                   <p className="mt-1 p-2 bg-muted rounded">{(selectedPayment as any).admin_notes}</p>
