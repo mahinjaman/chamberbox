@@ -82,6 +82,8 @@ const Queue = () => {
   const [isPatientDetailOpen, setIsPatientDetailOpen] = useState(false);
   const [noteDialogToken, setNoteDialogToken] = useState<QueueToken | null>(null);
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
+  const [selectedExistingPatient, setSelectedExistingPatient] = useState<{ id: string; name: string; phone: string } | null>(null);
+  const [existingPatientReason, setExistingPatientReason] = useState("");
   
   const sessionDate = format(selectedDate, "yyyy-MM-dd");
   
@@ -132,10 +134,22 @@ const Queue = () => {
     return notInQueue && matchesSearch;
   });
 
-  const handleAddToQueue = (patientId: string) => {
-    addToQueue(patientId, selectedSession?.id, selectedSession?.chamber_id);
+  const handleAddToQueue = () => {
+    if (!selectedExistingPatient) return;
+    addToQueue(selectedExistingPatient.id, selectedSession?.id, selectedSession?.chamber_id, existingPatientReason || undefined);
     setIsAddDialogOpen(false);
     setSearchQuery("");
+    setSelectedExistingPatient(null);
+    setExistingPatientReason("");
+  };
+
+  const handleSelectExistingPatient = (patient: { id: string; name: string; phone: string }) => {
+    setSelectedExistingPatient(patient);
+  };
+
+  const handleBackToPatientList = () => {
+    setSelectedExistingPatient(null);
+    setExistingPatientReason("");
   };
 
   const handleCreateAndAddToQueue = async () => {
@@ -414,7 +428,14 @@ const Queue = () => {
             </DialogContent>
           </Dialog>
 
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
+            setIsAddDialogOpen(open);
+            if (!open) {
+              setSelectedExistingPatient(null);
+              setExistingPatientReason("");
+              setSearchQuery("");
+            }
+          }}>
             <DialogTrigger asChild>
               <Button variant="outline" disabled={!selectedSession}>
                 <UserPlus className="mr-2 h-4 w-4" />
@@ -423,34 +444,80 @@ const Queue = () => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Add Patient to Queue</DialogTitle>
-                <DialogDescription>Select a patient to add to {selectedSession?.chamber?.name || "the queue"}.</DialogDescription>
+                <DialogTitle>
+                  {selectedExistingPatient ? "Add Visit Details" : "Add Patient to Queue"}
+                </DialogTitle>
+                <DialogDescription>
+                  {selectedExistingPatient 
+                    ? `Adding ${selectedExistingPatient.name} to ${selectedSession?.chamber?.name || "the queue"}`
+                    : `Select a patient to add to ${selectedSession?.chamber?.name || "the queue"}.`
+                  }
+                </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search by name or phone..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
+              
+              {selectedExistingPatient ? (
+                <div className="space-y-4">
+                  <div className="p-3 rounded-lg bg-muted/50 border">
+                    <p className="font-medium text-foreground">{selectedExistingPatient.name}</p>
+                    <p className="text-sm text-muted-foreground">{selectedExistingPatient.phone}</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="existing-visiting-reason">Visiting Reason (Optional)</Label>
+                    <Textarea
+                      id="existing-visiting-reason"
+                      placeholder="Briefly describe symptoms or reason for visit"
+                      value={existingPatientReason}
+                      onChange={(e) => setExistingPatientReason(e.target.value.slice(0, 200))}
+                      className="resize-none h-20"
+                    />
+                    <p className="text-xs text-muted-foreground text-right">{existingPatientReason.length}/200</p>
+                  </div>
+
+                  <div className="flex justify-between gap-2">
+                    <Button variant="outline" onClick={handleBackToPatientList}>
+                      Back
+                    </Button>
+                    <Button onClick={handleAddToQueue} disabled={isAdding}>
+                      {isAdding ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Adding...</>
+                      ) : (
+                        <><UserPlus className="mr-2 h-4 w-4" />Add to Queue</>
+                      )}
+                    </Button>
+                  </div>
                 </div>
-                <ScrollArea className="h-[300px] pr-4">
-                  {availablePatients.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      {patients.length === 0 ? <p>No patients registered yet</p> : searchQuery ? <p>No patients found matching "{searchQuery}"</p> : <p>All patients are already in the queue</p>}
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {availablePatients.map((patient) => (
-                        <button key={patient.id} onClick={() => handleAddToQueue(patient.id)} disabled={isAdding} className="w-full flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent transition-colors text-left disabled:opacity-50">
-                          <div>
-                            <p className="font-medium text-foreground">{patient.name}</p>
-                            <p className="text-sm text-muted-foreground">{patient.phone}</p>
+              ) : (
+                <div className="space-y-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Search by name or phone..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
+                  </div>
+                  <ScrollArea className="h-[300px] pr-4">
+                    {availablePatients.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        {patients.length === 0 ? <p>No patients registered yet</p> : searchQuery ? <p>No patients found matching "{searchQuery}"</p> : <p>All patients are already in the queue</p>}
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {availablePatients.map((patient) => (
+                          <button 
+                            key={patient.id} 
+                            onClick={() => handleSelectExistingPatient({ id: patient.id, name: patient.name, phone: patient.phone })} 
+                            className="w-full flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent transition-colors text-left"
+                          >
+                            <div>
+                              <p className="font-medium text-foreground">{patient.name}</p>
+                              <p className="text-sm text-muted-foreground">{patient.phone}</p>
+                            </div>
+                            <Badge variant="outline">Select</Badge>
+                          </button>
+                        ))}
                           </div>
-                          {isAdding ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : <Badge variant="outline">Add</Badge>}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </ScrollArea>
-              </div>
+                    )}
+                  </ScrollArea>
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>
