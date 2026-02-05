@@ -1,11 +1,11 @@
  import { AdminLayout } from "@/components/admin/AdminLayout";
  import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
- import { Badge } from "@/components/ui/badge";
  import { useQuery } from "@tanstack/react-query";
  import { supabase } from "@/integrations/supabase/client";
-import { Loader2, TrendingUp, CreditCard, AlertCircle, CheckCircle2, Users, Stethoscope, MessageSquare, FileText } from "lucide-react";
+import { Loader2, TrendingUp, CreditCard, AlertCircle, CheckCircle2, Users, Stethoscope, MessageSquare, FileText, Clock, Wallet } from "lucide-react";
  import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
  
  interface SubscriptionPayment {
    id: string;
@@ -178,124 +178,169 @@ import { Progress } from "@/components/ui/progress";
       title="Admin Analytics"
       description="Platform statistics and insights"
      >
-      {/* Platform Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-primary/10 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-primary mb-2">
-            <Stethoscope className="w-4 h-4" />
-            <span className="text-sm font-medium">Total Doctors</span>
-          </div>
-          <p className="text-2xl font-bold">{totalDoctors}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            +{newDoctorsThisMonth} this month
-          </p>
-        </div>
+      {/* Platform Overview - Stats Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Doctors</p>
+                <p className="text-3xl font-bold mt-1">{totalDoctors}</p>
+                <p className="text-xs text-primary mt-1">
+                  +{newDoctorsThisMonth} this month
+                </p>
+              </div>
+              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Stethoscope className="w-6 h-6 text-primary" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         
-        <div className="bg-muted rounded-lg p-4">
-          <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <Users className="w-4 h-4" />
-            <span className="text-sm font-medium">Total Patients</span>
-          </div>
-          <p className="text-2xl font-bold">{patientsCount.toLocaleString()}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Across all doctors
-          </p>
-        </div>
+        <Card className="border-muted bg-gradient-to-br from-muted/30 to-muted/50">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Patients</p>
+                <p className="text-3xl font-bold mt-1">{patientsCount.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Across all doctors
+                </p>
+              </div>
+              <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center">
+                <Users className="w-6 h-6 text-muted-foreground" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         
-        <div className="bg-accent/10 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-accent-foreground mb-2">
-            <FileText className="w-4 h-4" />
-            <span className="text-sm font-medium">Prescriptions</span>
-          </div>
-          <p className="text-2xl font-bold">{prescriptionsCount.toLocaleString()}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Total created
-          </p>
-        </div>
+        <Card className="border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Prescriptions</p>
+                <p className="text-3xl font-bold mt-1">{prescriptionsCount.toLocaleString()}</p>
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                  Total created
+                </p>
+              </div>
+              <div className="h-12 w-12 rounded-xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+                <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         
-        <div className="bg-success/10 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-success mb-2">
-            <CheckCircle2 className="w-4 h-4" />
-            <span className="text-sm font-medium">Active Subscriptions</span>
-          </div>
-          <p className="text-2xl font-bold">{activeSubscriptions}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {pendingApproval} pending approval
-          </p>
+        <Card className="border-success/20 bg-gradient-to-br from-success/5 to-success/10">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Active Subscriptions</p>
+                <p className="text-3xl font-bold mt-1">{activeSubscriptions}</p>
+                <p className="text-xs text-warning mt-1">
+                  {pendingApproval} pending approval
+                </p>
+              </div>
+              <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
+                <CheckCircle2 className="w-6 h-6 text-success" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Revenue Overview Section */}
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Wallet className="w-5 h-5 text-primary" />
+          Revenue Overview
+        </h3>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="border-primary/20">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 text-primary mb-2">
+                <TrendingUp className="w-4 h-4" />
+                <span className="text-sm font-medium">This Month</span>
+              </div>
+              <p className="text-2xl font-bold">৳{thisMonthTotal.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {thisMonthVerified.length} verified payments
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                <Clock className="w-4 h-4" />
+                <span className="text-sm font-medium">Last Month</span>
+              </div>
+              <p className="text-2xl font-bold">৳{lastMonthTotal.toLocaleString()}</p>
+              <p className={cn(
+                "text-xs mt-1",
+                Number(growth) >= 0 ? "text-success" : "text-destructive"
+              )}>
+                {Number(growth) >= 0 ? "+" : ""}{growth}% growth
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-warning/20">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 text-warning mb-2">
+                <AlertCircle className="w-4 h-4" />
+                <span className="text-sm font-medium">Pending</span>
+              </div>
+              <p className="text-2xl font-bold">৳{pendingTotal.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {pendingPayments.length} awaiting verification
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-success/20">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 text-success mb-2">
+                <CheckCircle2 className="w-4 h-4" />
+                <span className="text-sm font-medium">All Time</span>
+              </div>
+              <p className="text-2xl font-bold">৳{allTimeTotal.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {allTimeVerified.length} total verified
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
-      {/* Section Title: Revenue */}
-      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-        <CreditCard className="w-5 h-5" />
-        Revenue Overview
-      </h3>
-
-      {/* Revenue Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-         <div className="bg-primary/10 rounded-lg p-4">
-           <div className="flex items-center gap-2 text-primary mb-2">
-             <TrendingUp className="w-4 h-4" />
-             <span className="text-sm font-medium">This Month</span>
-           </div>
-           <p className="text-2xl font-bold">৳{thisMonthTotal.toLocaleString()}</p>
-           <p className="text-xs text-muted-foreground mt-1">
-             {thisMonthVerified.length} verified payments
-           </p>
-         </div>
-         
-         <div className="bg-muted rounded-lg p-4">
-           <div className="flex items-center gap-2 text-muted-foreground mb-2">
-             <CreditCard className="w-4 h-4" />
-             <span className="text-sm font-medium">Last Month</span>
-           </div>
-           <p className="text-2xl font-bold">৳{lastMonthTotal.toLocaleString()}</p>
-           <p className="text-xs text-muted-foreground mt-1">
-             {Number(growth) >= 0 ? "+" : ""}{growth}% vs this month
-           </p>
-         </div>
-         
-         <div className="bg-warning/10 rounded-lg p-4">
-           <div className="flex items-center gap-2 text-warning mb-2">
-             <AlertCircle className="w-4 h-4" />
-             <span className="text-sm font-medium">Pending</span>
-           </div>
-           <p className="text-2xl font-bold">৳{pendingTotal.toLocaleString()}</p>
-           <p className="text-xs text-muted-foreground mt-1">
-             {pendingPayments.length} awaiting verification
-           </p>
-         </div>
-         
-         <div className="bg-success/10 rounded-lg p-4">
-           <div className="flex items-center gap-2 text-success mb-2">
-             <CheckCircle2 className="w-4 h-4" />
-             <span className="text-sm font-medium">All Time</span>
-           </div>
-           <p className="text-2xl font-bold">৳{allTimeTotal.toLocaleString()}</p>
-           <p className="text-xs text-muted-foreground mt-1">
-             {allTimeVerified.length} total verified
-           </p>
-         </div>
-       </div>
- 
       {/* Subscription & Support Stats */}
-       <div className="grid md:grid-cols-2 gap-6 mb-6">
+      <div className="grid lg:grid-cols-2 gap-6 mb-8">
         {/* Subscription Distribution */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Subscription Distribution</CardTitle>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base flex items-center gap-2">
+              <CreditCard className="w-4 h-4 text-primary" />
+              Subscription Distribution
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {['trial', 'basic', 'pro', 'premium', 'enterprise'].map(tier => {
               const count = subscriptionDist[tier] || 0;
               const percentage = totalDoctors > 0 ? (count / totalDoctors) * 100 : 0;
+              const colors: Record<string, string> = {
+                trial: 'bg-muted-foreground',
+                basic: 'bg-primary',
+                pro: 'bg-blue-500',
+                premium: 'bg-purple-500',
+                enterprise: 'bg-amber-500'
+              };
               return (
-                <div key={tier} className="space-y-1">
+                <div key={tier} className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="capitalize font-medium">{tier}</span>
                     <span className="text-muted-foreground">{count} doctors ({percentage.toFixed(0)}%)</span>
                   </div>
-                  <Progress value={percentage} className="h-2" />
+                  <Progress value={percentage} className="h-2" indicatorClassName={colors[tier]} />
                 </div>
               );
             })}
@@ -304,29 +349,29 @@ import { Progress } from "@/components/ui/progress";
 
         {/* Support Ticket Stats */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-4">
             <CardTitle className="text-base flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
+              <MessageSquare className="w-4 h-4 text-primary" />
               Support Tickets
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 bg-warning/10 rounded-lg">
-                <p className="text-2xl font-bold text-warning">{openTickets}</p>
-                <p className="text-xs text-muted-foreground">Open</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="text-center p-4 bg-warning/10 rounded-xl border border-warning/20">
+                <p className="text-3xl font-bold text-warning">{openTickets}</p>
+                <p className="text-xs text-muted-foreground mt-1">Open</p>
               </div>
-              <div className="text-center p-3 bg-blue-500/10 rounded-lg">
-                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{inProgressTickets}</p>
-                <p className="text-xs text-muted-foreground">In Progress</p>
+              <div className="text-center p-4 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{inProgressTickets}</p>
+                <p className="text-xs text-muted-foreground mt-1">In Progress</p>
               </div>
-              <div className="text-center p-3 bg-success/10 rounded-lg">
-                <p className="text-2xl font-bold text-success">{resolvedTickets}</p>
-                <p className="text-xs text-muted-foreground">Resolved</p>
+              <div className="text-center p-4 bg-success/10 rounded-xl border border-success/20">
+                <p className="text-3xl font-bold text-success">{resolvedTickets}</p>
+                <p className="text-xs text-muted-foreground mt-1">Resolved</p>
               </div>
-              <div className="text-center p-3 bg-muted rounded-lg">
-                <p className="text-2xl font-bold">{closedTickets}</p>
-                <p className="text-xs text-muted-foreground">Closed</p>
+              <div className="text-center p-4 bg-muted rounded-xl border">
+                <p className="text-3xl font-bold">{closedTickets}</p>
+                <p className="text-xs text-muted-foreground mt-1">Closed</p>
               </div>
             </div>
             <p className="text-sm text-muted-foreground mt-4 text-center">
@@ -337,98 +382,127 @@ import { Progress } from "@/components/ui/progress";
       </div>
 
       {/* Payment Breakdown Section */}
-      <h3 className="text-lg font-semibold mb-4">This Month's Payment Breakdown</h3>
-      <div className="grid md:grid-cols-2 gap-6 mb-6">
-         {/* By Payment Method */}
-         <Card>
-           <CardHeader>
-             <CardTitle className="text-base">This Month by Payment Method</CardTitle>
-           </CardHeader>
-           <CardContent>
-             {Object.keys(byMethod).length > 0 ? (
-               <div className="space-y-3">
-                 {Object.entries(byMethod).sort((a, b) => b[1] - a[1]).map(([method, amount]) => (
-                   <div key={method} className="flex items-center justify-between">
-                     <div className="flex items-center gap-2">
-                       <span className={`w-3 h-3 rounded-full ${
-                         method === "bkash" ? "bg-pink-500" :
-                         method === "nagad" ? "bg-orange-500" :
-                         method === "rocket" ? "bg-purple-500" :
-                         method === "bank" ? "bg-blue-500" : "bg-gray-500"
-                       }`} />
-                       <span className="capitalize">{method}</span>
-                     </div>
-                     <span className="font-medium">৳{amount.toLocaleString()}</span>
-                   </div>
-                 ))}
-               </div>
-             ) : (
-               <p className="text-sm text-muted-foreground">No verified payments this month</p>
-             )}
-           </CardContent>
-         </Card>
- 
-         {/* By Plan */}
-         <Card>
-           <CardHeader>
-             <CardTitle className="text-base">This Month by Plan</CardTitle>
-           </CardHeader>
-           <CardContent>
-             {Object.keys(byPlan).length > 0 ? (
-               <div className="space-y-3">
-                 {Object.entries(byPlan).sort((a, b) => b[1] - a[1]).map(([plan, count]) => (
-                   <div key={plan} className="flex items-center justify-between">
-                     <div className="flex items-center gap-2">
-                       <Badge variant="outline" className="capitalize">{plan}</Badge>
-                     </div>
-                     <span className="font-medium">{count} subscription{count !== 1 ? "s" : ""}</span>
-                   </div>
-                 ))}
-               </div>
-             ) : (
-               <p className="text-sm text-muted-foreground">No verified payments this month</p>
-             )}
-           </CardContent>
-         </Card>
-       </div>
- 
-       {/* Monthly Comparison */}
-       <Card>
-         <CardHeader>
-           <CardTitle className="text-base">Monthly Comparison</CardTitle>
-         </CardHeader>
-         <CardContent>
-           <div className="overflow-x-auto">
-             <table className="w-full text-sm">
-               <thead>
-                 <tr className="border-b">
-                   <th className="text-left py-2 font-medium">Period</th>
-                   <th className="text-right py-2 font-medium">Payments</th>
-                   <th className="text-right py-2 font-medium">Verified</th>
-                   <th className="text-right py-2 font-medium">Rejected</th>
-                   <th className="text-right py-2 font-medium">Amount (Verified)</th>
-                 </tr>
-               </thead>
-               <tbody>
-                 <tr className="border-b">
-                   <td className="py-3 font-medium">{format(thisMonthStart, "MMMM yyyy")}</td>
-                   <td className="text-right">{thisMonthPayments.length}</td>
-                   <td className="text-right text-success">{thisMonthVerified.length}</td>
-                   <td className="text-right text-destructive">{thisMonthPayments.filter(p => p.status === "rejected").length}</td>
-                   <td className="text-right font-medium">৳{thisMonthTotal.toLocaleString()}</td>
-                 </tr>
-                 <tr>
-                   <td className="py-3 font-medium">{format(lastMonthStart, "MMMM yyyy")}</td>
-                   <td className="text-right">{lastMonthPayments.length}</td>
-                   <td className="text-right text-success">{lastMonthVerified.length}</td>
-                   <td className="text-right text-destructive">{lastMonthPayments.filter(p => p.status === "rejected").length}</td>
-                   <td className="text-right font-medium">৳{lastMonthTotal.toLocaleString()}</td>
-                 </tr>
-               </tbody>
-             </table>
-           </div>
-         </CardContent>
-       </Card>
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <CreditCard className="w-5 h-5 text-primary" />
+          This Month's Payment Breakdown
+        </h3>
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* By Payment Method */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base">By Payment Method</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {Object.keys(byMethod).length > 0 ? (
+                <div className="space-y-3">
+                  {Object.entries(byMethod).sort((a, b) => b[1] - a[1]).map(([method, amount]) => (
+                    <div key={method} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <span className={cn(
+                          "w-3 h-3 rounded-full",
+                          method === "bkash" ? "bg-pink-500" :
+                          method === "nagad" ? "bg-orange-500" :
+                          method === "rocket" ? "bg-purple-500" :
+                          method === "bank" ? "bg-blue-500" : "bg-gray-500"
+                        )} />
+                        <span className="capitalize font-medium">{method}</span>
+                      </div>
+                      <span className="font-semibold">৳{amount.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <CreditCard className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No verified payments this month</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* By Plan */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base">By Plan Tier</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {Object.keys(byPlan).length > 0 ? (
+                <div className="space-y-3">
+                  {Object.entries(byPlan).sort((a, b) => b[1] - a[1]).map(([plan, count]) => (
+                    <div key={plan} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <span className={cn(
+                        "px-3 py-1 rounded-full text-xs font-semibold capitalize",
+                        plan === "basic" ? "bg-primary/10 text-primary" :
+                        plan === "pro" ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" :
+                        plan === "premium" ? "bg-purple-500/10 text-purple-600 dark:text-purple-400" :
+                        plan === "enterprise" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" :
+                        "bg-muted text-muted-foreground"
+                      )}>
+                        {plan}
+                      </span>
+                      <span className="font-semibold">{count} subscription{count !== 1 ? "s" : ""}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No verified payments this month</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Monthly Comparison */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base">Monthly Comparison</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-3 font-medium">Period</th>
+                  <th className="text-right py-3 font-medium">Payments</th>
+                  <th className="text-right py-3 font-medium">Verified</th>
+                  <th className="text-right py-3 font-medium">Rejected</th>
+                  <th className="text-right py-3 font-medium">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b hover:bg-muted/50 transition-colors">
+                  <td className="py-4 font-medium">{format(thisMonthStart, "MMMM yyyy")}</td>
+                  <td className="text-right">{thisMonthPayments.length}</td>
+                  <td className="text-right">
+                    <span className="inline-flex items-center gap-1 text-success">
+                      <CheckCircle2 className="w-3 h-3" />
+                      {thisMonthVerified.length}
+                    </span>
+                  </td>
+                  <td className="text-right text-destructive">{thisMonthPayments.filter(p => p.status === "rejected").length}</td>
+                  <td className="text-right font-semibold">৳{thisMonthTotal.toLocaleString()}</td>
+                </tr>
+                <tr className="hover:bg-muted/50 transition-colors">
+                  <td className="py-4 font-medium text-muted-foreground">{format(lastMonthStart, "MMMM yyyy")}</td>
+                  <td className="text-right">{lastMonthPayments.length}</td>
+                  <td className="text-right">
+                    <span className="inline-flex items-center gap-1 text-success">
+                      <CheckCircle2 className="w-3 h-3" />
+                      {lastMonthVerified.length}
+                    </span>
+                  </td>
+                  <td className="text-right text-destructive">{lastMonthPayments.filter(p => p.status === "rejected").length}</td>
+                  <td className="text-right font-semibold">৳{lastMonthTotal.toLocaleString()}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
      </AdminLayout>
    );
  }
