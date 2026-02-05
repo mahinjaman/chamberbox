@@ -129,7 +129,7 @@ export const toBengaliNumerals = (num: number | string): string => {
 
 export const formatCurrency = (amount: number, useBengali: boolean = false): string => {
   if (useBengali) {
-    return `৳${toBengaliNumerals(amount)}`;
+    return `BDT ${toBengaliNumerals(amount)}`;
   }
-  return `৳${amount.toLocaleString()}`;
+  return `BDT ${amount.toLocaleString()}`;
 };
