@@ -661,7 +661,7 @@ const Queue = () => {
                                   setIsPatientDetailOpen(true);
                                 }}
                                 className={cn(
-                                  "w-full flex items-center justify-between p-3 rounded-lg border transition-all text-left hover:bg-accent",
+                                  "w-full flex items-center justify-between p-3 rounded-lg border transition-all text-left hover:bg-muted/50",
                                   index === 0 && "bg-warning/5 border-warning/30 shadow-sm"
                                 )}
                               >
