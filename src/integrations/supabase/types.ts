@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_staff: {
+        Row: {
+          accepted_at: string | null
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          invited_at: string | null
+          invited_by: string | null
+          is_active: boolean | null
+          phone: string | null
+          role: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string | null
+          email: string
+          full_name: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          is_active?: boolean | null
+          phone?: string | null
+          role?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          is_active?: boolean | null
+          phone?: string | null
+          role?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           appointment_date: string

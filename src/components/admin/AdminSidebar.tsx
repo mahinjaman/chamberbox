@@ -8,7 +8,8 @@ import {
   LogOut,
   Shield,
   Settings,
-  CheckCircle
+   CheckCircle,
+   UserCog
 } from "lucide-react";
 import {
   Sidebar,
@@ -35,6 +36,7 @@ const mainNavItems = [
   { title: "Plan Config", url: "/admin/plans", icon: Settings },
   { title: "Support Tickets", url: "/admin/tickets", icon: MessageSquare },
   { title: "Video Tutorials", url: "/admin/tutorials", icon: Video },
+   { title: "Admin Users", url: "/admin/users", icon: UserCog },
 ];
 
 export const AdminSidebar = () => {

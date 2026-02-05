@@ -47,6 +47,7 @@ import TutorialManagement from "./pages/admin/TutorialManagement";
 import PlanConfiguration from "./pages/admin/PlanConfiguration";
 import PaymentVerification from "./pages/admin/PaymentVerification";
 import DoctorDetail from "./pages/admin/DoctorDetail";
+ import AdminManagement from "./pages/admin/AdminManagement";
 
 // Staff Pages
 import StaffManagement from "./pages/StaffManagement";
@@ -356,6 +357,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+             <Route
+               path="/admin/users"
+               element={
+                 <ProtectedRoute>
+                   <AdminManagement />
+                 </ProtectedRoute>
+               }
+             />
 
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
