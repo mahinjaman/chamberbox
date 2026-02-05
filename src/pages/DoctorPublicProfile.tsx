@@ -203,7 +203,7 @@ const DoctorPublicProfile = () => {
             <Card className="shadow-lg border overflow-hidden">
               {/* Stats Row */}
               <div className="bg-muted/20">
-                <div className="grid grid-cols-3 divide-x divide-border">
+                <div className="grid grid-cols-2 divide-x divide-border">
                   <div className="py-3 text-center">
                     <div className="flex items-center justify-center gap-1.5">
                       <Clock className="w-4 h-4 text-primary" />
@@ -217,13 +217,6 @@ const DoctorPublicProfile = () => {
                       <span className="text-base md:text-lg font-bold">{profile.patient_count?.toLocaleString() || 0}</span>
                     </div>
                     <p className="text-[10px] text-muted-foreground">Patients</p>
-                  </div>
-                  <div className="py-3 text-center">
-                    <div className="flex items-center justify-center gap-1.5">
-                      <Star className="w-4 h-4 text-amber-500" />
-                      <span className="text-base md:text-lg font-bold">{profile.rating || "N/A"}</span>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">Rating</p>
                   </div>
                 </div>
               </div>
