@@ -25,25 +25,55 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/auth";
+ import { useAuth } from "@/lib/auth";
+ import { AdminStaffPermissions } from "@/hooks/useAdminStaff";
 import { cn } from "@/lib/utils";
 
 const mainNavItems = [
   { title: "Overview", url: "/admin", icon: LayoutDashboard },
-  { title: "Doctors", url: "/admin/doctors", icon: Users },
-  { title: "Subscriptions", url: "/admin/subscriptions", icon: CreditCard },
-  { title: "Payments", url: "/admin/payments", icon: CheckCircle },
-  { title: "Plan Config", url: "/admin/plans", icon: Settings },
-  { title: "Support Tickets", url: "/admin/tickets", icon: MessageSquare },
-  { title: "Video Tutorials", url: "/admin/tutorials", icon: Video },
-   { title: "Admin Users", url: "/admin/users", icon: UserCog },
-];
+ ];
+ 
+ const getNavItems = (permissions: AdminStaffPermissions | null) => {
+   if (!permissions) return mainNavItems;
+   
+   const items = [...mainNavItems];
+   
+   if (permissions.canManageDoctors) {
+     items.push({ title: "Doctors", url: "/admin/doctors", icon: Users });
+   }
+   if (permissions.canManageSubscriptions) {
+     items.push({ title: "Subscriptions", url: "/admin/subscriptions", icon: CreditCard });
+   }
+   if (permissions.canVerifyPayments) {
+     items.push({ title: "Payments", url: "/admin/payments", icon: CheckCircle });
+   }
+   if (permissions.canConfigurePlans) {
+     items.push({ title: "Plan Config", url: "/admin/plans", icon: Settings });
+   }
+   if (permissions.canManageTickets) {
+     items.push({ title: "Support Tickets", url: "/admin/tickets", icon: MessageSquare });
+   }
+   if (permissions.canManageTutorials) {
+     items.push({ title: "Video Tutorials", url: "/admin/tutorials", icon: Video });
+   }
+   if (permissions.canManageAdmins) {
+     items.push({ title: "Admin Users", url: "/admin/users", icon: UserCog });
+   }
+   
+   return items;
+ };
 
-export const AdminSidebar = () => {
+ interface AdminSidebarProps {
+   permissions: AdminStaffPermissions | null;
+ }
+ 
+ export const AdminSidebar = ({ permissions }: AdminSidebarProps) => {
   const location = useLocation();
   const { signOut } = useAuth();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+ 
+   const navItems = getNavItems(permissions);
 
   const isActive = (path: string) => {
     if (path === "/admin") {
@@ -72,7 +102,7 @@ export const AdminSidebar = () => {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainNavItems.map((item) => (
+               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild

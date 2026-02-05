@@ -568,6 +568,25 @@
                  </SelectContent>
                </Select>
              </div>
+               
+               <div className="text-xs text-muted-foreground space-y-1 bg-muted/50 p-2 rounded border">
+                 <p className="font-medium mb-1">Role Permissions:</p>
+                 {staffForm.role === "support" && (
+                   <p>• Only access to Support Tickets</p>
+                 )}
+                 {staffForm.role === "manager" && (
+                   <>
+                     <p>• Support Tickets, Doctor Management</p>
+                     <p>• Subscriptions, Payments, Tutorials</p>
+                   </>
+                 )}
+                 {staffForm.role === "super" && (
+                   <>
+                     <p>• Full access to all admin features</p>
+                     <p>• Including Plan Config & Admin Management</p>
+                   </>
+                 )}
+               </div>
  
              <div className="flex justify-end gap-2 pt-2">
                <Button type="button" variant="outline" onClick={() => setShowAddStaffDialog(false)}>
