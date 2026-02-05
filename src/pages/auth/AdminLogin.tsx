@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import { Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
 import { mapAuthError } from "@/lib/errors";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { LanguageToggle } from "@/components/common/LanguageToggle";
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -18,6 +19,8 @@ const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { language } = useLanguage();
+   const [activeTab, setActiveTab] = useState("login");
+   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +43,21 @@ const AdminLogin = () => {
       return;
     }
 
+     // Check if user is admin staff and needs account linking
+     const { data: adminStaff } = await supabase
+       .from("admin_staff")
+       .select("id, role")
+       .eq("user_id", authData.user.id)
+       .eq("is_active", true)
+       .maybeSingle();
+ 
+     if (adminStaff) {
+       setLoading(false);
+       toast.success(language === "bn" ? "অ্যাডমিন প্যানেলে স্বাগতম!" : "Welcome to Admin Panel!");
+       navigate("/admin");
+       return;
+     }
+ 
     // Check if user has admin role using the has_role function
     const { data: isAdmin } = await supabase
       .rpc("has_role", { _user_id: authData.user.id, _role: "admin" });
@@ -62,6 +80,80 @@ const AdminLogin = () => {
     await supabase.auth.signOut();
   };
 
+   const handleSignup = async (e: React.FormEvent) => {
+     e.preventDefault();
+     
+     if (!email || !password || !confirmPassword) {
+       toast.error(language === "bn" ? "সব ফিল্ড পূরণ করুন" : "Please fill in all fields");
+       return;
+     }
+ 
+     if (password !== confirmPassword) {
+       toast.error(language === "bn" ? "পাসওয়ার্ড মিলছে না" : "Passwords do not match");
+       return;
+     }
+ 
+     if (password.length < 6) {
+       toast.error(language === "bn" ? "পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে" : "Password must be at least 6 characters");
+       return;
+     }
+ 
+     setLoading(true);
+ 
+     // Check if email is invited as admin staff
+     const { data: invitedStaff, error: checkError } = await supabase
+       .from("admin_staff")
+       .select("id, role")
+       .eq("email", email.trim().toLowerCase())
+       .is("user_id", null)
+       .eq("is_active", true)
+       .maybeSingle();
+ 
+     if (!invitedStaff) {
+       setLoading(false);
+       toast.error(language === "bn" 
+         ? "এই ইমেইল অ্যাডমিন স্টাফ হিসেবে আমন্ত্রিত নয়।"
+         : "This email is not invited as admin staff.");
+       return;
+     }
+ 
+     // Create account
+     const { data: authData, error: signUpError } = await supabase.auth.signUp({
+       email: email.trim(),
+       password,
+       options: {
+         emailRedirectTo: `${window.location.origin}/2243`,
+       },
+     });
+ 
+     if (signUpError) {
+       setLoading(false);
+       toast.error(mapAuthError(signUpError));
+       return;
+     }
+ 
+     if (authData.user) {
+       // Link the account
+       const { error: linkError } = await supabase
+         .from("admin_staff")
+         .update({
+           user_id: authData.user.id,
+           accepted_at: new Date().toISOString(),
+         })
+         .eq("id", invitedStaff.id);
+ 
+       if (linkError) {
+         console.error("Link error:", linkError);
+       }
+     }
+ 
+     setLoading(false);
+     toast.success(language === "bn" 
+       ? "অ্যাকাউন্ট তৈরি হয়েছে! ইমেইল ভেরিফাই করুন।"
+       : "Account created! Please verify your email.");
+     setActiveTab("login");
+   };
+ 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
       {/* Decorative elements */}
@@ -90,77 +182,179 @@ const AdminLogin = () => {
           </CardDescription>
         </CardHeader>
 
-        <form onSubmit={handleLogin}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-200">
-                {language === "bn" ? "ইমেইল" : "Email"}
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="admin@chamberbox.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
-              />
-            </div>
+         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+           <TabsList className="grid w-full grid-cols-2 mx-6 mb-4 bg-slate-700/50" style={{ width: 'calc(100% - 48px)' }}>
+             <TabsTrigger value="login" className="data-[state=active]:bg-slate-600">
+               {language === "bn" ? "লগইন" : "Login"}
+             </TabsTrigger>
+             <TabsTrigger value="signup" className="data-[state=active]:bg-slate-600">
+               {language === "bn" ? "সাইনআপ" : "Staff Signup"}
+             </TabsTrigger>
+           </TabsList>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-200">
-                {language === "bn" ? "পাসওয়ার্ড" : "Password"}
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-slate-700/30 rounded-lg p-3 text-xs text-slate-400 border border-slate-600/50">
-              <p className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4" />
-                {language === "bn" 
-                  ? "এই প্যানেল শুধুমাত্র অনুমোদিত অ্যাডমিনদের জন্য।"
-                  : "This panel is for authorized administrators only."}
-              </p>
-            </div>
-          </CardContent>
-
-          <CardFooter className="flex flex-col gap-4">
-            <Button 
-              type="submit" 
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700" 
-              size="lg" 
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {language === "bn" ? "লগইন হচ্ছে..." : "Signing in..."}
-                </>
-              ) : (
-                language === "bn" ? "লগইন" : "Sign In"
-              )}
-            </Button>
-          </CardFooter>
-        </form>
+           <TabsContent value="login">
+             <form onSubmit={handleLogin}>
+               <CardContent className="space-y-4">
+                 <div className="space-y-2">
+                   <Label htmlFor="email" className="text-slate-200">
+                     {language === "bn" ? "ইমেইল" : "Email"}
+                   </Label>
+                   <Input
+                     id="email"
+                     type="email"
+                     placeholder="admin@chamberbox.com"
+                     value={email}
+                     onChange={(e) => setEmail(e.target.value)}
+                     required
+                     autoComplete="email"
+                     className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                   />
+                 </div>
+ 
+                 <div className="space-y-2">
+                   <Label htmlFor="password" className="text-slate-200">
+                     {language === "bn" ? "পাসওয়ার্ড" : "Password"}
+                   </Label>
+                   <div className="relative">
+                     <Input
+                       id="password"
+                       type={showPassword ? "text" : "password"}
+                       placeholder="••••••••"
+                       value={password}
+                       onChange={(e) => setPassword(e.target.value)}
+                       required
+                       autoComplete="current-password"
+                       className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                     />
+                     <button
+                       type="button"
+                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                       onClick={() => setShowPassword(!showPassword)}
+                     >
+                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                     </button>
+                   </div>
+                 </div>
+ 
+                 <div className="bg-slate-700/30 rounded-lg p-3 text-xs text-slate-400 border border-slate-600/50">
+                   <p className="flex items-center gap-2">
+                     <ShieldCheck className="w-4 h-4" />
+                     {language === "bn" 
+                       ? "এই প্যানেল শুধুমাত্র অনুমোদিত অ্যাডমিনদের জন্য।"
+                       : "This panel is for authorized administrators only."}
+                   </p>
+                 </div>
+               </CardContent>
+ 
+               <CardFooter>
+                 <Button 
+                   type="submit" 
+                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700" 
+                   size="lg" 
+                   disabled={loading}
+                 >
+                   {loading ? (
+                     <>
+                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                       {language === "bn" ? "লগইন হচ্ছে..." : "Signing in..."}
+                     </>
+                   ) : (
+                     language === "bn" ? "লগইন" : "Sign In"
+                   )}
+                 </Button>
+               </CardFooter>
+             </form>
+           </TabsContent>
+ 
+           <TabsContent value="signup">
+             <form onSubmit={handleSignup}>
+               <CardContent className="space-y-4">
+                 <div className="space-y-2">
+                   <Label htmlFor="signup-email" className="text-slate-200">
+                     {language === "bn" ? "আমন্ত্রিত ইমেইল" : "Invited Email"}
+                   </Label>
+                   <Input
+                     id="signup-email"
+                     type="email"
+                     placeholder="staff@chamberbox.com"
+                     value={email}
+                     onChange={(e) => setEmail(e.target.value)}
+                     required
+                     autoComplete="email"
+                     className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                   />
+                 </div>
+ 
+                 <div className="space-y-2">
+                   <Label htmlFor="signup-password" className="text-slate-200">
+                     {language === "bn" ? "পাসওয়ার্ড" : "Password"}
+                   </Label>
+                   <div className="relative">
+                     <Input
+                       id="signup-password"
+                       type={showPassword ? "text" : "password"}
+                       placeholder="••••••••"
+                       value={password}
+                       onChange={(e) => setPassword(e.target.value)}
+                       required
+                       autoComplete="new-password"
+                       className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                     />
+                     <button
+                       type="button"
+                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                       onClick={() => setShowPassword(!showPassword)}
+                     >
+                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                     </button>
+                   </div>
+                 </div>
+ 
+                 <div className="space-y-2">
+                   <Label htmlFor="confirm-password" className="text-slate-200">
+                     {language === "bn" ? "পাসওয়ার্ড নিশ্চিত করুন" : "Confirm Password"}
+                   </Label>
+                   <Input
+                     id="confirm-password"
+                     type={showPassword ? "text" : "password"}
+                     placeholder="••••••••"
+                     value={confirmPassword}
+                     onChange={(e) => setConfirmPassword(e.target.value)}
+                     required
+                     autoComplete="new-password"
+                     className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                   />
+                 </div>
+ 
+                 <div className="bg-amber-900/30 rounded-lg p-3 text-xs text-amber-200 border border-amber-700/50">
+                   <p>
+                     {language === "bn" 
+                       ? "শুধুমাত্র আমন্ত্রিত স্টাফরা সাইনআপ করতে পারবে।"
+                       : "Only invited staff members can sign up."}
+                   </p>
+                 </div>
+               </CardContent>
+ 
+               <CardFooter>
+                 <Button 
+                   type="submit" 
+                   className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700" 
+                   size="lg" 
+                   disabled={loading}
+                 >
+                   {loading ? (
+                     <>
+                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                       {language === "bn" ? "তৈরি হচ্ছে..." : "Creating..."}
+                     </>
+                   ) : (
+                     language === "bn" ? "অ্যাকাউন্ট তৈরি করুন" : "Create Account"
+                   )}
+                 </Button>
+               </CardFooter>
+             </form>
+           </TabsContent>
+         </Tabs>
       </Card>
     </div>
   );
