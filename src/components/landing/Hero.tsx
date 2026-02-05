@@ -35,7 +35,7 @@ export const Hero = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
             <Button size="lg" className="w-full sm:w-auto text-lg px-8 py-6" asChild>
               <Link to="/signup">
-                Start 90-Day Free Trial
+                Start 30-Day Free Trial
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
             </Button>
