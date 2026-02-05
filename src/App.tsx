@@ -46,6 +46,7 @@ import TicketManagement from "./pages/admin/TicketManagement";
 import TutorialManagement from "./pages/admin/TutorialManagement";
 import PlanConfiguration from "./pages/admin/PlanConfiguration";
 import PaymentVerification from "./pages/admin/PaymentVerification";
+import DoctorDetail from "./pages/admin/DoctorDetail";
 
 // Staff Pages
 import StaffManagement from "./pages/StaffManagement";
@@ -304,6 +305,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <DoctorManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/doctors/:id"
+              element={
+                <ProtectedRoute>
+                  <DoctorDetail />
                 </ProtectedRoute>
               }
             />

@@ -19,7 +19,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAdmin, DoctorProfile } from "@/hooks/useAdmin";
-import { Search, MoreHorizontal, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Search, MoreHorizontal, CheckCircle, XCircle, Loader2, Eye } from "lucide-react";
+import { Link } from "react-router-dom";
 import { format } from "date-fns";
 
 export default function DoctorManagement() {
@@ -125,7 +126,14 @@ export default function DoctorManagement() {
               <TableBody>
                 {filteredDoctors?.map((doctor) => (
                   <TableRow key={doctor.id}>
-                    <TableCell className="font-medium">{doctor.full_name}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link 
+                        to={`/admin/doctors/${doctor.id}`}
+                        className="text-primary hover:underline"
+                      >
+                        {doctor.full_name}
+                      </Link>
+                    </TableCell>
                     <TableCell>
                       <div className="text-sm">
                         <p>{doctor.email}</p>
@@ -158,6 +166,12 @@ export default function DoctorManagement() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link to={`/admin/doctors/${doctor.id}`}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
+                            </Link>
+                          </DropdownMenuItem>
                           {doctor.is_approved ? (
                             <DropdownMenuItem 
                               onClick={() => revokeApproval(doctor.id)}
