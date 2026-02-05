@@ -2,12 +2,16 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
-import { Users, UserCheck, MessageSquare, CreditCard } from "lucide-react";
+import { Users, UserCheck, MessageSquare, CreditCard, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { addDays } from "date-fns";
 
 export default function AdminDashboard() {
   const { doctors, doctorsLoading } = useAdmin();
   const { tickets, ticketsLoading } = useSupportTickets();
+
+  const now = new Date();
+  const sevenDaysFromNow = addDays(now, 7);
 
   const stats = {
     totalDoctors: doctors?.length || 0,
@@ -19,6 +23,11 @@ export default function AdminDashboard() {
       (!d.subscription_expires_at || new Date(d.subscription_expires_at) > new Date())
     ).length || 0,
     openTickets: tickets?.filter(t => t.status === "open").length || 0,
+    expiringSoon: doctors?.filter(d => {
+      if (!d.subscription_expires_at) return false;
+      const expiryDate = new Date(d.subscription_expires_at);
+      return expiryDate > now && expiryDate <= sevenDaysFromNow;
+    }).length || 0,
   };
 
   const isLoading = doctorsLoading || ticketsLoading;
@@ -30,7 +39,7 @@ export default function AdminDashboard() {
     >
       <div className="space-y-6">
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <Link to="/admin/doctors">
             <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -94,6 +103,23 @@ export default function AdminDashboard() {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Awaiting response
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to="/admin/subscriptions?filter=expiring">
+            <Card className="hover:bg-muted/50 transition-colors cursor-pointer border-warning/50">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
+                <AlertTriangle className="h-4 w-4 text-warning" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-warning">
+                  {isLoading ? "..." : stats.expiringSoon}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Within 7 days
                 </p>
               </CardContent>
             </Card>
