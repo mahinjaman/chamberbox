@@ -25,7 +25,7 @@ import { Label } from "@/components/ui/label";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, Loader2, Check, X, Eye, Clock, MoreHorizontal, StickyNote, RotateCcw } from "lucide-react";
+import { Search, Loader2, Check, X, Eye, Clock, MoreHorizontal, StickyNote, RotateCcw, Plus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +33,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format, addMonths, addYears } from "date-fns";
 
 interface SubscriptionPayment {
@@ -61,6 +68,30 @@ export default function PaymentVerification() {
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [showNotesDialog, setShowNotesDialog] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
+  const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
+  const [newPayment, setNewPayment] = useState({
+    doctor_id: "",
+    plan_tier: "basic",
+    billing_period: "monthly",
+    amount: "",
+    payment_method: "bkash",
+    transaction_id: "",
+    payer_mobile: "",
+    notes: "",
+  });
+
+  // Fetch doctors for selection
+  const { data: doctors = [] } = useQuery({
+    queryKey: ["admin-doctors-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .order("full_name");
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ["admin-subscription-payments"],
@@ -216,6 +247,70 @@ export default function PaymentVerification() {
     setShowNotesDialog(true);
   };
 
+  const addManualPayment = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("subscription_payments" as any)
+        .insert({
+          doctor_id: newPayment.doctor_id,
+          plan_tier: newPayment.plan_tier,
+          billing_period: newPayment.billing_period,
+          amount: parseFloat(newPayment.amount),
+          payment_method: newPayment.payment_method,
+          transaction_id: newPayment.transaction_id,
+          payer_mobile: newPayment.payer_mobile,
+          status: "verified",
+          verified_at: new Date().toISOString(),
+          admin_notes: newPayment.notes || "Manual payment added by admin",
+        });
+
+      if (error) throw error;
+
+      // Update doctor subscription
+      const getExpiryDate = () => {
+        switch (newPayment.billing_period) {
+          case "yearly":
+            return addYears(new Date(), 1);
+          case "biannual":
+            return addMonths(new Date(), 6);
+          case "quarterly":
+            return addMonths(new Date(), 3);
+          case "monthly":
+          default:
+            return addMonths(new Date(), 1);
+        }
+      };
+
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          subscription_tier: newPayment.plan_tier as any,
+          subscription_expires_at: getExpiryDate().toISOString(),
+        })
+        .eq("id", newPayment.doctor_id);
+
+      if (profileError) throw profileError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-subscription-payments"] });
+      toast.success("Manual payment added and subscription updated!");
+      setShowAddPaymentDialog(false);
+      setNewPayment({
+        doctor_id: "",
+        plan_tier: "basic",
+        billing_period: "monthly",
+        amount: "",
+        payment_method: "bkash",
+        transaction_id: "",
+        payer_mobile: "",
+        notes: "",
+      });
+    },
+    onError: (error: any) => {
+      toast.error("Failed to add payment: " + error.message);
+    },
+  });
+
   const filteredPayments = payments.filter((payment) => {
     const searchLower = searchQuery.toLowerCase();
     return (
@@ -261,14 +356,20 @@ export default function PaymentVerification() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row gap-4 justify-between">
             <CardTitle>Subscription Payments</CardTitle>
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search payments..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 w-[250px]"
-              />
+            <div className="flex gap-2">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search payments..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 w-[200px]"
+                />
+              </div>
+              <Button onClick={() => setShowAddPaymentDialog(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Manual Payment
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -551,6 +652,152 @@ export default function PaymentVerification() {
           )}
           <DialogFooter>
             <Button onClick={() => setSelectedPayment(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Manual Payment Dialog */}
+      <Dialog open={showAddPaymentDialog} onOpenChange={setShowAddPaymentDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add Manual Payment</DialogTitle>
+            <DialogDescription>
+              Record a manual payment and update doctor subscription.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Doctor</Label>
+              <Select
+                value={newPayment.doctor_id}
+                onValueChange={(value) => setNewPayment({ ...newPayment, doctor_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select doctor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {doctors.map((doctor) => (
+                    <SelectItem key={doctor.id} value={doctor.id}>
+                      {doctor.full_name} ({doctor.email})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Plan</Label>
+                <Select
+                  value={newPayment.plan_tier}
+                  onValueChange={(value) => setNewPayment({ ...newPayment, plan_tier: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="basic">Basic</SelectItem>
+                    <SelectItem value="pro">Pro</SelectItem>
+                    <SelectItem value="premium">Premium</SelectItem>
+                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Billing Period</Label>
+                <Select
+                  value={newPayment.billing_period}
+                  onValueChange={(value) => setNewPayment({ ...newPayment, billing_period: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                    <SelectItem value="biannual">Biannual</SelectItem>
+                    <SelectItem value="yearly">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Amount (৳)</Label>
+                <Input
+                  type="number"
+                  value={newPayment.amount}
+                  onChange={(e) => setNewPayment({ ...newPayment, amount: e.target.value })}
+                  placeholder="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Payment Method</Label>
+                <Select
+                  value={newPayment.payment_method}
+                  onValueChange={(value) => setNewPayment({ ...newPayment, payment_method: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bkash">bKash</SelectItem>
+                    <SelectItem value="nagad">Nagad</SelectItem>
+                    <SelectItem value="rocket">Rocket</SelectItem>
+                    <SelectItem value="bank">Bank Transfer</SelectItem>
+                    <SelectItem value="cash">Cash</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Transaction ID</Label>
+                <Input
+                  value={newPayment.transaction_id}
+                  onChange={(e) => setNewPayment({ ...newPayment, transaction_id: e.target.value })}
+                  placeholder="TRX123456"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Payer Mobile</Label>
+                <Input
+                  value={newPayment.payer_mobile}
+                  onChange={(e) => setNewPayment({ ...newPayment, payer_mobile: e.target.value })}
+                  placeholder="01XXXXXXXXX"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Notes (Optional)</Label>
+              <Textarea
+                value={newPayment.notes}
+                onChange={(e) => setNewPayment({ ...newPayment, notes: e.target.value })}
+                placeholder="Any additional notes..."
+                rows={2}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddPaymentDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => addManualPayment.mutate()}
+              disabled={
+                addManualPayment.isPending ||
+                !newPayment.doctor_id ||
+                !newPayment.amount ||
+                !newPayment.transaction_id ||
+                !newPayment.payer_mobile
+              }
+            >
+              {addManualPayment.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              Add Payment
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
