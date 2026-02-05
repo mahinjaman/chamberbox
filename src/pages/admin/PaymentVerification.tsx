@@ -765,8 +765,12 @@ export default function PaymentVerification() {
                 <Label>Payer Mobile</Label>
                 <Input
                   value={newPayment.payer_mobile}
-                  onChange={(e) => setNewPayment({ ...newPayment, payer_mobile: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 11);
+                    setNewPayment({ ...newPayment, payer_mobile: value });
+                  }}
                   placeholder="01XXXXXXXXX"
+                  maxLength={11}
                 />
               </div>
             </div>
