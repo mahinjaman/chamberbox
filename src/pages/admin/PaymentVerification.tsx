@@ -55,10 +55,10 @@ import {
 } from "@/components/ui/select";
 import { format, addMonths, addYears } from "date-fns";
 import { startOfMonth, endOfMonth, subMonths } from "date-fns";
-import { TrendingUp, CreditCard, AlertCircle, CheckCircle2, BarChart3 } from "lucide-react";
+import { TrendingUp, CreditCard, AlertCircle, CheckCircle2 } from "lucide-react";
 
-// Payment Analytics Component
-function PaymentAnalytics({ payments }: { payments: SubscriptionPayment[] }) {
+// Payment Summary Cards Component
+function PaymentSummaryCards({ payments }: { payments: SubscriptionPayment[] }) {
   const now = new Date();
   const thisMonthStart = startOfMonth(now);
   const thisMonthEnd = endOfMonth(now);
@@ -92,151 +92,55 @@ function PaymentAnalytics({ payments }: { payments: SubscriptionPayment[] }) {
   const allTimeVerified = payments.filter(p => p.status === "verified");
   const allTimeTotal = allTimeVerified.reduce((sum, p) => sum + p.amount, 0);
 
-  // By payment method
-  const byMethod = thisMonthVerified.reduce((acc, p) => {
-    acc[p.payment_method] = (acc[p.payment_method] || 0) + p.amount;
-    return acc;
-  }, {} as Record<string, number>);
-
-  // By plan
-  const byPlan = thisMonthVerified.reduce((acc, p) => {
-    acc[p.plan_tier] = (acc[p.plan_tier] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
   // Growth percentage
   const growth = lastMonthTotal > 0 
     ? ((thisMonthTotal - lastMonthTotal) / lastMonthTotal * 100).toFixed(1)
     : thisMonthTotal > 0 ? "100" : "0";
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-primary/10 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-primary mb-2">
-            <TrendingUp className="w-4 h-4" />
-            <span className="text-sm font-medium">This Month</span>
-          </div>
-          <p className="text-2xl font-bold">৳{thisMonthTotal.toLocaleString()}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {thisMonthVerified.length} verified payments
-          </p>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="bg-primary/10 rounded-lg p-4">
+        <div className="flex items-center gap-2 text-primary mb-2">
+          <TrendingUp className="w-4 h-4" />
+          <span className="text-sm font-medium">This Month</span>
         </div>
-        
-        <div className="bg-muted rounded-lg p-4">
-          <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <CreditCard className="w-4 h-4" />
-            <span className="text-sm font-medium">Last Month</span>
-          </div>
-          <p className="text-2xl font-bold">৳{lastMonthTotal.toLocaleString()}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {Number(growth) >= 0 ? "+" : ""}{growth}% vs this month
-          </p>
-        </div>
-        
-        <div className="bg-yellow-500/10 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400 mb-2">
-            <AlertCircle className="w-4 h-4" />
-            <span className="text-sm font-medium">Pending</span>
-          </div>
-          <p className="text-2xl font-bold">৳{pendingTotal.toLocaleString()}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {pendingPayments.length} awaiting verification
-          </p>
-        </div>
-        
-        <div className="bg-green-500/10 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-2">
-            <CheckCircle2 className="w-4 h-4" />
-            <span className="text-sm font-medium">All Time</span>
-          </div>
-          <p className="text-2xl font-bold">৳{allTimeTotal.toLocaleString()}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {allTimeVerified.length} total verified
-          </p>
-        </div>
+        <p className="text-2xl font-bold">৳{thisMonthTotal.toLocaleString()}</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {thisMonthVerified.length} verified payments
+        </p>
       </div>
-
-      {/* Breakdown Section */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* By Payment Method */}
-        <div className="border rounded-lg p-4">
-          <h4 className="font-medium mb-3">This Month by Payment Method</h4>
-          {Object.keys(byMethod).length > 0 ? (
-            <div className="space-y-2">
-              {Object.entries(byMethod).sort((a, b) => b[1] - a[1]).map(([method, amount]) => (
-                <div key={method} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-3 h-3 rounded-full ${
-                      method === "bkash" ? "bg-pink-500" :
-                      method === "nagad" ? "bg-orange-500" :
-                      method === "rocket" ? "bg-purple-500" :
-                      method === "bank" ? "bg-blue-500" : "bg-gray-500"
-                    }`} />
-                    <span className="capitalize">{method}</span>
-                  </div>
-                  <span className="font-medium">৳{amount.toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">No verified payments this month</p>
-          )}
+      
+      <div className="bg-muted rounded-lg p-4">
+        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+          <CreditCard className="w-4 h-4" />
+          <span className="text-sm font-medium">Last Month</span>
         </div>
-
-        {/* By Plan */}
-        <div className="border rounded-lg p-4">
-          <h4 className="font-medium mb-3">This Month by Plan</h4>
-          {Object.keys(byPlan).length > 0 ? (
-            <div className="space-y-2">
-              {Object.entries(byPlan).sort((a, b) => b[1] - a[1]).map(([plan, count]) => (
-                <div key={plan} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="capitalize">{plan}</Badge>
-                  </div>
-                  <span className="font-medium">{count} subscription{count !== 1 ? "s" : ""}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">No verified payments this month</p>
-          )}
-        </div>
+        <p className="text-2xl font-bold">৳{lastMonthTotal.toLocaleString()}</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {Number(growth) >= 0 ? "+" : ""}{growth}% vs this month
+        </p>
       </div>
-
-      {/* Monthly Comparison */}
-      <div className="border rounded-lg p-4">
-        <h4 className="font-medium mb-3">Monthly Comparison</h4>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left py-2">Period</th>
-                <th className="text-right py-2">Payments</th>
-                <th className="text-right py-2">Verified</th>
-                <th className="text-right py-2">Rejected</th>
-                <th className="text-right py-2">Amount (Verified)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b">
-                <td className="py-2 font-medium">{format(thisMonthStart, "MMMM yyyy")}</td>
-                <td className="text-right">{thisMonthPayments.length}</td>
-                <td className="text-right text-green-600">{thisMonthVerified.length}</td>
-                <td className="text-right text-destructive">{thisMonthPayments.filter(p => p.status === "rejected").length}</td>
-                <td className="text-right font-medium">৳{thisMonthTotal.toLocaleString()}</td>
-              </tr>
-              <tr>
-                <td className="py-2 font-medium">{format(lastMonthStart, "MMMM yyyy")}</td>
-                <td className="text-right">{lastMonthPayments.length}</td>
-                <td className="text-right text-green-600">{lastMonthVerified.length}</td>
-                <td className="text-right text-destructive">{lastMonthPayments.filter(p => p.status === "rejected").length}</td>
-                <td className="text-right font-medium">৳{lastMonthTotal.toLocaleString()}</td>
-              </tr>
-            </tbody>
-          </table>
+      
+      <div className="bg-yellow-500/10 rounded-lg p-4">
+        <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400 mb-2">
+          <AlertCircle className="w-4 h-4" />
+          <span className="text-sm font-medium">Pending</span>
         </div>
+        <p className="text-2xl font-bold">৳{pendingTotal.toLocaleString()}</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {pendingPayments.length} awaiting verification
+        </p>
+      </div>
+      
+      <div className="bg-green-500/10 rounded-lg p-4">
+        <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-2">
+          <CheckCircle2 className="w-4 h-4" />
+          <span className="text-sm font-medium">All Time</span>
+        </div>
+        <p className="text-2xl font-bold">৳{allTimeTotal.toLocaleString()}</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {allTimeVerified.length} total verified
+        </p>
       </div>
     </div>
   );
@@ -571,6 +475,9 @@ export default function PaymentVerification() {
       title="Payment Verification"
       description="Verify subscription payments from doctors"
     >
+      {/* Summary Cards at Top */}
+      <PaymentSummaryCards payments={payments} />
+
       <Card>
         <CardHeader className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -761,22 +668,6 @@ export default function PaymentVerification() {
               </TableBody>
             </Table>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Payment Analytics */}
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5" />
-            Payment Analytics
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Summary of subscription payments for reporting
-          </p>
-        </CardHeader>
-        <CardContent>
-          <PaymentAnalytics payments={payments} />
         </CardContent>
       </Card>
 
