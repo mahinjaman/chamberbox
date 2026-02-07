@@ -49,6 +49,7 @@ import PaymentVerification from "./pages/admin/PaymentVerification";
 import DoctorDetail from "./pages/admin/DoctorDetail";
  import AdminManagement from "./pages/admin/AdminManagement";
 import PaymentAnalytics from "./pages/admin/PaymentAnalytics";
+import AdminSmsConfig from "./pages/admin/AdminSmsConfig";
 
 // Staff Pages
 import StaffManagement from "./pages/StaffManagement";
@@ -371,6 +372,14 @@ const App = () => (
                element={
                  <ProtectedRoute>
                    <AdminManagement />
+                 </ProtectedRoute>
+               }
+             />
+             <Route
+               path="/admin/sms"
+               element={
+                 <ProtectedRoute>
+                   <AdminSmsConfig />
                  </ProtectedRoute>
                }
              />
