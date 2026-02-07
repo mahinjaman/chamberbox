@@ -27,7 +27,10 @@ import {
   StickyNote
 } from "lucide-react";
 import { PrescriptionModal } from "@/components/queue/PrescriptionModal";
+import { PrescriptionView } from "@/components/prescription/PrescriptionView";
 import { PaymentCollectionModal } from "@/components/queue/PaymentCollectionModal";
+import { supabase } from "@/integrations/supabase/client";
+import { Prescription } from "@/hooks/usePrescriptions";
 import { NoteDialog } from "@/components/queue/NoteDialog";
 import { cn } from "@/lib/utils";
 import { format, addDays, subDays, isToday, isFuture } from "date-fns";
@@ -82,6 +85,8 @@ const Queue = () => {
   const [isPatientDetailOpen, setIsPatientDetailOpen] = useState(false);
   const [noteDialogToken, setNoteDialogToken] = useState<QueueToken | null>(null);
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
+  const [viewPrescription, setViewPrescription] = useState<Prescription | null>(null);
+  const [isViewPrescriptionOpen, setIsViewPrescriptionOpen] = useState(false);
   const [selectedExistingPatient, setSelectedExistingPatient] = useState<{ id: string; name: string; phone: string } | null>(null);
   const [existingPatientReason, setExistingPatientReason] = useState("");
   
@@ -229,8 +234,28 @@ const Queue = () => {
     setIsPaymentModalOpen(false);
   };
 
-  const handleViewPrescription = (prescriptionId: string) => {
-    navigate(`/dashboard/prescriptions?highlight=${prescriptionId}`);
+  const handleViewPrescription = async (prescriptionId: string) => {
+    const { data, error } = await supabase
+      .from("prescriptions")
+      .select("*, patient:patients(name, phone, age, gender, blood_group)")
+      .eq("id", prescriptionId)
+      .single();
+    
+    if (error || !data) {
+      toast.error("Could not load prescription");
+      return;
+    }
+
+    const medicines = Array.isArray(data.medicines) ? data.medicines : [];
+    const investigations = Array.isArray(data.investigations) ? data.investigations : [];
+    
+    setViewPrescription({
+      ...data,
+      medicines: medicines as unknown as Prescription["medicines"],
+      investigations: investigations as unknown as Prescription["investigations"],
+      language: data.language || "english",
+    } as Prescription);
+    setIsViewPrescriptionOpen(true);
   };
 
   const handleDelete = (id: string, e: React.MouseEvent) => {
@@ -816,6 +841,15 @@ const Queue = () => {
         currentNote={noteDialogToken?.notes || null}
         patientName={noteDialogToken?.patient?.name || "Patient"}
         onSave={handleSaveNote}
+      />
+
+      <PrescriptionView
+        prescription={viewPrescription}
+        isOpen={isViewPrescriptionOpen}
+        onClose={() => {
+          setIsViewPrescriptionOpen(false);
+          setViewPrescription(null);
+        }}
       />
     </DashboardLayout>
   );
