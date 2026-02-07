@@ -99,7 +99,6 @@ export const DashboardSidebar = () => {
     { title: t.nav.myProfile, url: "/dashboard/profile", icon: Globe },
     { title: t.nav.integrations, url: "/dashboard/integrations", icon: Plug },
     { title: t.nav.staffManagement, url: "/dashboard/staff", icon: UserCog },
-    { title: t.nav.myTickets, url: "/dashboard/tickets", icon: MessageSquare },
     { title: language === "bn" ? "টিউটোরিয়াল" : "Tutorials", url: "/dashboard/tutorials", icon: PlayCircle },
     { title: t.nav.settings, url: "/dashboard/settings", icon: Settings },
   ];
@@ -230,6 +229,18 @@ export const DashboardSidebar = () => {
                 </SidebarMenuItem>
               ))}
               <SupportMenuItem />
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/dashboard/tickets")}
+                  tooltip={t.nav.myTickets}
+                >
+                  <Link to="/dashboard/tickets">
+                    <MessageSquare className="w-5 h-5" />
+                    <span>{t.nav.myTickets}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
