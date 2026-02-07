@@ -52,6 +52,7 @@ const mainNavItems = [
      items.push({ title: "Payments", url: "/admin/payments", icon: CheckCircle });
    }
     items.push({ title: "Analytics", url: "/admin/analytics", icon: BarChart3 });
+    items.push({ title: "SMS Config", url: "/admin/sms", icon: Phone });
    if (permissions.canConfigurePlans) {
      items.push({ title: "Plan Config", url: "/admin/plans", icon: Settings });
    }

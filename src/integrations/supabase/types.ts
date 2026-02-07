@@ -495,6 +495,45 @@ export type Database = {
           },
         ]
       }
+      platform_sms_config: {
+        Row: {
+          api_key: string | null
+          api_url: string
+          created_at: string
+          display_name: string
+          gateway_name: string
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          sender_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          api_key?: string | null
+          api_url: string
+          created_at?: string
+          display_name: string
+          gateway_name: string
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          sender_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string | null
+          api_url?: string
+          created_at?: string
+          display_name?: string
+          gateway_name?: string
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          sender_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       prescription_templates: {
         Row: {
           advice: string | null
