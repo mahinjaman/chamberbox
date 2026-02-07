@@ -8,7 +8,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { DoctorRoute } from "@/components/auth/DoctorRoute";
 import { StaffRoute } from "@/components/auth/StaffRoute";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
-import { FloatingWidgets } from "@/components/common/FloatingWidgets";
+
 
 // Pages
 import Landing from "./pages/Landing";
@@ -36,6 +36,7 @@ import DoctorPublicProfile from "./pages/DoctorPublicProfile";
 import DirectBooking from "./pages/DirectBooking";
 import IntegrationSettings from "./pages/IntegrationSettings";
 import MyTickets from "./pages/MyTickets";
+import Tutorials from "./pages/Tutorials";
 import NotFound from "./pages/NotFound";
 
 // Admin Pages
@@ -208,6 +209,14 @@ const App = () => (
               element={
                 <DoctorRoute>
                   <StaffManagement />
+                </DoctorRoute>
+              }
+            />
+            <Route
+              path="/dashboard/tutorials"
+              element={
+                <DoctorRoute>
+                  <Tutorials />
                 </DoctorRoute>
               }
             />
@@ -387,7 +396,6 @@ const App = () => (
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <FloatingWidgets />
         </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>

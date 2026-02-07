@@ -17,7 +17,8 @@ import {
   UserCog,
   ChevronDown,
   History,
-  BookTemplate
+  BookTemplate,
+  PlayCircle
 } from "lucide-react";
 import {
   Sidebar,
@@ -99,6 +100,7 @@ export const DashboardSidebar = () => {
     { title: t.nav.integrations, url: "/dashboard/integrations", icon: Plug },
     { title: t.nav.staffManagement, url: "/dashboard/staff", icon: UserCog },
     { title: t.nav.myTickets, url: "/dashboard/tickets", icon: MessageSquare },
+    { title: language === "bn" ? "টিউটোরিয়াল" : "Tutorials", url: "/dashboard/tutorials", icon: PlayCircle },
     { title: t.nav.settings, url: "/dashboard/settings", icon: Settings },
   ];
 
