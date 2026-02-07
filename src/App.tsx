@@ -37,6 +37,7 @@ import DirectBooking from "./pages/DirectBooking";
 import IntegrationSettings from "./pages/IntegrationSettings";
 import MyTickets from "./pages/MyTickets";
 import Tutorials from "./pages/Tutorials";
+import PaymentHistory from "./pages/PaymentHistory";
 import NotFound from "./pages/NotFound";
 
 // Admin Pages
@@ -217,6 +218,14 @@ const App = () => (
               element={
                 <DoctorRoute>
                   <Tutorials />
+                </DoctorRoute>
+              }
+            />
+            <Route
+              path="/dashboard/payments"
+              element={
+                <DoctorRoute>
+                  <PaymentHistory />
                 </DoctorRoute>
               }
             />

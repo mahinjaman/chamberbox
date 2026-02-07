@@ -18,7 +18,8 @@ import {
   ChevronDown,
   History,
   BookTemplate,
-  PlayCircle
+  PlayCircle,
+  Receipt
 } from "lucide-react";
 import {
   Sidebar,
@@ -101,6 +102,7 @@ export const DashboardSidebar = () => {
     { title: t.nav.staffManagement, url: "/dashboard/staff", icon: UserCog },
     { title: language === "bn" ? "টিউটোরিয়াল" : "Tutorials", url: "/dashboard/tutorials", icon: PlayCircle },
     { title: t.nav.settings, url: "/dashboard/settings", icon: Settings },
+    { title: language === "bn" ? "পেমেন্ট হিস্ট্রি" : "Payment History", url: "/dashboard/payments", icon: Receipt },
   ];
 
   const isActive = (path: string) => {
