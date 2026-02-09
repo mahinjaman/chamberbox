@@ -36,7 +36,7 @@ export const DashboardLayout = ({ children, title, description, actions }: Dashb
               </div>
             </div>
           </header>
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-4 sm:p-6 overflow-x-hidden">
             {children}
           </main>
         </SidebarInset>

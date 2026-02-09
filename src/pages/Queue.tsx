@@ -347,12 +347,12 @@ const Queue = () => {
         </div>
       }
       actions={
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 sm:gap-2">
           <Dialog open={isNewPatientDialogOpen} onOpenChange={setIsNewPatientDialogOpen}>
             <DialogTrigger asChild>
-              <Button disabled={!selectedSession}>
-                <Plus className="mr-2 h-4 w-4" />
-                New Patient
+              <Button disabled={!selectedSession} size="sm" className="sm:size-default px-2 sm:px-4">
+                <Plus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">New Patient</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
@@ -463,9 +463,9 @@ const Queue = () => {
             }
           }}>
             <DialogTrigger asChild>
-              <Button variant="outline" disabled={!selectedSession}>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Add Existing
+              <Button variant="outline" disabled={!selectedSession} size="sm" className="sm:size-default px-2 sm:px-4">
+                <UserPlus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Add Existing</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
