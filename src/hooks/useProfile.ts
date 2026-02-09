@@ -19,6 +19,7 @@ export interface Profile {
   degrees: string[] | null;
   slug: string | null;
   is_public: boolean | null;
+  doctor_code: string | null;
   created_at: string;
   updated_at: string;
 }
