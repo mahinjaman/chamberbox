@@ -92,10 +92,9 @@ serve(async (req: Request) => {
         );
       }
 
-      // Use admin API to generate password reset link
-      const { data, error } = await adminClient.auth.admin.generateLink({
-        type: "recovery",
-        email: profile.email,
+      // Use resetPasswordForEmail which actually sends the email
+      const { data, error } = await adminClient.auth.resetPasswordForEmail(profile.email, {
+        redirectTo: `${req.headers.get("origin") || "https://chamberbox.lovable.app"}/reset-password`,
       });
 
       if (error) {
