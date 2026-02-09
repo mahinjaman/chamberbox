@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { StaffSidebar } from "./StaffSidebar";
-import { LanguageToggle } from "@/components/common/LanguageToggle";
 
 interface StaffLayoutProps {
   children: ReactNode;
@@ -27,7 +26,6 @@ export const StaffLayout = ({ children, title, description, actions }: StaffLayo
               )}
             </div>
             <div className="flex items-center gap-2">
-              <LanguageToggle />
               {actions}
             </div>
           </header>

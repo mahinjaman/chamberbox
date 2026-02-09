@@ -10,14 +10,16 @@ import { Progress } from "@/components/ui/progress";
 import { useProfile } from "@/hooks/useProfile";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useStaff } from "@/hooks/useStaff";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { UpgradePlanDialog } from "@/components/subscription/UpgradePlanDialog";
-import { Loader2, Save, Users, FileText, MessageSquare, Building2, Crown, AlertTriangle, CheckCircle, Clock, UserPlus } from "lucide-react";
+import { Loader2, Save, Users, FileText, MessageSquare, Building2, Crown, AlertTriangle, CheckCircle, Clock, UserPlus, Languages } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 
 const Settings = () => {
   const { profile, isLoading, updateProfile, isUpdating, chambers } = useProfile();
   const { currentPlan, usage, createLimits, expiresAt, isExpired, daysRemaining, isLoading: subscriptionLoading } = useSubscription();
   const { staffMembers } = useStaff();
+  const { language, setLanguage } = useLanguage();
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
   // Calculate actual limits with real staff/chamber counts
@@ -419,6 +421,37 @@ const Settings = () => {
                 )}
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Language Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Languages className="w-5 h-5 text-primary" />
+              Language / ভাষা
+            </CardTitle>
+            <CardDescription>Choose your preferred language for the interface</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3">
+              <Button
+                variant={language === 'en' ? 'default' : 'outline'}
+                onClick={() => setLanguage('en')}
+                className="flex-1"
+              >
+                <span className="mr-2">🇺🇸</span>
+                English
+              </Button>
+              <Button
+                variant={language === 'bn' ? 'default' : 'outline'}
+                onClick={() => setLanguage('bn')}
+                className="flex-1"
+              >
+                <span className="mr-2">🇧🇩</span>
+                বাংলা
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
