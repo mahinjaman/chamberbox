@@ -247,7 +247,7 @@ export default function MyTickets() {
 
       {/* Ticket Detail Dialog */}
       <Dialog open={!!selectedTicket} onOpenChange={() => setSelectedTicket(null)}>
-        <DialogContent className="max-w-2xl h-[90vh] sm:h-[80vh] p-0 flex flex-col gap-0 sm:rounded-lg rounded-none sm:max-h-[80vh] max-h-[100dvh] w-full sm:w-auto [&>button]:z-50">
+        <DialogContent className="p-0 flex flex-col gap-0 [&>button]:z-50 max-w-[100vw] h-[100dvh] rounded-none sm:max-w-lg sm:h-auto sm:max-h-[70vh] sm:rounded-lg">
           {selectedTicket && (
             <div className="flex flex-col h-full min-h-0">
               {/* Compact Header */}
