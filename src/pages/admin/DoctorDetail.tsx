@@ -55,11 +55,12 @@ type SubscriptionTier = Database["public"]["Enums"]["subscription_tier"];
    slug: string | null;
    subscription_tier: string | null;
    subscription_expires_at: string | null;
-   is_approved: boolean | null;
-   approved_at: string | null;
-   created_at: string;
-   doctor_code: string | null;
- }
+  is_approved: boolean | null;
+  approved_at: string | null;
+  created_at: string;
+  doctor_code: string | null;
+  approval_status: string | null;
+}
  
  interface SubscriptionUsage {
    total_patients: number | null;
@@ -284,14 +285,21 @@ type SubscriptionTier = Database["public"]["Enums"]["subscription_tier"];
                <div className="flex-1 space-y-3">
                  <div className="flex flex-wrap items-center gap-3">
                    <h2 className="text-2xl font-bold">{doctor.full_name}</h2>
-                   {doctor.is_approved ? (
-                     <Badge className="bg-emerald-600">
-                       <CheckCircle className="w-3 h-3 mr-1" />
-                       Approved
-                     </Badge>
-                   ) : (
-                     <Badge variant="secondary">Pending</Badge>
-                   )}
+                    {doctor.approval_status === "approved" ? (
+                      <Badge className="bg-emerald-600">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Approved
+                      </Badge>
+                    ) : doctor.approval_status === "spam" ? (
+                      <Badge variant="destructive">Spam</Badge>
+                    ) : doctor.approval_status === "rejected" ? (
+                      <Badge variant="destructive">
+                        <XCircle className="w-3 h-3 mr-1" />
+                        Rejected
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary">Pending</Badge>
+                    )}
                    <Badge variant="outline" className="capitalize">
                      {doctor.subscription_tier || "trial"}
                    </Badge>
