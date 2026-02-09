@@ -289,24 +289,6 @@ export const DashboardSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Admin Section */}
-        {isAdmin && (
-          <SidebarGroup>
-            <SidebarGroupLabel className={cn(collapsed && "sr-only")}>Admin</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={location.pathname.startsWith("/admin")} tooltip="Admin Panel">
-                    <Link to="/admin">
-                      <Shield className="w-5 h-5" />
-                      <span>Admin Panel</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border">
