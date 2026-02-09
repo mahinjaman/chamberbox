@@ -11,7 +11,7 @@ import { ProfileSocialLinks } from "@/components/profile-editor/ProfileSocialLin
 import { ProfileEducation } from "@/components/profile-editor/ProfileEducation";
 import { ProfileVideos } from "@/components/profile-editor/ProfileVideos";
 import { ProfileCustomInfo } from "@/components/profile-editor/ProfileCustomInfo";
-import { Loader2, User, Building2, Globe, Plug, ArrowRight, Share2, GraduationCap, Video, Info } from "lucide-react";
+import { Loader2, User, Building2, Globe, Share2, GraduationCap, Video, Info } from "lucide-react";
 
 const ProfileEditor = () => {
   const { profile, chambers, availabilitySlots, isLoading } = useDoctorProfile();
@@ -31,20 +31,11 @@ const ProfileEditor = () => {
     <DashboardLayout
       title="Public Profile"
       description="Manage your public presence and appointment booking page"
-      actions={
-        <Button variant="outline" asChild>
-          <Link to="/dashboard/integrations">
-            <Plug className="w-4 h-4 mr-2" />
-            Integrations
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Link>
-        </Button>
-      }
     >
       <div className="space-y-6">
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7 lg:w-auto lg:inline-flex">
+          <TabsList className="flex flex-wrap gap-1 h-auto w-full lg:w-auto lg:inline-flex">
             <TabsTrigger value="basic" className="gap-2">
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Basic</span>
