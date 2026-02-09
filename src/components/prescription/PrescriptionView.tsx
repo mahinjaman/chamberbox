@@ -176,19 +176,16 @@ ${brandingFooter}
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            <span>Prescription Details</span>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handlePrint}>
-                <Printer className="h-4 w-4 mr-1" />
-                Print
+            <span>Prescription</span>
+            <div className="flex gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handlePrint} title="Print">
+                <Printer className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
-                <Download className="h-4 w-4 mr-1" />
-                PDF
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleDownloadPDF} title="Download PDF">
+                <Download className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" onClick={handleShareWhatsApp}>
-                <Share2 className="h-4 w-4 mr-1" />
-                WhatsApp
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleShareWhatsApp} title="Share on WhatsApp">
+                <Share2 className="h-4 w-4" />
               </Button>
             </div>
           </DialogTitle>
