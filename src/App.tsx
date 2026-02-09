@@ -31,6 +31,7 @@ import Finances from "./pages/Finances";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import QueueStatus from "./pages/QueueStatus";
+import DashboardQueueStatus from "./pages/DashboardQueueStatus";
 import ProfileEditor from "./pages/ProfileEditor";
 import DoctorPublicProfile from "./pages/DoctorPublicProfile";
 import DirectBooking from "./pages/DirectBooking";
@@ -138,6 +139,14 @@ const App = () => (
               element={
                 <DoctorRoute>
                   <Queue />
+                </DoctorRoute>
+              }
+            />
+            <Route
+              path="/dashboard/queue-status"
+              element={
+                <DoctorRoute>
+                  <DashboardQueueStatus />
                 </DoctorRoute>
               }
             />

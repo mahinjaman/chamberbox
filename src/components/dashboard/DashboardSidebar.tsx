@@ -77,7 +77,7 @@ export const DashboardSidebar = () => {
     { title: t.nav.dashboard, url: "/dashboard", icon: LayoutDashboard },
     { title: t.nav.patients, url: "/dashboard/patients", icon: Users },
     { title: t.nav.queue, url: "/dashboard/queue", icon: Clock },
-    { title: t.nav.queueStatus, url: "/queue-status", icon: ListOrdered, external: true },
+    { title: t.nav.queueStatus, url: "/dashboard/queue-status", icon: ListOrdered },
     { title: t.nav.finances, url: "/dashboard/finances", icon: CreditCard },
     { title: t.nav.analytics, url: "/dashboard/analytics", icon: BarChart3 },
   ];
