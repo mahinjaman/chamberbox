@@ -220,7 +220,7 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                 Select a date for your appointment
               </p>
               
-              <ScrollArea className="max-h-[300px]">
+              <ScrollArea className="max-h-[400px]">
                 <div className="grid grid-cols-2 gap-2 pr-2">
                   {quickDates.map(date => {
                     const isSelected = selectedDate === date;
