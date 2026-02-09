@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Phone } from "lucide-react";
+import { Eye, EyeOff, Loader2, Phone, CheckCircle, Copy, MessageCircle } from "lucide-react";
 import { mapAuthError } from "@/lib/errors";
 
 const Signup = () => {
@@ -18,6 +18,8 @@ const Signup = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [signupComplete, setSignupComplete] = useState(false);
+  const [doctorCode, setDoctorCode] = useState("");
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +29,6 @@ const Signup = () => {
       return;
     }
 
-    // Validate Bangladeshi phone format
     const phoneRegex = /^01[0-9]{9}$/;
     if (!phoneRegex.test(phone)) {
       toast.error("Invalid phone number. Use format: 01XXXXXXXXX");
@@ -46,7 +47,7 @@ const Signup = () => {
 
     setLoading(true);
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
@@ -58,20 +59,114 @@ const Signup = () => {
       },
     });
 
-    setLoading(false);
-
     if (error) {
+      setLoading(false);
       toast.error(mapAuthError(error));
       return;
     }
 
-    toast.success("Check your email to verify your account");
-    navigate("/login");
+    // Fetch the doctor_code from the newly created profile
+    if (data.user) {
+      // Small delay for trigger to complete
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("doctor_code")
+        .eq("user_id", data.user.id)
+        .single();
+
+      if (profile?.doctor_code) {
+        setDoctorCode(profile.doctor_code);
+      }
+
+      // Sign out immediately - they can't use the app until approved
+      await supabase.auth.signOut();
+    }
+
+    setLoading(false);
+    setSignupComplete(true);
   };
+
+  const copyDoctorCode = () => {
+    navigator.clipboard.writeText(doctorCode);
+    toast.success("Doctor ID copied!");
+  };
+
+  if (signupComplete) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4">
+        <div className="absolute top-1/4 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+
+        <Card className="w-full max-w-md relative z-10 shadow-2xl">
+          <CardHeader className="text-center">
+            <div className="mx-auto w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4">
+              <CheckCircle className="w-8 h-8 text-amber-600" />
+            </div>
+            <CardTitle className="text-2xl">Account Created!</CardTitle>
+            <CardDescription>
+              Your account is pending admin approval
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-6">
+            {/* Doctor ID Display */}
+            <div className="bg-muted rounded-lg p-4 text-center space-y-2">
+              <p className="text-sm text-muted-foreground">Your Doctor ID</p>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-3xl font-mono font-bold tracking-wider text-primary">
+                  {doctorCode}
+                </span>
+                <Button variant="ghost" size="icon" onClick={copyDoctorCode}>
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Save this ID — use it to check your approval status
+              </p>
+            </div>
+
+            {/* Status Badge */}
+            <div className="flex items-center justify-center">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200 text-amber-700">
+                <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                <span className="text-sm font-medium">Pending Approval</span>
+              </div>
+            </div>
+
+            <p className="text-sm text-center text-muted-foreground">
+              An admin will review and approve your account. You'll be able to log in once approved.
+            </p>
+
+            {/* WhatsApp Support */}
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={() => {
+                const message = encodeURIComponent(
+                  `Hi, I just signed up on ChamberBox. My Doctor ID is ${doctorCode}. Please approve my account.`
+                );
+                window.open(`https://wa.me/8801XXXXXXXXX?text=${message}`, "_blank");
+              }}
+            >
+              <MessageCircle className="w-4 h-4 text-green-600" />
+              Contact Support via WhatsApp
+            </Button>
+          </CardContent>
+
+          <CardFooter className="flex flex-col gap-4">
+            <Button className="w-full" onClick={() => navigate("/login")}>
+              Go to Login
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4">
-      {/* Decorative elements */}
       <div className="absolute top-1/4 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
 
