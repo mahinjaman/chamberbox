@@ -661,6 +661,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          admin_notes: string | null
           approved_at: string | null
           approved_by: string | null
           avatar_url: string | null
@@ -699,6 +700,7 @@ export type Database = {
           youtube_url: string | null
         }
         Insert: {
+          admin_notes?: string | null
           approved_at?: string | null
           approved_by?: string | null
           avatar_url?: string | null
@@ -737,6 +739,7 @@ export type Database = {
           youtube_url?: string | null
         }
         Update: {
+          admin_notes?: string | null
           approved_at?: string | null
           approved_by?: string | null
           avatar_url?: string | null
