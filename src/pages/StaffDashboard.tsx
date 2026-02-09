@@ -18,7 +18,7 @@ import {
   UserPlus,
   Info
 } from "lucide-react";
-import { LanguageToggle } from "@/components/common/LanguageToggle";
+
 import { Loader2 } from "lucide-react";
 import {
   Tooltip,
@@ -100,7 +100,6 @@ export default function StaffDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <LanguageToggle />
             <Button variant="ghost" size="icon" onClick={signOut}>
               <LogOut className="w-5 h-5" />
             </Button>

@@ -4,7 +4,6 @@ import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/s
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LanguageToggle } from "@/components/common/LanguageToggle";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -31,7 +30,6 @@ export const DashboardLayout = ({ children, title, description, actions }: Dashb
                 )}
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                <LanguageToggle />
                 {actions}
               </div>
             </div>
