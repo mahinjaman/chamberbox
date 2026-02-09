@@ -31,7 +31,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useMedicines, MedicineInsert } from "@/hooks/useMedicines";
+import { useMedicines, Medicine, MedicineInsert } from "@/hooks/useMedicines";
 import {
   Search,
   Plus,
@@ -40,6 +40,7 @@ import {
   Loader2,
   Pill,
   Download,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -56,6 +57,8 @@ export default function MedicineManagement() {
     isDeletingBulk,
     createMedicinesBulk,
     isCreatingBulk,
+    updateMedicine,
+    isUpdating,
   } = useMedicines();
 
   const [search, setSearch] = useState("");
@@ -64,6 +67,8 @@ export default function MedicineManagement() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showBulkAddDialog, setShowBulkAddDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editingMedicine, setEditingMedicine] = useState<Medicine | null>(null);
+  const [editMed, setEditMed] = useState<MedicineInsert>({ brand_name: "", generic_name: "" });
   const [bulkText, setBulkText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -295,14 +300,34 @@ export default function MedicineManagement() {
                         <TableCell className="text-muted-foreground">{m.dosage_form || "—"}</TableCell>
                         <TableCell className="text-muted-foreground">{m.manufacturer || "—"}</TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive"
-                            onClick={() => deleteMedicine(m.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => {
+                                setEditingMedicine(m);
+                                setEditMed({
+                                  brand_name: m.brand_name,
+                                  generic_name: m.generic_name,
+                                  strength: m.strength || "",
+                                  dosage_form: m.dosage_form || "",
+                                  manufacturer: m.manufacturer || "",
+                                  default_dosage: m.default_dosage || "",
+                                });
+                              }}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => deleteMedicine(m.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
@@ -454,6 +479,83 @@ export default function MedicineManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Medicine Dialog */}
+      <Dialog open={!!editingMedicine} onOpenChange={(open) => { if (!open) setEditingMedicine(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Medicine</DialogTitle>
+            <DialogDescription>Update medicine details</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Brand Name *</Label>
+                <Input
+                  value={editMed.brand_name}
+                  onChange={(e) => setEditMed({ ...editMed, brand_name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Generic Name *</Label>
+                <Input
+                  value={editMed.generic_name}
+                  onChange={(e) => setEditMed({ ...editMed, generic_name: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Strength</Label>
+                <Input
+                  value={editMed.strength || ""}
+                  onChange={(e) => setEditMed({ ...editMed, strength: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Dosage Form</Label>
+                <Input
+                  value={editMed.dosage_form || ""}
+                  onChange={(e) => setEditMed({ ...editMed, dosage_form: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Manufacturer</Label>
+                <Input
+                  value={editMed.manufacturer || ""}
+                  onChange={(e) => setEditMed({ ...editMed, manufacturer: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Default Dosage</Label>
+                <Input
+                  value={editMed.default_dosage || ""}
+                  onChange={(e) => setEditMed({ ...editMed, default_dosage: e.target.value })}
+                />
+              </div>
+            </div>
+            <Button
+              onClick={async () => {
+                if (!editingMedicine || !editMed.brand_name.trim() || !editMed.generic_name.trim()) {
+                  toast.error("Brand name and generic name are required");
+                  return;
+                }
+                try {
+                  await updateMedicine({ id: editingMedicine.id, ...editMed });
+                  setEditingMedicine(null);
+                } catch {}
+              }}
+              disabled={isUpdating}
+              className="w-full"
+            >
+              {isUpdating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Update Medicine
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
