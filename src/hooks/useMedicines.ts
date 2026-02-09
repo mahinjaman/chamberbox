@@ -1,5 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { mapDatabaseError } from "@/lib/errors";
 
 export interface Medicine {
   id: string;
@@ -12,7 +14,19 @@ export interface Medicine {
   default_dosage: string | null;
 }
 
+export interface MedicineInsert {
+  brand_name: string;
+  generic_name: string;
+  strength?: string;
+  dosage_form?: string;
+  manufacturer?: string;
+  default_dosage?: string;
+  brand_name_bn?: string;
+}
+
 export const useMedicines = () => {
+  const queryClient = useQueryClient();
+
   const { data: medicines = [], isLoading, error } = useQuery({
     queryKey: ["medicines"],
     queryFn: async () => {
@@ -37,10 +51,82 @@ export const useMedicines = () => {
     );
   };
 
+  const createMedicine = useMutation({
+    mutationFn: async (medicine: MedicineInsert) => {
+      const { data, error } = await supabase
+        .from("medicines")
+        .insert([medicine])
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Medicine;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["medicines"] });
+      toast.success("Medicine added successfully");
+    },
+    onError: (error) => {
+      toast.error(mapDatabaseError(error));
+    },
+  });
+
+  const deleteMedicine = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("medicines").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["medicines"] });
+      toast.success("Medicine deleted");
+    },
+    onError: (error) => {
+      toast.error(mapDatabaseError(error));
+    },
+  });
+
+  const deleteMedicinesBulk = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase.from("medicines").delete().in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: (_, ids) => {
+      queryClient.invalidateQueries({ queryKey: ["medicines"] });
+      toast.success(`${ids.length} medicines deleted`);
+    },
+    onError: (error) => {
+      toast.error(mapDatabaseError(error));
+    },
+  });
+
+  const createMedicinesBulk = useMutation({
+    mutationFn: async (medicines: MedicineInsert[]) => {
+      const { data, error } = await supabase
+        .from("medicines")
+        .insert(medicines)
+        .select();
+      if (error) throw error;
+      return data as Medicine[];
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["medicines"] });
+      toast.success(`${data.length} medicines added`);
+    },
+    onError: (error) => {
+      toast.error(mapDatabaseError(error));
+    },
+  });
+
   return {
     medicines,
     isLoading,
     error,
     searchMedicines,
+    createMedicine: createMedicine.mutateAsync,
+    isCreating: createMedicine.isPending,
+    deleteMedicine: deleteMedicine.mutate,
+    deleteMedicinesBulk: deleteMedicinesBulk.mutate,
+    isDeletingBulk: deleteMedicinesBulk.isPending,
+    createMedicinesBulk: createMedicinesBulk.mutateAsync,
+    isCreatingBulk: createMedicinesBulk.isPending,
   };
 };

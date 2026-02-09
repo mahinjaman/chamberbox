@@ -70,7 +70,7 @@ const Prescriptions = () => {
   const { profile } = useProfile();
   const { patients } = usePatients();
   const { prescriptions, templates, createPrescription, saveTemplate, deletePrescription, isCreating, isDeleting } = usePrescriptions();
-  const { medicines, searchMedicines } = useMedicines();
+  const { medicines, searchMedicines, createMedicine, isCreating: isCreatingMedicine } = useMedicines();
   const { checkLimit, isExpired } = useFeatureAccess();
   const prescriptionLimit = checkLimit("prescriptions");
 
@@ -90,6 +90,10 @@ const Prescriptions = () => {
   const [previewMode, setPreviewMode] = useState(false);
   const [viewPrescription, setViewPrescription] = useState<Prescription | null>(null);
   const [prescriptionToDelete, setPrescriptionToDelete] = useState<string | null>(null);
+  const [showAddMedicineForm, setShowAddMedicineForm] = useState(false);
+  const [newMedName, setNewMedName] = useState("");
+  const [newMedGeneric, setNewMedGeneric] = useState("");
+  const [newMedStrength, setNewMedStrength] = useState("");
 
   // Search and filter state for prescriptions list
   const [prescriptionSearch, setPrescriptionSearch] = useState("");
@@ -355,8 +359,8 @@ const Prescriptions = () => {
                     onChange={(e) => setMedicineSearch(e.target.value)}
                   />
                 </div>
-                {medicineSearch && searchResults.length > 0 && (
-                  <div className="border rounded-md max-h-40 overflow-y-auto">
+                {medicineSearch && medicineSearch.length >= 2 && (
+                  <div className="border rounded-md max-h-48 overflow-y-auto">
                     {searchResults.map((m) => (
                       <button
                         key={m.id}
@@ -373,7 +377,80 @@ const Prescriptions = () => {
                         <Badge variant="outline">{m.generic_name}</Badge>
                       </button>
                     ))}
+                    {/* Add new medicine option */}
+                    {!showAddMedicineForm && (
+                      <button
+                        className="w-full text-left px-3 py-2 hover:bg-primary/5 border-t flex items-center gap-2 text-primary"
+                        onClick={() => {
+                          setShowAddMedicineForm(true);
+                          setNewMedName(medicineSearch);
+                        }}
+                      >
+                        <Plus className="h-4 w-4" />
+                        <span className="text-sm font-medium">Add "{medicineSearch}" as new medicine</span>
+                      </button>
+                    )}
                   </div>
+                )}
+                {/* Inline Add Medicine Form */}
+                {showAddMedicineForm && (
+                  <Card className="border-primary/30 bg-primary/5">
+                    <CardContent className="py-3 space-y-2">
+                      <p className="text-sm font-medium">Add New Medicine</p>
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        <Input
+                          placeholder="Brand Name *"
+                          value={newMedName}
+                          onChange={(e) => setNewMedName(e.target.value)}
+                        />
+                        <Input
+                          placeholder="Generic/Category *"
+                          value={newMedGeneric}
+                          onChange={(e) => setNewMedGeneric(e.target.value)}
+                        />
+                        <Input
+                          placeholder="Strength (e.g. 500mg)"
+                          value={newMedStrength}
+                          onChange={(e) => setNewMedStrength(e.target.value)}
+                        />
+                      </div>
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setShowAddMedicineForm(false);
+                            setNewMedName("");
+                            setNewMedGeneric("");
+                            setNewMedStrength("");
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          size="sm"
+                          disabled={!newMedName.trim() || !newMedGeneric.trim() || isCreatingMedicine}
+                          onClick={async () => {
+                            const created = await createMedicine({
+                              brand_name: newMedName.trim(),
+                              generic_name: newMedGeneric.trim(),
+                              strength: newMedStrength.trim() || undefined,
+                            });
+                            if (created) {
+                              addMedicine(created);
+                            }
+                            setShowAddMedicineForm(false);
+                            setNewMedName("");
+                            setNewMedGeneric("");
+                            setNewMedStrength("");
+                          }}
+                        >
+                          {isCreatingMedicine && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                          Add & Use
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
               </div>
 
