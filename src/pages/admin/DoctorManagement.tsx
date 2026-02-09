@@ -97,29 +97,29 @@ export default function DoctorManagement() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row gap-4 justify-between">
             <CardTitle>All Doctors ({filteredDoctors?.length || 0})</CardTitle>
-            <div className="flex gap-2 flex-wrap">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name, email, ID..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 w-[220px]"
-                />
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="capitalize gap-1">
-                    {filter} <ChevronDown className="w-3 h-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  {(["all", "pending", "approved", "rejected"] as const).map(f => (
-                    <DropdownMenuItem key={f} onClick={() => setFilter(f)} className="capitalize">{f}</DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, email, ID..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 w-[220px]"
+              />
             </div>
+          </div>
+          {/* Filter tabs below title */}
+          <div className="flex gap-2 mt-2 flex-wrap">
+            {(["all", "pending", "approved", "rejected"] as const).map(f => (
+              <Button
+                key={f}
+                variant={filter === f ? "default" : "outline"}
+                size="sm"
+                className="capitalize"
+                onClick={() => setFilter(f)}
+              >
+                {f}
+              </Button>
+            ))}
           </div>
 
           {/* Bulk Actions Bar */}
@@ -246,9 +246,14 @@ export default function DoctorManagement() {
                                 <XCircle className="w-4 h-4 mr-2" /> Reject / Revoke
                               </DropdownMenuItem>
                             ) : (
-                              <DropdownMenuItem onClick={() => approveDoctor(doctor.id)}>
-                                <CheckCircle className="w-4 h-4 mr-2" /> Approve
-                              </DropdownMenuItem>
+                              <>
+                                <DropdownMenuItem onClick={() => approveDoctor(doctor.id)}>
+                                  <CheckCircle className="w-4 h-4 mr-2" /> Approve
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => revokeApproval(doctor.id)} className="text-destructive">
+                                  <XCircle className="w-4 h-4 mr-2" /> Reject
+                                </DropdownMenuItem>
+                              </>
                             )}
                             <DropdownMenuItem
                               onClick={() => { bulkMarkSpam([doctor.id]); }}
