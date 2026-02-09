@@ -47,12 +47,12 @@ const DURATION_PRESETS = [
   { value: "continue", label_en: "Continue", label_bn: "চলবে" },
 ];
 const ADVICE_SHORTCUTS = [
-  "Drink plenty of water",
-  "Take rest",
-  "Avoid spicy food",
-  "Come for follow-up if symptoms persist",
-  "Take medicines after meals",
-  "Avoid cold drinks",
+  "প্রচুর পানি পান করুন",
+  "বিশ্রাম নিন",
+  "ঝাল খাবার এড়িয়ে চলুন",
+  "সমস্যা থাকলে ফলো-আপে আসুন",
+  "খাবারের পরে ওষুধ খান",
+  "ঠান্ডা পানীয় এড়িয়ে চলুন",
 ];
 
 // Helper to get duration display label
