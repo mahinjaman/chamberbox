@@ -662,6 +662,7 @@ export type Database = {
       profiles: {
         Row: {
           admin_notes: string | null
+          approval_status: string | null
           approved_at: string | null
           approved_by: string | null
           avatar_url: string | null
@@ -701,6 +702,7 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
+          approval_status?: string | null
           approved_at?: string | null
           approved_by?: string | null
           avatar_url?: string | null
@@ -740,6 +742,7 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
+          approval_status?: string | null
           approved_at?: string | null
           approved_by?: string | null
           avatar_url?: string | null
