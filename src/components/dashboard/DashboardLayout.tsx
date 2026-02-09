@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "./DashboardSidebar";
-import { Globe, AlertTriangle, Crown } from "lucide-react";
+import { Globe, AlertTriangle, Crown, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -73,6 +73,13 @@ export const DashboardLayout = ({ children, title, description, actions }: Dashb
                       <Link to="/dashboard/payments">
                         {bn ? "পেমেন্ট হিস্টোরি" : "Payment History"}
                       </Link>
+                    </Button>
+                    <Button variant="outline" className="gap-2" onClick={() => {
+                      const message = encodeURIComponent("Hi, I need help with ChamberBox.");
+                      window.open(`https://wa.me/8801XXXXXXXXX?text=${message}`, "_blank");
+                    }}>
+                      <MessageCircle className="w-4 h-4" />
+                      {bn ? "সাপোর্টে যোগাযোগ" : "Contact Support"}
                     </Button>
                   </div>
                 </CardContent>
