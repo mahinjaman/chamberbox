@@ -12,7 +12,8 @@ import {
    UserCog,
    Mail,
    Phone,
-   BarChart3
+   BarChart3,
+   Pill
 } from "lucide-react";
 import {
   Sidebar,
@@ -53,6 +54,7 @@ const mainNavItems = [
    }
     items.push({ title: "Analytics", url: "/admin/analytics", icon: BarChart3 });
     items.push({ title: "SMS Config", url: "/admin/sms", icon: Phone });
+    items.push({ title: "Medicines", url: "/admin/medicines", icon: Pill });
    if (permissions.canConfigurePlans) {
      items.push({ title: "Plan Config", url: "/admin/plans", icon: Settings });
    }
