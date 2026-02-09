@@ -92,15 +92,19 @@ serve(async (req: Request) => {
         );
       }
 
-      // Use resetPasswordForEmail which actually sends the email
-      const { data, error } = await adminClient.auth.resetPasswordForEmail(profile.email, {
-        redirectTo: `${req.headers.get("origin") || "https://chamberbox.lovable.app"}/reset-password`,
+      // Generate password reset link using admin API
+      const { data, error } = await adminClient.auth.admin.generateLink({
+        type: "recovery",
+        email: profile.email,
+        options: {
+          redirectTo: `${req.headers.get("origin") || "https://chamberbox.lovable.app"}/reset-password`,
+        },
       });
 
       if (error) {
         console.error("Password reset error:", error);
         return new Response(
-          JSON.stringify({ error: "Failed to send password reset: " + error.message }),
+          JSON.stringify({ error: "Failed to generate password reset link: " + error.message }),
           {
             status: 500,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -108,8 +112,15 @@ serve(async (req: Request) => {
         );
       }
 
+      const resetLink = data?.properties?.action_link || null;
+
       return new Response(
-        JSON.stringify({ success: true, message: "Password reset link sent to " + profile.email }),
+        JSON.stringify({ 
+          success: true, 
+          message: "Password reset link generated for " + profile.email,
+          reset_link: resetLink,
+          email: profile.email,
+        }),
         {
           status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
