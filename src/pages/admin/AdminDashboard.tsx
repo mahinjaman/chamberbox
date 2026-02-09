@@ -60,12 +60,12 @@ export default function AdminDashboard() {
 
   const stats = {
     totalDoctors: doctors?.length || 0,
-    approvedDoctors: doctors?.filter(d => d.is_approved).length || 0,
-    pendingApproval: doctors?.filter(d => !d.is_approved).length || 0,
+    approvedDoctors: doctors?.filter(d => d.approval_status === "approved").length || 0,
+    pendingApproval: doctors?.filter(d => !d.approval_status || d.approval_status === "pending").length || 0,
     activeSubscriptions: doctors?.filter(d => 
-      d.subscription_tier && 
-      d.subscription_tier !== "trial" &&
-      (!d.subscription_expires_at || new Date(d.subscription_expires_at) > new Date())
+      d.approval_status === "approved" &&
+      d.subscription_expires_at && 
+      new Date(d.subscription_expires_at) > new Date()
     ).length || 0,
     openTickets: tickets?.filter(t => t.status === "open").length || 0,
     expiringSoon: doctors?.filter(d => {
@@ -210,7 +210,7 @@ export default function AdminDashboard() {
                 <p className="text-muted-foreground">Loading...</p>
               ) : stats.pendingApproval > 0 ? (
                 <div className="space-y-2">
-                  {doctors?.filter(d => !d.is_approved).slice(0, 5).map((doctor) => (
+                  {doctors?.filter(d => !d.approval_status || d.approval_status === "pending").slice(0, 5).map((doctor) => (
                     <div key={doctor.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                       <div>
                         <p className="font-medium">{doctor.full_name}</p>

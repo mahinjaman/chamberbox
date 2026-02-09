@@ -40,7 +40,7 @@ import { cn } from "@/lib/utils";
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, subscription_tier, subscription_expires_at, created_at, is_approved");
+        .select("id, subscription_tier, subscription_expires_at, created_at, is_approved, approval_status");
       if (error) throw error;
       return data;
     },
@@ -132,24 +132,24 @@ import { cn } from "@/lib/utils";
      ? ((thisMonthTotal - lastMonthTotal) / lastMonthTotal * 100).toFixed(1)
      : thisMonthTotal > 0 ? "100" : "0";
  
-  // Doctor stats
-  const totalDoctors = doctors.length;
+  // Doctor stats - only count approved doctors
+  const approvedDoctors = doctors.filter(d => d.approval_status === "approved");
+  const totalActiveDoctors = approvedDoctors.length;
   const newDoctorsThisMonth = doctors.filter(d => {
     const date = new Date(d.created_at);
     return date >= thisMonthStart && date <= thisMonthEnd;
   }).length;
-  const approvedDoctors = doctors.filter(d => d.is_approved).length;
-  const pendingApproval = doctors.filter(d => !d.is_approved).length;
+  const pendingApproval = doctors.filter(d => !d.approval_status || d.approval_status === "pending").length;
 
-  // Subscription distribution
-  const subscriptionDist = doctors.reduce((acc, d) => {
+  // Subscription distribution - only approved doctors
+  const subscriptionDist = approvedDoctors.reduce((acc, d) => {
     const tier = d.subscription_tier || 'trial';
     acc[tier] = (acc[tier] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  // Active subscriptions (not expired)
-  const activeSubscriptions = doctors.filter(d => {
+  // Active subscriptions - approved doctors with non-expired subscriptions
+  const activeSubscriptions = approvedDoctors.filter(d => {
     if (!d.subscription_expires_at) return false;
     return new Date(d.subscription_expires_at) > now;
   }).length;
@@ -180,22 +180,22 @@ import { cn } from "@/lib/utils";
      >
       {/* Platform Overview - Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Doctors</p>
-                <p className="text-3xl font-bold mt-1">{totalDoctors}</p>
-                <p className="text-xs text-primary mt-1">
-                  +{newDoctorsThisMonth} this month
-                </p>
-              </div>
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Stethoscope className="w-6 h-6 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+           <CardContent className="p-5">
+             <div className="flex items-center justify-between">
+               <div>
+                 <p className="text-sm font-medium text-muted-foreground">Active Doctors</p>
+                 <p className="text-3xl font-bold mt-1">{totalActiveDoctors}</p>
+                 <p className="text-xs text-primary mt-1">
+                   +{newDoctorsThisMonth} new this month
+                 </p>
+               </div>
+               <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                 <Stethoscope className="w-6 h-6 text-primary" />
+               </div>
+             </div>
+           </CardContent>
+         </Card>
         
         <Card className="border-muted bg-gradient-to-br from-muted/30 to-muted/50">
           <CardContent className="p-5">
@@ -326,7 +326,7 @@ import { cn } from "@/lib/utils";
           <CardContent className="space-y-4">
             {['trial', 'basic', 'pro', 'premium', 'enterprise'].map(tier => {
               const count = subscriptionDist[tier] || 0;
-              const percentage = totalDoctors > 0 ? (count / totalDoctors) * 100 : 0;
+              const percentage = totalActiveDoctors > 0 ? (count / totalActiveDoctors) * 100 : 0;
               const colors: Record<string, string> = {
                 trial: 'bg-muted-foreground',
                 basic: 'bg-primary',
