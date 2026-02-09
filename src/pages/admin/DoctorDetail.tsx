@@ -1,12 +1,19 @@
- import { useParams, Link } from "react-router-dom";
- import { useQuery } from "@tanstack/react-query";
- import { AdminLayout } from "@/components/admin/AdminLayout";
- import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
- import { Badge } from "@/components/ui/badge";
- import { Button } from "@/components/ui/button";
- import { Progress } from "@/components/ui/progress";
- import { Separator } from "@/components/ui/separator";
- import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { useAuth } from "@/lib/auth";
+import { toast } from "sonner";
  import {
    Table,
    TableBody,
@@ -16,25 +23,25 @@
    TableRow,
  } from "@/components/ui/table";
  import { supabase } from "@/integrations/supabase/client";
- import { 
-   ArrowLeft, 
-   User, 
-   Mail, 
-   Phone, 
-   MapPin, 
-   Calendar,
-   CreditCard,
-   CheckCircle,
-   XCircle,
-   Users,
-   FileText,
-   Building2,
-   MessageSquare,
-   Clock,
-   Loader2,
-   ExternalLink
- } from "lucide-react";
- import { format, differenceInDays } from "date-fns";
+import { 
+    ArrowLeft, 
+    User, 
+    Mail, 
+    Phone, 
+    Calendar,
+    CreditCard,
+    CheckCircle,
+    XCircle,
+    Users,
+    FileText,
+    Building2,
+    Clock,
+    Loader2,
+    ExternalLink,
+    KeyRound,
+    MailCheck,
+  } from "lucide-react";
+  import { format, differenceInDays } from "date-fns";
 import type { Database } from "@/integrations/supabase/types";
 
 type SubscriptionTier = Database["public"]["Enums"]["subscription_tier"];
@@ -107,8 +114,26 @@ type SubscriptionTier = Database["public"]["Enums"]["subscription_tier"];
    is_active: boolean;
  }
  
- export default function DoctorDetail() {
-   const { id } = useParams<{ id: string }>();
+  export default function DoctorDetail() {
+    const { id } = useParams<{ id: string }>();
+    const { user } = useAuth();
+    const queryClient = useQueryClient();
+    const [sendingReset, setSendingReset] = useState(false);
+    const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+    const [newEmail, setNewEmail] = useState("");
+    const [changingEmail, setChangingEmail] = useState(false);
+
+    // Check if caller is super_admin
+    const { data: isSuperAdmin } = useQuery({
+      queryKey: ["isSuperAdmin", user?.id],
+      queryFn: async () => {
+        if (!user?.id) return false;
+        const { data, error } = await supabase.rpc("has_role", { _user_id: user.id, _role: "super_admin" });
+        if (error) return false;
+        return data as boolean;
+      },
+      enabled: !!user?.id,
+    });
  
    // Fetch doctor profile
    const { data: doctor, isLoading: doctorLoading } = useQuery({
@@ -205,15 +230,52 @@ type SubscriptionTier = Database["public"]["Enums"]["subscription_tier"];
      enabled: !!id,
    });
  
-   if (doctorLoading) {
-     return (
-       <AdminLayout title="Doctor Details" description="Loading...">
-         <div className="flex items-center justify-center py-20">
-           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-         </div>
-       </AdminLayout>
-     );
-   }
+    if (doctorLoading) {
+      return (
+        <AdminLayout title="Doctor Details" description="Loading...">
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          </div>
+        </AdminLayout>
+      );
+    }
+
+    const handleSendPasswordReset = async () => {
+      if (!doctor) return;
+      setSendingReset(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("admin-auth", {
+          body: { action: "send_password_reset", doctor_id: doctor.id },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        toast.success(data.message || "Password reset link sent!");
+      } catch (err: any) {
+        toast.error(err.message || "Failed to send password reset");
+      } finally {
+        setSendingReset(false);
+      }
+    };
+
+    const handleChangeEmail = async () => {
+      if (!doctor || !newEmail.trim()) return;
+      setChangingEmail(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("admin-auth", {
+          body: { action: "change_email", doctor_id: doctor.id, new_email: newEmail.trim() },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        toast.success(data.message || "Email changed!");
+        setEmailDialogOpen(false);
+        setNewEmail("");
+        queryClient.invalidateQueries({ queryKey: ["adminDoctorDetail", id] });
+      } catch (err: any) {
+        toast.error(err.message || "Failed to change email");
+      } finally {
+        setChangingEmail(false);
+      }
+    };
  
    if (!doctor) {
      return (
@@ -351,11 +413,43 @@ type SubscriptionTier = Database["public"]["Enums"]["subscription_tier"];
                        Public Profile
                      </a>
                    )}
-                 </div>
-               </div>
-             </div>
-           </CardContent>
-         </Card>
+                  </div>
+
+                  {/* Admin Actions */}
+                  {doctor.approval_status === "approved" && (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSendPasswordReset}
+                        disabled={sendingReset}
+                      >
+                        {sendingReset ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <KeyRound className="w-4 h-4 mr-2" />
+                        )}
+                        Send Password Reset
+                      </Button>
+                      {isSuperAdmin && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setNewEmail(doctor.email || "");
+                            setEmailDialogOpen(true);
+                          }}
+                        >
+                          <MailCheck className="w-4 h-4 mr-2" />
+                          Change Email
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
  
          {/* Subscription Info */}
          <div className="grid gap-6 md:grid-cols-2">
@@ -575,7 +669,37 @@ type SubscriptionTier = Database["public"]["Enums"]["subscription_tier"];
              )}
            </CardContent>
          </Card>
-       </div>
-     </AdminLayout>
-   );
- }
+        </div>
+
+        {/* Change Email Dialog */}
+        <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Change Doctor Email</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Current: <span className="font-medium text-foreground">{doctor?.email}</span>
+              </p>
+              <Input
+                placeholder="New email address"
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                This will update the authentication email and profile email. The change takes effect immediately.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleChangeEmail} disabled={changingEmail || !newEmail.trim()}>
+                {changingEmail ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                Change Email
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </AdminLayout>
+    );
+  }
