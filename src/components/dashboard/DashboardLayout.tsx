@@ -18,7 +18,7 @@ export const DashboardLayout = ({ children, title, description, actions }: Dashb
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <DashboardSidebar />
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1 overflow-x-hidden">
           <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6">
             <div className="flex h-14 sm:h-16 items-center gap-3 sm:gap-4">
               <SidebarTrigger className="-ml-2 shrink-0" />

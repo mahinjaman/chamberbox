@@ -686,34 +686,29 @@ const Queue = () => {
                                   setIsPatientDetailOpen(true);
                                 }}
                                 className={cn(
-                                  "w-full flex items-center justify-between p-3 rounded-lg border transition-all text-left hover:bg-muted/50",
+                                  "w-full flex items-center justify-between p-3 rounded-lg border transition-all text-left hover:bg-muted/50 gap-2",
                                   index === 0 && "bg-warning/5 border-warning/30 shadow-sm"
                                 )}
                               >
-                                <div className="flex items-center gap-3">
-                                  <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm", index === 0 ? "bg-warning text-warning-foreground" : "bg-muted text-muted-foreground")}>#{token.token_number}</div>
-                                  <div>
-                                    <p className="font-medium text-foreground text-sm">{token.patient?.name}</p>
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                  <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm shrink-0", index === 0 ? "bg-warning text-warning-foreground" : "bg-muted text-muted-foreground")}>#{token.token_number}</div>
+                                  <div className="min-w-0">
+                                    <p className="font-medium text-foreground text-sm truncate">{token.patient?.name}</p>
                                     <p className="text-xs text-muted-foreground">{token.patient?.phone}</p>
                                     {token.serial_number && (
-                                      <p className="text-[10px] text-muted-foreground/70 font-mono mt-0.5">{token.serial_number}</p>
+                                      <p className="text-[10px] text-muted-foreground/70 font-mono mt-0.5 truncate">{token.serial_number}</p>
                                     )}
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
                                   {token.booked_by === "public" && (
                                     <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30">
                                       <Globe className="w-2.5 h-2.5 mr-0.5" />
                                       Online
                                     </Badge>
                                   )}
-                                  {token.visiting_reason && (
-                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30">
-                                      Has Reason
-                                    </Badge>
-                                  )}
                                   {token.notes && (
-                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30">
+                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 hidden sm:flex">
                                       <StickyNote className="w-2.5 h-2.5 mr-0.5" />
                                       Note
                                     </Badge>
