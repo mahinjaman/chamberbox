@@ -66,9 +66,12 @@ export const useAdmin = () => {
     enabled: !!isAdmin,
   });
 
-  // Approve doctor
+  // Approve doctor - also sets trial subscription (30 days)
   const approveDoctor = useMutation({
     mutationFn: async (doctorId: string) => {
+      const trialExpiresAt = new Date();
+      trialExpiresAt.setDate(trialExpiresAt.getDate() + 30);
+      
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -76,6 +79,9 @@ export const useAdmin = () => {
           approved_at: new Date().toISOString(),
           approved_by: user?.id,
           approval_status: "approved",
+          // Set trial subscription when approved
+          subscription_tier: "trial",
+          subscription_expires_at: trialExpiresAt.toISOString(),
         } as any)
         .eq("id", doctorId);
 
@@ -83,7 +89,7 @@ export const useAdmin = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["adminDoctors"] });
-      toast.success("Doctor approved successfully");
+      toast.success("Doctor approved with 30-day trial subscription");
     },
     onError: (error) => {
       toast.error("Failed to approve doctor: " + error.message);
@@ -144,9 +150,12 @@ export const useAdmin = () => {
     },
   });
 
-  // Bulk approve doctors
+  // Bulk approve doctors - also sets trial subscription
   const bulkApprove = useMutation({
     mutationFn: async (doctorIds: string[]) => {
+      const trialExpiresAt = new Date();
+      trialExpiresAt.setDate(trialExpiresAt.getDate() + 30);
+      
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -154,13 +163,15 @@ export const useAdmin = () => {
           approved_at: new Date().toISOString(),
           approved_by: user?.id,
           approval_status: "approved",
+          subscription_tier: "trial",
+          subscription_expires_at: trialExpiresAt.toISOString(),
         } as any)
         .in("id", doctorIds);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["adminDoctors"] });
-      toast.success("Doctors approved");
+      toast.success("Doctors approved with 30-day trial subscription");
     },
     onError: (error) => toast.error("Bulk approve failed: " + error.message),
   });
