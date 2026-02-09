@@ -1789,6 +1789,13 @@ export type Database = {
       }
     }
     Functions: {
+      check_doctor_approval_status: {
+        Args: { _doctor_code: string }
+        Returns: {
+          full_name: string
+          is_approved: boolean
+        }[]
+      }
       get_staff_doctor_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {

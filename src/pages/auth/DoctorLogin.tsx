@@ -105,17 +105,14 @@ const DoctorLogin = () => {
     setStatusResult(null);
 
     const { data, error } = await supabase
-      .from("profiles")
-      .select("full_name, is_approved")
-      .eq("doctor_code", statusDoctorId.trim().toUpperCase())
-      .single();
+      .rpc("check_doctor_approval_status", { _doctor_code: statusDoctorId.trim() });
 
     setStatusLoading(false);
 
-    if (error || !data) {
+    if (error || !data || data.length === 0) {
       setStatusResult({ found: false, approved: false });
     } else {
-      setStatusResult({ found: true, approved: !!data.is_approved, name: data.full_name });
+      setStatusResult({ found: true, approved: !!data[0].is_approved, name: data[0].full_name });
     }
   };
 
