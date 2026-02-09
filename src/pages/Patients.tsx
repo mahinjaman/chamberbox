@@ -198,16 +198,16 @@ const Patients = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="rounded-xl border bg-card overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Phone</TableHead>
-                  <TableHead>Age/Gender</TableHead>
-                  <TableHead>Blood Group</TableHead>
-                  <TableHead>Registered</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  <TableHead className="hidden sm:table-cell">Age/Gender</TableHead>
+                  <TableHead className="hidden md:table-cell">Blood Group</TableHead>
+                  <TableHead className="hidden sm:table-cell">Registered</TableHead>
+                  <TableHead className="w-[60px] sm:w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -217,31 +217,34 @@ const Patients = () => {
                     <Link to={`/dashboard/patients/${patient.id}`} className="hover:text-primary hover:underline">
                       {patient.name}
                     </Link>
+                    <div className="sm:hidden text-xs text-muted-foreground mt-0.5">
+                      {patient.age && patient.gender ? `${patient.age}y / ${patient.gender.charAt(0).toUpperCase()}` : ""}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <a
                       href={`tel:${patient.phone}`}
-                      className="flex items-center gap-1 text-primary hover:underline"
+                      className="flex items-center gap-1 text-primary hover:underline text-sm"
                     >
-                      <Phone className="w-3 h-3" />
-                      {patient.phone}
+                      <Phone className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{patient.phone}</span>
                     </a>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     {patient.age && patient.gender ? (
                       `${patient.age}y / ${patient.gender.charAt(0).toUpperCase()}`
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     {patient.blood_group ? (
                       <Badge variant="outline">{patient.blood_group}</Badge>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-muted-foreground hidden sm:table-cell">
                     {format(new Date(patient.created_at), "MMM d, yyyy")}
                   </TableCell>
                   <TableCell>
