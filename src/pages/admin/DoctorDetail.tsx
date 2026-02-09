@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
@@ -40,6 +40,8 @@ import {
     ExternalLink,
     KeyRound,
     MailCheck,
+    Copy,
+    Link as LinkIcon,
   } from "lucide-react";
   import { format, differenceInDays } from "date-fns";
 import type { Database } from "@/integrations/supabase/types";
@@ -118,10 +120,13 @@ type SubscriptionTier = Database["public"]["Enums"]["subscription_tier"];
     const { id } = useParams<{ id: string }>();
     const { user } = useAuth();
     const queryClient = useQueryClient();
-    const [sendingReset, setSendingReset] = useState(false);
-    const [emailDialogOpen, setEmailDialogOpen] = useState(false);
-    const [newEmail, setNewEmail] = useState("");
-    const [changingEmail, setChangingEmail] = useState(false);
+     const [sendingReset, setSendingReset] = useState(false);
+     const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+     const [resetDialogOpen, setResetDialogOpen] = useState(false);
+     const [resetLink, setResetLink] = useState("");
+     const [resetEmail, setResetEmail] = useState("");
+     const [newEmail, setNewEmail] = useState("");
+     const [changingEmail, setChangingEmail] = useState(false);
 
     // Check if caller is super_admin
     const { data: isSuperAdmin } = useQuery({
@@ -240,22 +245,32 @@ type SubscriptionTier = Database["public"]["Enums"]["subscription_tier"];
       );
     }
 
-    const handleSendPasswordReset = async () => {
-      if (!doctor) return;
-      setSendingReset(true);
-      try {
-        const { data, error } = await supabase.functions.invoke("admin-auth", {
-          body: { action: "send_password_reset", doctor_id: doctor.id },
-        });
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
-        toast.success(data.message || "Password reset link sent!");
-      } catch (err: any) {
-        toast.error(err.message || "Failed to send password reset");
-      } finally {
-        setSendingReset(false);
-      }
-    };
+     const handleSendPasswordReset = async () => {
+       if (!doctor) return;
+       setSendingReset(true);
+       try {
+         const { data, error } = await supabase.functions.invoke("admin-auth", {
+           body: { action: "send_password_reset", doctor_id: doctor.id },
+         });
+         if (error) throw error;
+         if (data?.error) throw new Error(data.error);
+         
+         // Show dialog with the reset link
+         setResetLink(data.reset_link || "");
+         setResetEmail(data.email || doctor.email || "");
+         setResetDialogOpen(true);
+         toast.success("Password reset link generated!");
+       } catch (err: any) {
+         toast.error(err.message || "Failed to generate password reset link");
+       } finally {
+         setSendingReset(false);
+       }
+     };
+
+     const handleCopyResetLink = () => {
+       navigator.clipboard.writeText(resetLink);
+       toast.success("Link copied to clipboard!");
+     };
 
     const handleChangeEmail = async () => {
       if (!doctor || !newEmail.trim()) return;
@@ -671,7 +686,54 @@ type SubscriptionTier = Database["public"]["Enums"]["subscription_tier"];
          </Card>
         </div>
 
-        {/* Change Email Dialog */}
+         {/* Password Reset Link Dialog */}
+         <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+           <DialogContent className="max-w-lg">
+             <DialogHeader>
+               <DialogTitle className="flex items-center gap-2">
+                 <LinkIcon className="w-5 h-5" />
+                 Password Reset Link
+               </DialogTitle>
+               <DialogDescription>
+                 Copy this link and share it with the doctor ({resetEmail})
+               </DialogDescription>
+             </DialogHeader>
+             <div className="space-y-4">
+               {resetLink ? (
+                 <div className="space-y-3">
+                   <div className="flex items-center gap-2">
+                     <Input 
+                       readOnly 
+                       value={resetLink} 
+                       className="text-xs font-mono"
+                     />
+                     <Button size="icon" variant="outline" onClick={handleCopyResetLink}>
+                       <Copy className="w-4 h-4" />
+                     </Button>
+                   </div>
+                   <p className="text-xs text-muted-foreground">
+                     ⚠️ This link is single-use and will expire. Share it securely with the doctor.
+                   </p>
+                 </div>
+               ) : (
+                 <p className="text-sm text-muted-foreground">
+                   Reset link could not be generated. Please try again.
+                 </p>
+               )}
+             </div>
+             <DialogFooter>
+               <Button variant="outline" onClick={() => setResetDialogOpen(false)}>Close</Button>
+               {resetLink && (
+                 <Button onClick={handleCopyResetLink}>
+                   <Copy className="w-4 h-4 mr-2" />
+                   Copy Link
+                 </Button>
+               )}
+             </DialogFooter>
+           </DialogContent>
+         </Dialog>
+
+         {/* Change Email Dialog */}
         <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
