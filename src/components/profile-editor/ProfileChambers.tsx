@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -137,6 +138,15 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
         is_active: true,
       }));
       await upsertAvailability.mutateAsync(slots);
+    }
+
+    // Trigger auto-create sessions for the new/updated chamber
+    try {
+      await supabase.functions.invoke('auto-create-sessions', {
+        body: { time: new Date().toISOString() }
+      });
+    } catch (e) {
+      console.error('Failed to auto-create sessions:', e);
     }
 
     setShowChamberDialog(false);
