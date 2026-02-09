@@ -15,7 +15,7 @@ interface DashboardLayoutProps {
   actions?: ReactNode;
 }
 
-const EXEMPT_PATHS = ["/dashboard/settings", "/dashboard/payment-history"];
+const EXEMPT_PATHS = ["/dashboard/settings", "/dashboard/payments"];
 
 export const DashboardLayout = ({ children, title, description, actions }: DashboardLayoutProps) => {
   const { isExpired, isLoading: subLoading } = useSubscription();
@@ -70,7 +70,7 @@ export const DashboardLayout = ({ children, title, description, actions }: Dashb
                       </Link>
                     </Button>
                     <Button variant="outline" asChild>
-                      <Link to="/dashboard/payment-history">
+                      <Link to="/dashboard/payments">
                         {bn ? "পেমেন্ট হিস্টোরি" : "Payment History"}
                       </Link>
                     </Button>
