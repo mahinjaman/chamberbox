@@ -247,76 +247,102 @@ export default function MyTickets() {
 
       {/* Ticket Detail Dialog */}
       <Dialog open={!!selectedTicket} onOpenChange={() => setSelectedTicket(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle>{selectedTicket?.subject}</DialogTitle>
-          </DialogHeader>
-          
+        <DialogContent className="max-w-2xl h-[90vh] sm:h-[80vh] p-0 flex flex-col gap-0 sm:rounded-lg rounded-none sm:max-h-[80vh] max-h-[100dvh] w-full sm:w-auto [&>button]:z-50">
           {selectedTicket && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                {getStatusBadge(selectedTicket.status)}
-                <span className="text-sm text-muted-foreground">
-                  Created {format(new Date(selectedTicket.created_at), "MMM d, yyyy 'at' h:mm a")}
-                </span>
-              </div>
-
-              <div className="p-4 bg-muted rounded-lg">
-                <p className="whitespace-pre-wrap">{selectedTicket.message}</p>
-              </div>
-
-              <ScrollArea className="h-[200px] border rounded-lg p-4">
-                {repliesLoading ? (
-                  <div className="flex justify-center py-4">
-                    <Loader2 className="w-5 h-5 animate-spin" />
+            <div className="flex flex-col h-full min-h-0">
+              {/* Compact Header */}
+              <div className="flex items-center gap-3 px-4 py-3 border-b bg-muted/30 shrink-0">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm truncate pr-6">{selectedTicket.subject}</h3>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {getStatusBadge(selectedTicket.status)}
+                    <span className="text-xs text-muted-foreground">
+                      {format(new Date(selectedTicket.created_at), "MMM d, yyyy")}
+                    </span>
                   </div>
-                ) : replies && replies.length > 0 ? (
-                  <div className="space-y-3">
-                    {replies.map((reply) => (
-                      <div 
-                        key={reply.id} 
-                        className={`p-3 rounded-lg ${
-                          reply.is_admin_reply 
-                            ? "bg-primary/10 ml-4" 
-                            : "bg-muted mr-4"
-                        }`}
-                      >
-                        <p className="text-xs font-medium mb-1">
-                          {reply.is_admin_reply ? "Support Team" : "You"}
-                        </p>
-                        <p className="text-sm whitespace-pre-wrap">{reply.message}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {format(new Date(reply.created_at), "MMM d 'at' h:mm a")}
-                        </p>
+                </div>
+              </div>
+
+              {/* Messages Area */}
+              <ScrollArea className="flex-1 min-h-0">
+                <div className="p-4 space-y-3">
+                  {/* Original message */}
+                  <div className="flex gap-2">
+                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 text-xs font-medium">
+                      You
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="bg-muted rounded-2xl rounded-tl-sm px-3 py-2">
+                        <p className="text-sm whitespace-pre-wrap break-words">{selectedTicket.message}</p>
                       </div>
-                    ))}
+                      <p className="text-[10px] text-muted-foreground mt-1 ml-1">
+                        {format(new Date(selectedTicket.created_at), "MMM d 'at' h:mm a")}
+                      </p>
+                    </div>
                   </div>
-                ) : (
-                  <p className="text-center text-muted-foreground py-4">
-                    No replies yet
-                  </p>
-                )}
+
+                  {/* Replies */}
+                  {repliesLoading ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : replies && replies.length > 0 ? (
+                    replies.map((reply) => (
+                      <div key={reply.id} className={`flex gap-2 ${reply.is_admin_reply ? "" : "flex-row-reverse"}`}>
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[10px] font-medium ${
+                          reply.is_admin_reply ? "bg-primary/15 text-primary" : "bg-muted"
+                        }`}>
+                          {reply.is_admin_reply ? "S" : "You"}
+                        </div>
+                        <div className={`flex-1 min-w-0 ${reply.is_admin_reply ? "" : "flex flex-col items-end"}`}>
+                          <div className={`rounded-2xl px-3 py-2 max-w-[85%] ${
+                            reply.is_admin_reply
+                              ? "bg-primary/10 rounded-tl-sm"
+                              : "bg-muted rounded-tr-sm"
+                          }`}>
+                            {reply.is_admin_reply && (
+                              <p className="text-[10px] font-semibold text-primary mb-0.5">Support Team</p>
+                            )}
+                            <p className="text-sm whitespace-pre-wrap break-words">{reply.message}</p>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-1 mx-1">
+                            {format(new Date(reply.created_at), "MMM d 'at' h:mm a")}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-xs text-muted-foreground py-2">
+                      No replies yet
+                    </p>
+                  )}
+                </div>
               </ScrollArea>
 
+              {/* Reply Input */}
               {selectedTicket.status !== "closed" && selectedTicket.status !== "resolved" && (
-                <div className="flex gap-2">
-                  <Textarea
-                    placeholder="Type your reply..."
-                    value={replyMessage}
-                    onChange={(e) => setReplyMessage(e.target.value)}
-                    className="min-h-[80px]"
-                  />
-                  <Button 
-                    onClick={handleSendReply}
-                    disabled={isAddingReply || !replyMessage.trim()}
-                    className="self-end"
-                  >
-                    {isAddingReply ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
-                  </Button>
+                <div className="border-t px-3 py-2 shrink-0 bg-background">
+                  <div className="flex items-end gap-2">
+                    <Textarea
+                      placeholder="Type your reply..."
+                      value={replyMessage}
+                      onChange={(e) => setReplyMessage(e.target.value)}
+                      className="min-h-[40px] max-h-[100px] resize-none text-sm rounded-xl"
+                      rows={1}
+                    />
+                    <Button 
+                      size="icon"
+                      onClick={handleSendReply}
+                      disabled={isAddingReply || !replyMessage.trim()}
+                      className="shrink-0 rounded-full h-9 w-9"
+                    >
+                      {isAddingReply ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
