@@ -43,7 +43,7 @@ export const DashboardLayout = ({ children, title, description, actions }: Dashb
                 )}
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                {actions}
+                {!showBlocker && actions}
               </div>
             </div>
           </header>
