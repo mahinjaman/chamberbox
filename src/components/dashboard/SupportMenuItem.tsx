@@ -83,15 +83,14 @@ export const SupportMenuItem = () => {
 
   return (
     <>
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          onClick={handleOpenDialog}
-          tooltip="Support"
-        >
-          <Headphones className="w-5 h-5" />
-          <span>Support</span>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
+      <SidebarMenuButton
+        onClick={handleOpenDialog}
+        tooltip="Support"
+        className="flex-1"
+      >
+        <Headphones className="w-5 h-5" />
+        <span>Support</span>
+      </SidebarMenuButton>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-md">
