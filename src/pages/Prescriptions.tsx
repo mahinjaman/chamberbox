@@ -421,18 +421,23 @@ const Prescriptions = () => {
                           size="sm"
                           disabled={!newMedName.trim() || !newMedGeneric.trim() || isCreatingMedicine}
                           onClick={async () => {
-                            const created = await createMedicine({
-                              brand_name: newMedName.trim(),
-                              generic_name: newMedGeneric.trim(),
-                              strength: newMedStrength.trim() || undefined,
-                            });
-                            if (created) {
-                              addMedicine(created);
+                            try {
+                              const created = await createMedicine({
+                                brand_name: newMedName.trim(),
+                                generic_name: newMedGeneric.trim(),
+                                strength: newMedStrength.trim() || undefined,
+                              });
+                              if (created) {
+                                addMedicine(created);
+                              }
+                            } catch {
+                              // error handled by mutation onError
+                            } finally {
+                              setShowAddMedicineForm(false);
+                              setNewMedName("");
+                              setNewMedGeneric("");
+                              setNewMedStrength("");
                             }
-                            setShowAddMedicineForm(false);
-                            setNewMedName("");
-                            setNewMedGeneric("");
-                            setNewMedStrength("");
                           }}
                         >
                           {isCreatingMedicine && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
