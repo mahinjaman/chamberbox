@@ -155,6 +155,24 @@ export const useQueueSessions = (date?: string) => {
       
       const finalSessions = existingSessions || [];
       
+      // Auto-close past date sessions that are still open/running/paused
+      const today = new Date().toISOString().split("T")[0];
+      if (sessionDate < today) {
+        const nonClosedSessions = finalSessions.filter(
+          s => s.status !== "closed" && s.status !== "completed"
+        );
+        if (nonClosedSessions.length > 0) {
+          const nonClosedIds = nonClosedSessions.map(s => s.id);
+          await supabase
+            .from("queue_sessions")
+            .update({ status: "closed", updated_at: new Date().toISOString() })
+            .in("id", nonClosedIds);
+          
+          // Update local data
+          nonClosedSessions.forEach(s => { (s as any).status = "closed"; });
+        }
+      }
+      
       // Get token counts for each session
       const sessionIds = finalSessions.map(s => s.id);
       if (sessionIds.length > 0) {
