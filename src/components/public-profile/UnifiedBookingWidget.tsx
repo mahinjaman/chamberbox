@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,10 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { usePublicBookingSlots, useCreateQueueBooking, useDoctorBookingStatus, BookingSlot } from "@/hooks/useUnifiedQueue";
 import { DoctorProfile, Chamber } from "@/hooks/useDoctorProfile";
 import { formatTime12Hour, formatCurrency } from "@/lib/doctor-profile-utils";
-import { format, parseISO, isToday, isTomorrow } from "date-fns";
+import { format, parseISO, isToday, isTomorrow, addDays, startOfDay } from "date-fns";
 import { 
   Calendar, Clock, Users, MapPin, Loader2, 
   AlertCircle, ArrowLeft, ArrowRight, Lock, UserX
@@ -32,6 +34,7 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
   const [step, setStep] = useState<BookingStep>("date");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<BookingSlot | null>(null);
+  const [showCustomDate, setShowCustomDate] = useState(false);
   const [bookingResult, setBookingResult] = useState<any>(null);
   
   const [formData, setFormData] = useState({
@@ -65,6 +68,21 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
       slotsByDate[date].some(slot => slot.is_available)
     ).slice(0, 16);
   }, [slotsByDate]);
+
+  // Split dates: first 10 as quick buttons, rest available via custom picker
+  const quickDates = useMemo(() => availableDates.slice(0, 10), [availableDates]);
+  
+  // All 16 days range for custom date picker
+  const dateRange = useMemo(() => {
+    const today = startOfDay(new Date());
+    return {
+      from: today,
+      to: addDays(today, 15),
+    };
+  }, []);
+
+  // Set of available date strings for the calendar
+  const availableDateSet = useMemo(() => new Set(availableDates), [availableDates]);
 
   // Get slots for selected date
   const slotsForDate = selectedDate ? (slotsByDate[selectedDate] || []) : [];
@@ -202,34 +220,79 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                 Select a date for your appointment
               </p>
               
-              <div className="grid grid-cols-2 gap-2">
-                {availableDates.map(date => {
-                  const dateSlots = slotsByDate[date] || [];
-                  const totalAvailable = dateSlots.filter(s => s.is_available).length;
-                  const isSelected = selectedDate === date;
-                  
-                  return (
-                    <button
-                      key={date}
-                      onClick={() => setSelectedDate(date)}
-                      className={`p-3 rounded-lg border-2 text-left transition-all ${
-                        isSelected 
-                          ? "border-primary bg-primary text-primary-foreground shadow-lg" 
-                          : "border-border hover:border-primary/30 hover:bg-muted/50"
-                      }`}
-                    >
-                      <div>
-                        <p className={`font-medium text-sm ${isSelected ? "text-primary-foreground" : "text-foreground"}`}>
-                          {formatDateLabel(date)}
-                        </p>
-                        <p className={`text-xs ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
-                          {format(parseISO(date), "MMM d, yyyy")}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+              <ScrollArea className="max-h-[300px]">
+                <div className="grid grid-cols-2 gap-2 pr-2">
+                  {quickDates.map(date => {
+                    const isSelected = selectedDate === date;
+                    
+                    return (
+                      <button
+                        key={date}
+                        onClick={() => { setSelectedDate(date); setShowCustomDate(false); }}
+                        className={`p-3 rounded-lg border-2 text-left transition-all ${
+                          isSelected 
+                            ? "border-primary bg-primary text-primary-foreground shadow-lg" 
+                            : "border-border hover:border-primary/30 hover:bg-muted/50"
+                        }`}
+                      >
+                        <div>
+                          <p className={`font-medium text-sm ${isSelected ? "text-primary-foreground" : "text-foreground"}`}>
+                            {formatDateLabel(date)}
+                          </p>
+                          <p className={`text-xs ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                            {format(parseISO(date), "MMM d, yyyy")}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+
+                  {/* Custom Date Picker Button */}
+                  <Popover open={showCustomDate} onOpenChange={setShowCustomDate}>
+                    <PopoverTrigger asChild>
+                      <button
+                        className={`p-3 rounded-lg border-2 text-left transition-all col-span-2 ${
+                          selectedDate && !quickDates.includes(selectedDate)
+                            ? "border-primary bg-primary text-primary-foreground shadow-lg"
+                            : "border-dashed border-border hover:border-primary/30 hover:bg-muted/50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 justify-center">
+                          <Calendar className="w-4 h-4" />
+                          <span className="font-medium text-sm">
+                            {selectedDate && !quickDates.includes(selectedDate) 
+                              ? format(parseISO(selectedDate), "EEE, MMM d, yyyy")
+                              : "Select Custom Date"
+                            }
+                          </span>
+                        </div>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="center">
+                      <CalendarComponent
+                        mode="single"
+                        selected={selectedDate ? parseISO(selectedDate) : undefined}
+                        onSelect={(date) => {
+                          if (date) {
+                            const dateStr = format(date, "yyyy-MM-dd");
+                            if (availableDateSet.has(dateStr)) {
+                              setSelectedDate(dateStr);
+                              setShowCustomDate(false);
+                            }
+                          }
+                        }}
+                        disabled={(date) => {
+                          const dateStr = format(date, "yyyy-MM-dd");
+                          return !availableDateSet.has(dateStr) || date < dateRange.from || date > dateRange.to;
+                        }}
+                        fromDate={dateRange.from}
+                        toDate={dateRange.to}
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </ScrollArea>
               
               <Button 
                 className="w-full" 
