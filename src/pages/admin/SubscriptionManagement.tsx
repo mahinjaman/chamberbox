@@ -104,7 +104,10 @@ export default function SubscriptionManagement() {
   const now = startOfDay(new Date());
   const sevenDaysFromNow = addDays(now, 7);
 
-  const filteredDoctors = doctors?.filter((doctor) => {
+  // Only show approved doctors in subscription management
+  const approvedDoctors = doctors?.filter((doctor) => doctor.approval_status === "approved");
+
+  const filteredDoctors = approvedDoctors?.filter((doctor) => {
     const matchesSearch = 
       doctor.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       doctor.email?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -210,9 +213,8 @@ export default function SubscriptionManagement() {
     >
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row gap-4 justify-between">
-            <CardTitle>Subscriptions</CardTitle>
-            <div className="flex gap-2">
+           <div className="flex flex-col sm:flex-row gap-4 justify-between">
+              <CardTitle>Subscriptions</CardTitle>
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -222,27 +224,19 @@ export default function SubscriptionManagement() {
                   className="pl-8 w-[200px]"
                 />
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant={filter !== "all" ? "default" : "outline"} className="gap-2">
-                    <Filter className="h-4 w-4" />
-                    {FILTER_OPTIONS.find(opt => opt.value === filter)?.label || "All"}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {FILTER_OPTIONS.map((option) => (
-                    <DropdownMenuItem 
-                      key={option.value} 
-                      onClick={() => handleFilterChange(option.value)}
-                      className={filter === option.value ? "bg-muted" : ""}
-                    >
-                      {option.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
-          </div>
+            <div className="flex gap-2 mt-2 flex-wrap">
+              {FILTER_OPTIONS.map((option) => (
+                <Button
+                  key={option.value}
+                  variant={filter === option.value ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleFilterChange(option.value)}
+                >
+                  {option.label}
+                </Button>
+              ))}
+            </div>
         </CardHeader>
         <CardContent>
           {doctorsLoading ? (
