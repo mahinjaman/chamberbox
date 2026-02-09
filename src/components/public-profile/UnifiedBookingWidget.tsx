@@ -69,8 +69,8 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
     ).slice(0, 16);
   }, [slotsByDate]);
 
-  // Split dates: first 10 as quick buttons, rest available via custom picker
-  const quickDates = useMemo(() => availableDates.slice(0, 10), [availableDates]);
+  // Split dates: first 8 as quick buttons, rest available via custom picker
+  const quickDates = useMemo(() => availableDates.slice(0, 8), [availableDates]);
   
   // All 16 days range for custom date picker
   const dateRange = useMemo(() => {
