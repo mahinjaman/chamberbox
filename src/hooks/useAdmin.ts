@@ -18,12 +18,14 @@ export interface DoctorProfile {
   phone: string | null;
   specialization: string | null;
   bmdc_number: string | null;
+  doctor_code: string | null;
   subscription_tier: "trial" | "basic" | "pro" | "premium" | "enterprise" | null;
   subscription_expires_at: string | null;
   is_approved: boolean | null;
   approved_at: string | null;
   created_at: string;
   is_public: boolean | null;
+  admin_notes: string | null;
 }
 
 export const useAdmin = () => {
@@ -139,6 +141,83 @@ export const useAdmin = () => {
     },
   });
 
+  // Bulk approve doctors
+  const bulkApprove = useMutation({
+    mutationFn: async (doctorIds: string[]) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          is_approved: true,
+          approved_at: new Date().toISOString(),
+          approved_by: user?.id,
+        })
+        .in("id", doctorIds);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminDoctors"] });
+      toast.success("Doctors approved");
+    },
+    onError: (error) => toast.error("Bulk approve failed: " + error.message),
+  });
+
+  // Bulk reject (revoke) doctors
+  const bulkReject = useMutation({
+    mutationFn: async (doctorIds: string[]) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          is_approved: false,
+          approved_at: null,
+          approved_by: null,
+        })
+        .in("id", doctorIds);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminDoctors"] });
+      toast.success("Doctors rejected");
+    },
+    onError: (error) => toast.error("Bulk reject failed: " + error.message),
+  });
+
+  // Update admin notes
+  const updateAdminNotes = useMutation({
+    mutationFn: async ({ doctorId, notes }: { doctorId: string; notes: string }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ admin_notes: notes } as any)
+        .eq("id", doctorId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminDoctors"] });
+      toast.success("Note saved");
+    },
+    onError: (error) => toast.error("Failed to save note: " + error.message),
+  });
+
+  // Mark as spam (reject + add note)
+  const bulkMarkSpam = useMutation({
+    mutationFn: async (doctorIds: string[]) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          is_approved: false,
+          approved_at: null,
+          approved_by: null,
+          admin_notes: "Marked as spam",
+        } as any)
+        .in("id", doctorIds);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminDoctors"] });
+      toast.success("Marked as spam");
+    },
+    onError: (error) => toast.error("Failed: " + error.message),
+  });
+
   return {
     isAdmin,
     isAdminLoading,
@@ -147,8 +226,13 @@ export const useAdmin = () => {
     approveDoctor: approveDoctor.mutate,
     revokeApproval: revokeApproval.mutate,
     updateSubscription: updateSubscription.mutate,
+    bulkApprove: bulkApprove.mutate,
+    bulkReject: bulkReject.mutate,
+    bulkMarkSpam: bulkMarkSpam.mutate,
+    updateAdminNotes: updateAdminNotes.mutate,
     isApproving: approveDoctor.isPending,
     isRevoking: revokeApproval.isPending,
     isUpdatingSubscription: updateSubscription.isPending,
+    isBulkProcessing: bulkApprove.isPending || bulkReject.isPending || bulkMarkSpam.isPending,
   };
 };
