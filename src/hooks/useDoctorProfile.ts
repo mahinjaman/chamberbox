@@ -249,7 +249,7 @@ export const usePublicDoctorProfile = (slug: string) => {
     queryKey: ["public-profile", slug],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("profiles")
+        .from("profiles_public" as any)
         .select("*")
         .eq("slug", slug)
         .eq("is_public", true)

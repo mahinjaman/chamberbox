@@ -147,6 +147,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "appointments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       availability_slots: {
@@ -247,6 +254,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "chambers_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       doctor_videos: {
@@ -292,6 +306,13 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_videos_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -375,6 +396,13 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_settings_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: true
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -491,6 +519,13 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patients_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -808,6 +843,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "queue_sessions_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       queue_tokens: {
@@ -890,6 +932,13 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_tokens_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -1112,6 +1161,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "staff_members_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       subscription_payments: {
@@ -1169,6 +1225,13 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_payments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1303,6 +1366,13 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_usage_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: true
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1559,6 +1629,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "visits_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "visits_patient_id_fkey"
             columns: ["patient_id"]
             isOneToOne: false
@@ -1569,6 +1646,90 @@ export type Database = {
       }
     }
     Views: {
+      profiles_public: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          bmdc_number: string | null
+          cover_photo_url: string | null
+          created_at: string | null
+          custom_info: Json | null
+          degrees: string[] | null
+          doctor_code: string | null
+          education: Json | null
+          experience_years: number | null
+          full_name: string | null
+          id: string | null
+          is_public: boolean | null
+          languages: string[] | null
+          patient_count: number | null
+          rating: number | null
+          seo_description: string | null
+          seo_title: string | null
+          services: string[] | null
+          slug: string | null
+          social_links: Json | null
+          specialization: string | null
+          updated_at: string | null
+          verified: boolean | null
+          youtube_url: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          bmdc_number?: string | null
+          cover_photo_url?: string | null
+          created_at?: string | null
+          custom_info?: Json | null
+          degrees?: string[] | null
+          doctor_code?: string | null
+          education?: Json | null
+          experience_years?: number | null
+          full_name?: string | null
+          id?: string | null
+          is_public?: boolean | null
+          languages?: string[] | null
+          patient_count?: number | null
+          rating?: number | null
+          seo_description?: string | null
+          seo_title?: string | null
+          services?: string[] | null
+          slug?: string | null
+          social_links?: Json | null
+          specialization?: string | null
+          updated_at?: string | null
+          verified?: boolean | null
+          youtube_url?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          bmdc_number?: string | null
+          cover_photo_url?: string | null
+          created_at?: string | null
+          custom_info?: Json | null
+          degrees?: string[] | null
+          doctor_code?: string | null
+          education?: Json | null
+          experience_years?: number | null
+          full_name?: string | null
+          id?: string | null
+          is_public?: boolean | null
+          languages?: string[] | null
+          patient_count?: number | null
+          rating?: number | null
+          seo_description?: string | null
+          seo_title?: string | null
+          services?: string[] | null
+          slug?: string | null
+          social_links?: Json | null
+          specialization?: string | null
+          updated_at?: string | null
+          verified?: boolean | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
       public_integration_settings: {
         Row: {
           calendly_buffer_minutes: number | null
@@ -1609,6 +1770,13 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_settings_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: true
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
