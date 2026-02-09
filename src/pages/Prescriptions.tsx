@@ -256,7 +256,7 @@ const Prescriptions = () => {
     >
       {/* New Prescription Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>Create Prescription</DialogTitle>
             <DialogDescription>
@@ -264,7 +264,7 @@ const Prescriptions = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-2 grid-cols-1">
             {/* Left Side - Builder */}
             <div className="space-y-4">
               {/* Patient Selection */}
@@ -459,9 +459,9 @@ const Prescriptions = () => {
                           <div className="font-medium">
                             {language === "bangla" && med.name_bn ? med.name_bn : med.name}
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
                             <Input
-                              className="w-24"
+                              className="w-20 sm:w-24"
                               placeholder="Dosage"
                               value={med.dosage}
                               onChange={(e) => updateMedicine(index, { dosage: e.target.value })}
@@ -470,7 +470,7 @@ const Prescriptions = () => {
                               value={med.duration}
                               onValueChange={(v) => updateMedicine(index, { duration: v })}
                             >
-                              <SelectTrigger className="w-28">
+                              <SelectTrigger className="w-24 sm:w-28">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -482,7 +482,7 @@ const Prescriptions = () => {
                               </SelectContent>
                             </Select>
                             <Input
-                              className="flex-1"
+                              className="w-full sm:flex-1"
                               placeholder="Special instructions"
                               value={med.instructions || ""}
                               onChange={(e) => updateMedicine(index, { instructions: e.target.value })}
@@ -571,7 +571,7 @@ const Prescriptions = () => {
             </div>
 
             {/* Right Side - Preview */}
-            <div className="border rounded-lg p-6 bg-card text-card-foreground print:border-0 print:bg-white print:text-black">
+            <div className="border rounded-lg p-4 sm:p-6 bg-card text-card-foreground print:border-0 print:bg-white print:text-black hidden lg:block">
               <div className="text-center mb-6 border-b pb-4">
                 <h2 className="text-xl font-bold">{profile?.full_name || "Doctor Name"}</h2>
                 <p className="text-sm text-muted-foreground">{profile?.specialization}</p>
@@ -652,7 +652,7 @@ const Prescriptions = () => {
             </div>
           </div>
 
-          <div className="flex gap-3 mt-4">
+          <div className="flex flex-col sm:flex-row gap-3 mt-4">
             <Button
               variant="outline"
               onClick={() => setShowTemplateDialog(true)}
@@ -709,8 +709,8 @@ const Prescriptions = () => {
       {/* Prescriptions List */}
       <div className="space-y-4">
         {/* Search & Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by patient name or phone..."
@@ -719,19 +719,21 @@ const Prescriptions = () => {
               className="pl-10"
             />
           </div>
-          <Select value={dateFilter} onValueChange={handleDateFilterChange}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Date" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Time</SelectItem>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="week">This Week</SelectItem>
-              <SelectItem value="month">This Month</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="flex items-center text-sm text-muted-foreground ml-auto">
-            Total: <span className="font-semibold text-foreground ml-1">{totalPrescriptions}</span> prescriptions
+          <div className="flex items-center gap-3">
+            <Select value={dateFilter} onValueChange={handleDateFilterChange}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Date" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Time</SelectItem>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="week">This Week</SelectItem>
+                <SelectItem value="month">This Month</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex items-center text-sm text-muted-foreground whitespace-nowrap ml-auto">
+              Total: <span className="font-semibold text-foreground ml-1">{totalPrescriptions}</span>
+            </div>
           </div>
         </div>
 
@@ -762,7 +764,7 @@ const Prescriptions = () => {
           </Card>
         ) : (
           <>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {paginatedPrescriptions.map((p) => (
                 <Card 
                   key={p.id} 
@@ -843,7 +845,7 @@ const Prescriptions = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4">
                 <p className="text-sm text-muted-foreground">
                   Showing {(currentPage - 1) * PRESCRIPTIONS_PER_PAGE + 1}-{Math.min(currentPage * PRESCRIPTIONS_PER_PAGE, totalPrescriptions)} of {totalPrescriptions}
                 </p>
@@ -857,7 +859,7 @@ const Prescriptions = () => {
                     Previous
                   </Button>
                   <span className="text-sm text-muted-foreground px-2">
-                    Page {currentPage} of {totalPages}
+                    {currentPage}/{totalPages}
                   </span>
                   <Button
                     variant="outline"
