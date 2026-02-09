@@ -339,17 +339,7 @@ const Prescriptions = () => {
 
               {/* Medicine Search */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
                   <Label>Medicines</Label>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setLanguage(language === "english" ? "bangla" : "english")}
-                  >
-                    <Languages className="mr-1 h-4 w-4" />
-                    {language === "english" ? "EN" : "বাং"}
-                  </Button>
-                </div>
                 <div className="relative">
                   <Pill className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
