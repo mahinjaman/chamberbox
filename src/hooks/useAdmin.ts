@@ -26,6 +26,7 @@ export interface DoctorProfile {
   created_at: string;
   is_public: boolean | null;
   admin_notes: string | null;
+  approval_status: "pending" | "approved" | "rejected" | "spam" | null;
 }
 
 export const useAdmin = () => {
@@ -74,7 +75,8 @@ export const useAdmin = () => {
           is_approved: true,
           approved_at: new Date().toISOString(),
           approved_by: user?.id,
-        })
+          approval_status: "approved",
+        } as any)
         .eq("id", doctorId);
 
       if (error) throw error;
@@ -97,7 +99,8 @@ export const useAdmin = () => {
           is_approved: false,
           approved_at: null,
           approved_by: null,
-        })
+          approval_status: "rejected",
+        } as any)
         .eq("id", doctorId);
 
       if (error) throw error;
@@ -150,7 +153,8 @@ export const useAdmin = () => {
           is_approved: true,
           approved_at: new Date().toISOString(),
           approved_by: user?.id,
-        })
+          approval_status: "approved",
+        } as any)
         .in("id", doctorIds);
       if (error) throw error;
     },
@@ -170,7 +174,8 @@ export const useAdmin = () => {
           is_approved: false,
           approved_at: null,
           approved_by: null,
-        })
+          approval_status: "rejected",
+        } as any)
         .in("id", doctorIds);
       if (error) throw error;
     },
@@ -206,7 +211,7 @@ export const useAdmin = () => {
           is_approved: false,
           approved_at: null,
           approved_by: null,
-          admin_notes: "Marked as spam",
+          approval_status: "spam",
         } as any)
         .in("id", doctorIds);
       if (error) throw error;

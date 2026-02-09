@@ -44,9 +44,9 @@ export default function DoctorManagement() {
     
     const matchesFilter = 
       filter === "all" ||
-      (filter === "pending" && !doctor.is_approved && doctor.admin_notes !== "Marked as spam") ||
-      (filter === "approved" && doctor.is_approved) ||
-      (filter === "rejected" && !doctor.is_approved && doctor.admin_notes === "Marked as spam");
+      (filter === "pending" && (doctor.approval_status === "pending" || (!doctor.approval_status && !doctor.is_approved))) ||
+      (filter === "approved" && doctor.approval_status === "approved") ||
+      (filter === "rejected" && (doctor.approval_status === "rejected" || doctor.approval_status === "spam"));
 
     return matchesSearch && matchesFilter;
   });
@@ -195,13 +195,17 @@ export default function DoctorManagement() {
                       <TableCell>{doctor.specialization || "-"}</TableCell>
                       <TableCell>{doctor.bmdc_number || "-"}</TableCell>
                       <TableCell>
-                        {doctor.is_approved ? (
+                        {doctor.approval_status === "approved" ? (
                           <Badge className="bg-emerald-600 hover:bg-emerald-600/80">
                             <CheckCircle className="w-3 h-3 mr-1" /> Approved
                           </Badge>
-                        ) : doctor.admin_notes === "Marked as spam" ? (
+                        ) : doctor.approval_status === "spam" ? (
                           <Badge variant="destructive">
                             <ShieldBan className="w-3 h-3 mr-1" /> Spam
+                          </Badge>
+                        ) : doctor.approval_status === "rejected" ? (
+                          <Badge variant="destructive">
+                            <XCircle className="w-3 h-3 mr-1" /> Rejected
                           </Badge>
                         ) : (
                           <Badge variant="secondary">Pending</Badge>
