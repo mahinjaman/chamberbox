@@ -564,43 +564,43 @@ const Queue = () => {
           sessionDate={sessionDate} 
         />
 
-        {/* Stats Cards - Horizontal scroll on mobile */}
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 lg:mx-0 lg:px-0 lg:grid lg:grid-cols-3 lg:overflow-visible">
-          <Card className="border-l-4 border-l-success min-w-[140px] flex-shrink-0 lg:min-w-0">
-            <CardContent className="py-3 px-4">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center">
-                  <CheckCircle2 className="w-4 h-4 text-success" />
+        {/* Stats Cards - 2 per row on mobile, 3 on desktop */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+          <Card className="border-l-4 border-l-success">
+            <CardContent className="py-2.5 px-3 sm:py-3 sm:px-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-success/10 flex items-center justify-center">
+                  <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-success" />
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-foreground">{completedCount}</p>
-                  <p className="text-xs text-muted-foreground">Completed</p>
+                  <p className="text-lg sm:text-xl font-bold text-foreground">{completedCount}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Completed</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-l-4 border-l-warning min-w-[140px] flex-shrink-0 lg:min-w-0">
-            <CardContent className="py-3 px-4">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-warning/10 flex items-center justify-center">
-                  <Clock className="w-4 h-4 text-warning" />
+          <Card className="border-l-4 border-l-warning">
+            <CardContent className="py-2.5 px-3 sm:py-3 sm:px-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-warning/10 flex items-center justify-center">
+                  <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-warning" />
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-foreground">{waitingCount}</p>
-                  <p className="text-xs text-muted-foreground">Waiting</p>
+                  <p className="text-lg sm:text-xl font-bold text-foreground">{waitingCount}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Waiting</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-l-4 border-l-primary min-w-[140px] flex-shrink-0 lg:min-w-0">
-            <CardContent className="py-3 px-4">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Play className="w-4 h-4 text-primary" />
+          <Card className="border-l-4 border-l-primary col-span-2 sm:col-span-1">
+            <CardContent className="py-2.5 px-3 sm:py-3 sm:px-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-foreground">{currentToken ? `#${currentToken.token_number}` : "—"}</p>
-                  <p className="text-xs text-muted-foreground">Current</p>
+                  <p className="text-lg sm:text-xl font-bold text-foreground">{currentToken ? `#${currentToken.token_number}` : "—"}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Current</p>
                 </div>
               </div>
             </CardContent>
@@ -686,13 +686,13 @@ const Queue = () => {
                                   setIsPatientDetailOpen(true);
                                 }}
                                 className={cn(
-                                  "w-full flex items-center justify-between p-3 rounded-lg border transition-all text-left hover:bg-muted/50 gap-2",
+                                  "w-full flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg border transition-all text-left hover:bg-muted/50 gap-2",
                                   index === 0 && "bg-warning/5 border-warning/30 shadow-sm"
                                 )}
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                   <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm shrink-0", index === 0 ? "bg-warning text-warning-foreground" : "bg-muted text-muted-foreground")}>#{token.token_number}</div>
-                                  <div className="min-w-0">
+                                  <div className="min-w-0 flex-1">
                                     <p className="font-medium text-foreground text-sm truncate">{token.patient?.name}</p>
                                     <p className="text-xs text-muted-foreground">{token.patient?.phone}</p>
                                     {token.serial_number && (
@@ -700,7 +700,7 @@ const Queue = () => {
                                     )}
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                                <div className="flex items-center gap-1.5 shrink-0 pl-12 sm:pl-0">
                                   {token.booked_by === "public" && (
                                     <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30">
                                       <Globe className="w-2.5 h-2.5 mr-0.5" />
