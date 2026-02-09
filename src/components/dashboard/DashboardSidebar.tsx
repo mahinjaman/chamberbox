@@ -43,7 +43,7 @@ import { useAuth } from "@/lib/auth";
 import { useProfile } from "@/hooks/useProfile";
 import { useAdmin } from "@/hooks/useAdmin";
 import { cn } from "@/lib/utils";
-import { SupportMenuItem } from "./SupportMenuItem";
+import { Headset } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { CopyBookingLink } from "@/components/common/CopyBookingLink";
 
@@ -254,7 +254,15 @@ export const DashboardSidebar = () => {
               <Collapsible open={supportMenuOpen} onOpenChange={setSupportMenuOpen} className="group/support">
                 <SidebarMenuItem>
                   <div className="flex items-center w-full">
-                    <SupportMenuItem />
+                    <SidebarMenuButton 
+                      tooltip={language === "bn" ? "সাপোর্ট" : "Support"} 
+                      isActive={isSupportRoute} 
+                      className="flex-1 cursor-pointer"
+                      onClick={() => setSupportMenuOpen(!supportMenuOpen)}
+                    >
+                      <Headset className="w-5 h-5" />
+                      <span>{language === "bn" ? "সাপোর্ট" : "Support"}</span>
+                    </SidebarMenuButton>
                     <CollapsibleTrigger asChild>
                       <button className="p-2 hover:bg-sidebar-accent rounded-md transition-colors" onClick={(e) => e.stopPropagation()}>
                         <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/support:rotate-180" />
