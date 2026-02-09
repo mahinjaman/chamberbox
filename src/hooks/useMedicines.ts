@@ -116,6 +116,26 @@ export const useMedicines = () => {
     },
   });
 
+  const updateMedicine = useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<MedicineInsert> & { id: string }) => {
+      const { data, error } = await supabase
+        .from("medicines")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Medicine;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["medicines"] });
+      toast.success("Medicine updated successfully");
+    },
+    onError: (error) => {
+      toast.error(mapDatabaseError(error));
+    },
+  });
+
   return {
     medicines,
     isLoading,
@@ -128,5 +148,7 @@ export const useMedicines = () => {
     isDeletingBulk: deleteMedicinesBulk.isPending,
     createMedicinesBulk: createMedicinesBulk.mutateAsync,
     isCreatingBulk: createMedicinesBulk.isPending,
+    updateMedicine: updateMedicine.mutateAsync,
+    isUpdating: updateMedicine.isPending,
   };
 };
