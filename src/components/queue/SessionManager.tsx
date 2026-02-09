@@ -326,7 +326,7 @@ export const SessionManager = ({
             <Card 
               key={session.id}
               className={cn(
-                "cursor-pointer transition-all hover:shadow-md border-l-4 min-w-[260px] flex-shrink-0 lg:min-w-0",
+                "cursor-pointer transition-all hover:shadow-md border-l-4 min-w-[240px] sm:min-w-[260px] flex-shrink-0 lg:min-w-0 max-w-[85vw] sm:max-w-none",
                 selectedSession?.id === session.id 
                   ? "ring-2 ring-primary border-l-primary bg-primary/5" 
                   : "border-l-transparent hover:border-l-muted-foreground/30",
