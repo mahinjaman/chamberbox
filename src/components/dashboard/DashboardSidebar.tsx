@@ -149,17 +149,6 @@ export const DashboardSidebar = () => {
             <CopyBookingLink slug={profile.slug} variant="icon" />
           </div>
         )}
-        {profile?.doctor_code && !collapsed && (
-          <div className="mt-2 px-2 py-1.5 bg-sidebar-accent/50 rounded-md text-center">
-            <p className="text-[10px] text-sidebar-foreground/60 uppercase tracking-wider">Doctor ID</p>
-            <p className="text-sm font-mono font-bold text-sidebar-foreground tracking-widest">{profile.doctor_code}</p>
-          </div>
-        )}
-        {profile?.doctor_code && collapsed && (
-          <div className="mt-2 text-center" title={`Doctor ID: ${profile.doctor_code}`}>
-            <p className="text-[10px] font-mono font-bold text-sidebar-foreground">{profile.doctor_code}</p>
-          </div>
-        )}
       </SidebarHeader>
 
       <SidebarContent>
@@ -321,6 +310,12 @@ export const DashboardSidebar = () => {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border">
+        {!collapsed && profile?.doctor_code && (
+          <div className="mb-2 px-2 py-1.5 bg-sidebar-accent/50 rounded-md text-center">
+            <p className="text-[10px] text-sidebar-foreground/60 uppercase tracking-wider">Doctor ID</p>
+            <p className="text-sm font-mono font-bold text-sidebar-foreground tracking-widest">{profile.doctor_code}</p>
+          </div>
+        )}
         {!collapsed && profile && (
           <div className="mb-3 px-2">
             <p className="text-sm font-medium text-sidebar-foreground truncate">{profile.full_name}</p>
