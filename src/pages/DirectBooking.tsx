@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { usePublicDoctorProfile } from "@/hooks/useDoctorProfile";
 import { UnifiedBookingWidget } from "@/components/public-profile/UnifiedBookingWidget";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const DirectBooking = () => {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+  const isEmbed = searchParams.get("embed") === "true";
   const { profile, chambers, isLoading } = usePublicDoctorProfile(slug || "");
 
   if (isLoading) {
@@ -42,21 +44,23 @@ const DirectBooking = () => {
   const primaryChamber = chambers?.find(c => c.is_primary) || chambers?.[0] || null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-center">
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xs">C</span>
-            </div>
-            <span className="text-sm font-medium">ChamberBox</span>
-          </Link>
-        </div>
-      </header>
+    <div className={isEmbed ? "bg-background" : "min-h-screen bg-gradient-to-br from-background via-background to-primary/5"}>
+      {/* Header - hidden in embed mode */}
+      {!isEmbed && (
+        <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-10">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-center">
+            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-xs">C</span>
+              </div>
+              <span className="text-sm font-medium">ChamberBox</span>
+            </Link>
+          </div>
+        </header>
+      )}
 
       {/* Main Content */}
-      <main className="max-w-2xl mx-auto px-4 py-8">
+      <main className={isEmbed ? "p-4" : "max-w-2xl mx-auto px-4 py-8"}>
         {/* Doctor Card */}
         <div className="bg-card rounded-xl border p-6 mb-6 shadow-sm">
           <div className="flex items-center gap-4">
@@ -105,10 +109,12 @@ const DirectBooking = () => {
           </div>
         </div>
 
-        {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground mt-8">
-          Powered by ChamberBox • Secure Online Booking
-        </p>
+        {/* Footer - hidden in embed mode */}
+        {!isEmbed && (
+          <p className="text-center text-xs text-muted-foreground mt-8">
+            Powered by ChamberBox • Secure Online Booking
+          </p>
+        )}
       </main>
     </div>
   );

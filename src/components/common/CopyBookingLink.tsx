@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Dialog, 
   DialogContent, 
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link2, Copy, Check, ExternalLink, QrCode, Share2 } from "lucide-react";
+import { Link2, Copy, Check, ExternalLink, QrCode, Share2, Code2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -134,6 +135,22 @@ const BookingLinkContent = ({
   onCopy, 
   onShare 
 }: BookingLinkContentProps) => {
+  const embedUrl = `${bookingUrl}?embed=true`;
+  const embedCode = `<iframe src="${embedUrl}" width="100%" height="700" frameborder="0" style="border:none; border-radius:12px; max-width:600px;"></iframe>`;
+  const [copiedEmbed, setCopiedEmbed] = useState(false);
+  const [showEmbed, setShowEmbed] = useState(false);
+
+  const handleCopyEmbed = async () => {
+    try {
+      await navigator.clipboard.writeText(embedCode);
+      setCopiedEmbed(true);
+      toast.success("Embed code copied!");
+      setTimeout(() => setCopiedEmbed(false), 2000);
+    } catch {
+      toast.error("Failed to copy embed code");
+    }
+  };
+
   return (
     <>
       <DialogHeader>
@@ -193,6 +210,42 @@ const BookingLinkContent = ({
           <p className="text-xs text-muted-foreground">
             Opens your public profile with all details
           </p>
+        </div>
+
+        {/* Embed Code Section */}
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => setShowEmbed(!showEmbed)}
+            className="flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+          >
+            <Code2 className="w-4 h-4" />
+            {showEmbed ? "Hide" : "Show"} Embed Code
+          </button>
+          {showEmbed && (
+            <div className="space-y-2 animate-in fade-in-0 slide-in-from-top-2">
+              <Textarea
+                value={embedCode}
+                readOnly
+                rows={3}
+                className="font-mono text-xs bg-muted resize-none"
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={handleCopyEmbed}
+                >
+                  {copiedEmbed ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  Copy Embed Code
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Paste this code on any website to embed the booking form
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
