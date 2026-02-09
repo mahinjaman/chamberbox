@@ -217,16 +217,16 @@ const Finances = () => {
       title="Financial Tracking"
       description="Track your chamber earnings, dues, and expenses"
       actions={
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={exportToCSV}>
-            <Download className="mr-2 h-4 w-4" />
-            Export
+        <div className="flex gap-1.5 sm:gap-2">
+          <Button variant="outline" onClick={exportToCSV} size="sm" className="px-2 sm:px-4">
+            <Download className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Export</span>
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Transaction
+              <Button size="sm" className="px-2 sm:px-4">
+                <Plus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Add Transaction</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
