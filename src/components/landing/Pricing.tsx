@@ -151,7 +151,7 @@ const Pricing = () => {
     : [];
 
   return (
-    <section id="pricing" className="py-20 md:py-32 bg-background">
+    <section id="pricing" className="py-20 md:py-32 bg-muted/30">
       <div className="container px-4 md:px-6">
         {/* Section header */}
         <div className="text-center max-w-3xl mx-auto mb-16">

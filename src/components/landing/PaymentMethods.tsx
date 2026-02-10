@@ -23,7 +23,7 @@ const PaymentMethods = () => {
   const t = paymentText[language];
 
   return (
-    <section className="py-20 md:py-24 bg-muted/30 relative overflow-hidden">
+    <section className="py-20 md:py-24 bg-background/80 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
