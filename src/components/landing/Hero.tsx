@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, Smartphone, Shield, Wifi } from "lucide-react";
+import { ArrowRight, CheckCircle2, Smartphone, Shield } from "lucide-react";
 
 export const Hero = () => {
   return (
@@ -53,10 +53,6 @@ export const Hero = () => {
             <div className="flex items-center gap-2">
               <Smartphone className="w-4 h-4 text-primary" />
               <span>Mobile-first design</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Wifi className="w-4 h-4 text-info" />
-              <span>Works offline</span>
             </div>
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-warning" />
