@@ -132,8 +132,8 @@ export const AdminSidebar = ({ permissions }: AdminSidebarProps) => {
           <img src={chamberboxIcon} alt="ChamberBox" className="w-8 h-8 rounded-lg flex-shrink-0" />
           {!collapsed && (
             <div>
-              <span className="font-bold text-lg text-amber-100">Chamberbox</span>
-              <p className="text-xs text-amber-200/60 -mt-0.5">Crafters</p>
+              <span className="font-bold text-lg text-sidebar-foreground">Chamberbox</span>
+              <p className="text-xs text-sidebar-foreground/60 -mt-0.5">Crafters</p>
             </div>
           )}
         </Link>
