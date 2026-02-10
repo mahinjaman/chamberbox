@@ -1,7 +1,40 @@
 import { Link } from "react-router-dom";
 import chamberboxIcon from "@/assets/chamberbox-icon.png";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+
+const footerText = {
+  en: {
+    description: "The complete digital chamber management system for individual doctors in Bangladesh. Simple, affordable, and built for local needs.",
+    madeWith: "Made with ❤️ in Bangladesh",
+    product: "Product",
+    features: "Features",
+    pricing: "Pricing",
+    signIn: "Sign In",
+    support: "Support",
+    helpCenter: "Help Center",
+    contactUs: "Contact Us",
+    privacyPolicy: "Privacy Policy",
+    copyright: `© ${new Date().getFullYear()} ChamberBox. All rights reserved.`,
+  },
+  bn: {
+    description: "বাংলাদেশের ডাক্তারদের জন্য সম্পূর্ণ ডিজিটাল চেম্বার ম্যানেজমেন্ট সিস্টেম। সহজ, সাশ্রয়ী এবং স্থানীয় প্রয়োজনে তৈরি।",
+    madeWith: "বাংলাদেশে ❤️ দিয়ে তৈরি",
+    product: "প্রোডাক্ট",
+    features: "ফিচার",
+    pricing: "মূল্য",
+    signIn: "সাইন ইন",
+    support: "সাপোর্ট",
+    helpCenter: "হেল্প সেন্টার",
+    contactUs: "যোগাযোগ করুন",
+    privacyPolicy: "প্রাইভেসি পলিসি",
+    copyright: `© ${new Date().getFullYear()} ChamberBox। সর্বস্বত্ব সংরক্ষিত।`,
+  },
+};
 
 const Footer = () => {
+  const { language } = useLanguage();
+  const t = footerText[language];
+
   return (
     <footer id="about" className="bg-sidebar py-16">
       <div className="container px-4 md:px-6">
@@ -13,52 +46,51 @@ const Footer = () => {
               <span className="font-bold text-xl text-sidebar-foreground">ChamberBox</span>
             </Link>
             <p className="text-sidebar-foreground/70 max-w-md mb-6">
-              The complete digital chamber management system for individual doctors in Bangladesh. 
-              Simple, affordable, and built for local needs.
+              {t.description}
             </p>
             <p className="text-sidebar-foreground/50 text-sm">
-              Made with ❤️ in Bangladesh
+              {t.madeWith}
             </p>
           </div>
 
           {/* Links */}
           <div>
-            <h4 className="text-sidebar-foreground font-semibold mb-4">Product</h4>
+            <h4 className="text-sidebar-foreground font-semibold mb-4">{t.product}</h4>
             <ul className="space-y-3">
               <li>
                 <a href="#features" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
-                  Features
+                  {t.features}
                 </a>
               </li>
               <li>
                 <a href="#pricing" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
-                  Pricing
+                  {t.pricing}
                 </a>
               </li>
               <li>
                 <Link to="/login" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
-                  Sign In
+                  {t.signIn}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-sidebar-foreground font-semibold mb-4">Support</h4>
+            <h4 className="text-sidebar-foreground font-semibold mb-4">{t.support}</h4>
             <ul className="space-y-3">
               <li>
                 <a href="#" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
-                  Help Center
+                  {t.helpCenter}
                 </a>
               </li>
               <li>
                 <a href="#" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
-                  Contact Us
+                  {t.contactUs}
                 </a>
               </li>
               <li>
                 <a href="#" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
-                  Privacy Policy
+                  {t.privacyPolicy}
                 </a>
               </li>
             </ul>
@@ -68,7 +100,7 @@ const Footer = () => {
         {/* Copyright */}
         <div className="pt-8 border-t border-sidebar-border">
           <p className="text-center text-sidebar-foreground/50 text-sm">
-            © {new Date().getFullYear()} ChamberBox. All rights reserved.
+            {t.copyright}
           </p>
         </div>
       </div>
