@@ -97,42 +97,10 @@ export const Hero = () => {
           </div>
         </div>
 
-        {/* Platform Stats */}
-        <div className="mt-16 max-w-5xl mx-auto animate-fade-in-up" style={{ animationDelay: "0.5s" }}>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/10">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-1">50K+</div>
-                <div className="text-white/70 text-sm font-medium">{t.patientsServed}</div>
-              </div>
-            </div>
-
-            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-success/10 to-success/5 border border-success/20 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-success/10">
-              <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="text-3xl md:text-4xl font-bold text-success mb-1">500+</div>
-                <div className="text-white/70 text-sm font-medium">{t.doctorsOnboarded}</div>
-              </div>
-            </div>
-
-            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-info/10 to-info/5 border border-info/20 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-info/10">
-              <div className="absolute inset-0 bg-gradient-to-br from-info/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="text-3xl md:text-4xl font-bold text-info mb-1">200K+</div>
-                <div className="text-white/70 text-sm font-medium">{t.tokensGenerated}</div>
-              </div>
-            </div>
-
-            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-warning/10 to-warning/5 border border-warning/20 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-warning/10">
-              <div className="absolute inset-0 bg-gradient-to-br from-warning/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="text-3xl md:text-4xl font-bold text-warning mb-1">10K+</div>
-                <div className="text-white/70 text-sm font-medium">{t.hoursSaved}</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Platform Stats - temporarily hidden */}
+        {/* <div className="mt-16 max-w-5xl mx-auto animate-fade-in-up" style={{ animationDelay: "0.5s" }}>
+          ...stats cards...
+        </div> */}
       </div>
     </section>
   );
