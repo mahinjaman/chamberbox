@@ -47,18 +47,14 @@ interface NavGroup {
 }
 
 const getNavGroups = (permissions: AdminStaffPermissions | null): NavGroup[] => {
-  if (!permissions) return [{ label: "Overview", items: [{ title: "Overview", url: "/admin", icon: LayoutDashboard }] }];
+  if (!permissions) return [{ label: "Overview", items: [{ title: "Dashboard", url: "/admin", icon: LayoutDashboard }] }];
 
   const groups: NavGroup[] = [];
 
-  // Overview - always visible
-  groups.push({
-    label: "Overview",
-    items: [{ title: "Dashboard", url: "/admin", icon: LayoutDashboard }],
-  });
-
-  // Doctor & Subscription Management
-  const doctorItems: NavItem[] = [];
+  // Doctors & Billing (includes Dashboard)
+  const doctorItems: NavItem[] = [
+    { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
+  ];
   if (permissions.canManageDoctors) {
     doctorItems.push({ title: "Doctors", url: "/admin/doctors", icon: Users });
   }
@@ -68,9 +64,7 @@ const getNavGroups = (permissions: AdminStaffPermissions | null): NavGroup[] => 
   if (permissions.canVerifyPayments) {
     doctorItems.push({ title: "Payments", url: "/admin/payments", icon: CheckCircle });
   }
-  if (doctorItems.length > 0) {
-    groups.push({ label: "Doctors & Billing", items: doctorItems });
-  }
+  groups.push({ label: "Doctors & Billing", items: doctorItems });
 
   // Platform Config
   const configItems: NavItem[] = [];
