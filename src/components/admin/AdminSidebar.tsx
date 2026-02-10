@@ -60,13 +60,13 @@ const mainNavItems = [
    if (permissions.canConfigurePlans) {
      items.push({ title: "Plan Config", url: "/admin/plans", icon: Settings });
    }
-   if (permissions.canManageTickets) {
-     items.push({ title: "Support Tickets", url: "/admin/tickets", icon: MessageSquare });
-   }
-    if (permissions.canManageTutorials) {
-      items.push({ title: "Video Tutorials", url: "/admin/tutorials", icon: Video });
+    if (permissions.canManageTickets) {
+      items.push({ title: "Support Tickets", url: "/admin/tickets", icon: MessageSquare });
+      items.push({ title: "Contact Messages", url: "/admin/contacts", icon: Inbox });
     }
-    items.push({ title: "Contact Messages", url: "/admin/contacts", icon: Inbox });
+     if (permissions.canManageTutorials) {
+       items.push({ title: "Video Tutorials", url: "/admin/tutorials", icon: Video });
+     }
     if (permissions.canManageAdmins) {
       items.push({ title: "Admin Users", url: "/admin/users", icon: UserCog });
     }
