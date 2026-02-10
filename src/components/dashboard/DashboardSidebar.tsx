@@ -115,9 +115,9 @@ export const DashboardSidebar = () => {
 
   const settingsSubItems = [
     { title: language === "bn" ? "সাবস্ক্রিপশন ও প্রোফাইল" : "Subscription & Profile", url: "/dashboard/settings", icon: Shield },
+    { title: language === "bn" ? "পেমেন্ট হিস্ট্রি" : "Payment History", url: "/dashboard/payments", icon: Receipt },
     { title: t.nav.integrations, url: "/dashboard/integrations", icon: Plug },
     { title: t.nav.staffManagement, url: "/dashboard/staff", icon: UserCog },
-    { title: language === "bn" ? "পেমেন্ট হিস্ট্রি" : "Payment History", url: "/dashboard/payments", icon: Receipt },
   ];
 
   const supportSubItems = [
