@@ -25,6 +25,7 @@ export default function AdminDashboard() {
       const { data, error } = await supabase
         .from("contact_messages")
         .select("*")
+        .eq("is_read", false)
         .order("created_at", { ascending: false })
         .limit(5);
       if (error) throw error;
@@ -81,7 +82,8 @@ export default function AdminDashboard() {
       d.subscription_expires_at && 
       new Date(d.subscription_expires_at) > new Date()
     ).length || 0,
-    openTickets: tickets?.filter(t => t.status === "open").length || 0,
+    openTickets: tickets?.filter(t => t.status === "open" || t.status === "in_progress").length || 0,
+    inProgressTickets: tickets?.filter(t => t.status === "in_progress").length || 0,
     expiringSoon: doctors?.filter(d => {
       if (!d.subscription_expires_at) return false;
       const expiryDate = new Date(d.subscription_expires_at);
@@ -197,7 +199,7 @@ export default function AdminDashboard() {
                   {isLoading ? "..." : stats.openTickets}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Awaiting response
+                  {stats.inProgressTickets > 0 && `${stats.inProgressTickets} in progress · `}Awaiting response
                 </p>
               </CardContent>
             </Card>
@@ -264,7 +266,7 @@ export default function AdminDashboard() {
                 <p className="text-muted-foreground">Loading...</p>
               ) : tickets && tickets.length > 0 ? (
                 <div className="space-y-2">
-                  {tickets.filter(t => t.status === "open").slice(0, 5).map((ticket) => (
+                  {tickets.filter(t => t.status === "open" || t.status === "in_progress").slice(0, 5).map((ticket) => (
                     <div key={ticket.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
                       <div>
                         <p className="font-medium line-clamp-1">{ticket.subject}</p>
@@ -318,7 +320,7 @@ export default function AdminDashboard() {
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground">No messages yet</p>
+                <p className="text-muted-foreground">No unread messages</p>
               )}
             </CardContent>
           </Card>
