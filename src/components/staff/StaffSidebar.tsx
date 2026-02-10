@@ -31,6 +31,7 @@ import { useStaff } from "@/hooks/useStaff";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { CopyBookingLink } from "@/components/common/CopyBookingLink";
+import chamberboxIcon from "@/assets/chamberbox-icon.png";
 
 export const StaffSidebar = () => {
   const location = useLocation();
@@ -112,9 +113,7 @@ export const StaffSidebar = () => {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="p-4">
         <Link to="/staff" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center flex-shrink-0">
-            <span className="text-sidebar-primary-foreground font-bold text-lg">C</span>
-          </div>
+          <img src={chamberboxIcon} alt="ChamberBox" className="w-8 h-8 rounded-lg flex-shrink-0" />
           {!collapsed && (
             <span className="font-bold text-lg text-sidebar-foreground">ChamberBox</span>
           )}

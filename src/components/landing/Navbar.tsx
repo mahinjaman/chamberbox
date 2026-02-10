@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import chamberboxLogo from "@/assets/chamberbox-logo.png";
+import chamberboxIcon from "@/assets/chamberbox-icon.png";
 import { useState } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { LanguageToggle } from "@/components/common/LanguageToggle";
@@ -14,7 +14,8 @@ export const Navbar = () => {
       <nav className="container flex items-center justify-between h-16 px-4 md:px-6">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <img src={chamberboxLogo} alt="ChamberBox" className="h-9" />
+          <img src={chamberboxIcon} alt="ChamberBox" className="w-8 h-8 rounded-lg" />
+          <span className="font-bold text-xl text-foreground">ChamberBox</span>
         </Link>
 
         {/* Desktop Navigation */}
