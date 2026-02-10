@@ -13,7 +13,8 @@ import {
    Mail,
    Phone,
    BarChart3,
-   Pill
+   Pill,
+   Inbox
 } from "lucide-react";
 import {
   Sidebar,
@@ -62,12 +63,13 @@ const mainNavItems = [
    if (permissions.canManageTickets) {
      items.push({ title: "Support Tickets", url: "/admin/tickets", icon: MessageSquare });
    }
-   if (permissions.canManageTutorials) {
-     items.push({ title: "Video Tutorials", url: "/admin/tutorials", icon: Video });
-   }
-   if (permissions.canManageAdmins) {
-     items.push({ title: "Admin Users", url: "/admin/users", icon: UserCog });
-   }
+    if (permissions.canManageTutorials) {
+      items.push({ title: "Video Tutorials", url: "/admin/tutorials", icon: Video });
+    }
+    items.push({ title: "Contact Messages", url: "/admin/contacts", icon: Inbox });
+    if (permissions.canManageAdmins) {
+      items.push({ title: "Admin Users", url: "/admin/users", icon: UserCog });
+    }
    
    return items;
  };

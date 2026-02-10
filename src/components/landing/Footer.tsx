@@ -84,7 +84,7 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a href="#" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
+                <a href="#contact" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
                   {t.contactUs}
                 </a>
               </li>
