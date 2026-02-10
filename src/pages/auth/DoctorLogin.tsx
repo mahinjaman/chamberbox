@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Stethoscope, Search, MessageCircle, CheckCircle, Clock, XCircle } from "lucide-react";
+import { Eye, EyeOff, Loader2, Stethoscope, Search, MessageCircle, CheckCircle, Clock, XCircle, Home } from "lucide-react";
 import { mapAuthError } from "@/lib/errors";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { LanguageToggle } from "@/components/common/LanguageToggle";
@@ -120,6 +120,13 @@ const DoctorLogin = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4">
       <div className="absolute top-1/4 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+
+      <div className="absolute top-4 left-4 z-20">
+        <Link to="/" className="flex items-center gap-1.5 text-sm text-white/70 hover:text-white transition-colors">
+          <Home className="w-4 h-4" />
+          <span>{language === "bn" ? "হোমপেজ" : "Home"}</span>
+        </Link>
+      </div>
 
       <div className="absolute top-4 right-4 z-20">
         <LanguageToggle showLabel />

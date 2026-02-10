@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Users, CheckCircle2, XCircle, Phone } from "lucide-react";
+import { Eye, EyeOff, Loader2, Users, CheckCircle2, XCircle, Phone, Home } from "lucide-react";
 import { mapAuthError } from "@/lib/errors";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { LanguageToggle } from "@/components/common/LanguageToggle";
@@ -170,6 +170,13 @@ const StaffSignup = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary/30 via-background to-primary/10 p-4">
+      <div className="absolute top-4 left-4 z-20">
+        <Link to="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Home className="w-4 h-4" />
+          <span>{language === "bn" ? "হোমপেজ" : "Home"}</span>
+        </Link>
+      </div>
+
       {/* Decorative elements */}
       <div className="absolute top-1/4 left-10 w-72 h-72 bg-secondary/20 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
