@@ -28,7 +28,7 @@ const contactText = {
     error: "Failed to send message. Please try again.",
     address: "Dhaka, Bangladesh",
     emailContact: "support@chamberbox.com",
-    phoneContact: "+880 1XXX-XXXXXX",
+    phoneContact: "+880 1601-025502",
   },
   bn: {
     title: "যোগাযোগ করুন",
@@ -49,7 +49,7 @@ const contactText = {
     error: "মেসেজ পাঠাতে ব্যর্থ। আবার চেষ্টা করুন।",
     address: "ঢাকা, বাংলাদেশ",
     emailContact: "support@chamberbox.com",
-    phoneContact: "+৮৮০ ১XXX-XXXXXX",
+    phoneContact: "+৮৮০ ১৬০১-০২৫৫০২",
   },
 };
 

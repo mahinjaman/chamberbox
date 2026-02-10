@@ -76,7 +76,7 @@ export const DashboardLayout = ({ children, title, description, actions }: Dashb
                     </Button>
                     <Button variant="outline" className="gap-2" onClick={() => {
                       const message = encodeURIComponent("Hi, I need help with ChamberBox.");
-                      window.open(`https://wa.me/8801XXXXXXXXX?text=${message}`, "_blank");
+                      window.open(`https://wa.me/8801601025502?text=${message}`, "_blank");
                     }}>
                       <MessageCircle className="w-4 h-4" />
                       {bn ? "সাপোর্টে যোগাযোগ" : "Contact Support"}
