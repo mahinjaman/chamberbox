@@ -40,6 +40,7 @@ import MyTickets from "./pages/MyTickets";
 import Tutorials from "./pages/Tutorials";
 import PaymentHistory from "./pages/PaymentHistory";
 import NotFound from "./pages/NotFound";
+import HelpCenter from "./pages/HelpCenter";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -84,7 +85,7 @@ const App = () => (
             <Route path="/queue-status" element={<QueueStatus />} />
             <Route path="/doctor/:slug" element={<DoctorPublicProfile />} />
             <Route path="/book/:slug" element={<DirectBooking />} />
-            
+            <Route path="/help" element={<HelpCenter />} />
             {/* Auth Routes - Separate portals for each role */}
             <Route path="/login" element={<DoctorLogin />} />
             <Route path="/signup" element={<Signup />} />
