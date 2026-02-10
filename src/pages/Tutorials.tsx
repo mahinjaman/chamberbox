@@ -18,6 +18,7 @@ import {
   Plug,
   ListOrdered,
   HelpCircle,
+  Bell,
 } from "lucide-react";
 import {
   Dialog,
@@ -26,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { cn } from "@/lib/utils";
 
 const TOPIC_ICONS: Record<string, typeof BookOpen> = {
   "Getting Started": BookOpen,
@@ -38,7 +40,7 @@ const TOPIC_ICONS: Record<string, typeof BookOpen> = {
   "Public Profile": Globe,
   "Integrations": Plug,
   "Booking System": ListOrdered,
-  "SMS & Notifications": HelpCircle,
+  "SMS & Notifications": Bell,
   "Staff Management": Users,
 };
 
@@ -56,6 +58,8 @@ const getYouTubeThumbnail = (url: string) => {
   return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null;
 };
 
+const getTopicIcon = (topic: string) => TOPIC_ICONS[topic] || BookOpen;
+
 export default function Tutorials() {
   const { tutorials, tutorialsLoading } = useVideoTutorials();
   const { language } = useLanguage();
@@ -66,8 +70,7 @@ export default function Tutorials() {
   const activeTutorials = tutorials?.filter(t => t.is_active) || [];
 
   const topics = useMemo(() => {
-    const paths = [...new Set(activeTutorials.map((t) => t.page_path))];
-    return paths.sort();
+    return [...new Set(activeTutorials.map((t) => t.page_path))].sort();
   }, [activeTutorials]);
 
   const filteredTutorials = useMemo(() => {
@@ -90,16 +93,11 @@ export default function Tutorials() {
     return groups;
   }, [filteredTutorials]);
 
-  const getTopicIcon = (topic: string) => {
-    return TOPIC_ICONS[topic] || HelpCircle;
-  };
-
   const t = {
     title: language === "bn" ? "হেল্প সেন্টার" : "Help Center",
-    subtitle: language === "bn" ? "ধাপে ধাপে ভিডিও টিউটোরিয়াল দিয়ে ChamberBox ব্যবহার শিখুন" : "Learn how to use ChamberBox with step-by-step video tutorials",
+    subtitle: language === "bn" ? "ভিডিও টিউটোরিয়াল দিয়ে ChamberBox ব্যবহার শিখুন" : "Learn how to use ChamberBox with video tutorials",
     searchPlaceholder: language === "bn" ? "টিউটোরিয়াল খুঁজুন..." : "Search tutorials...",
-    allTopics: language === "bn" ? "সব" : "All",
-    topics: language === "bn" ? "টপিক" : "Topics",
+    allTopics: language === "bn" ? "সব টপিক" : "All Topics",
     noResults: language === "bn" ? "কোনো টিউটোরিয়াল পাওয়া যায়নি" : "No tutorials found",
     noResultsDesc: language === "bn" ? "অন্য সার্চ বা টপিক ফিল্টার চেষ্টা করুন" : "Try a different search or topic filter",
     videosCount: (n: number) => language === "bn" ? `${n}টি ভিডিও` : `${n} video${n !== 1 ? "s" : ""}`,
@@ -111,49 +109,47 @@ export default function Tutorials() {
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t.title}</h1>
-          <p className="text-muted-foreground">{t.subtitle}</p>
+          <p className="text-sm text-muted-foreground mt-1">{t.subtitle}</p>
         </div>
 
         {/* Search */}
-        <div className="max-w-md relative">
+        <div className="max-w-sm relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder={t.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-9 h-9 text-sm"
           />
         </div>
 
         {tutorialsLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>
         ) : activeTutorials.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <PlayCircle className="w-12 h-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">{t.noResults}</p>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+              <PlayCircle className="w-6 h-6 text-muted-foreground" />
+            </div>
+            <p className="text-sm text-muted-foreground">{t.noResults}</p>
+          </div>
         ) : (
           <div className="flex flex-col md:flex-row gap-8">
-            {/* Sidebar - Topic Filter */}
-            <aside className="md:w-52 flex-shrink-0">
-              <h3 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-3">
-                {t.topics}
-              </h3>
-              <nav className="space-y-1">
+            {/* Sidebar */}
+            <aside className="md:w-48 flex-shrink-0">
+              <nav className="space-y-0.5">
                 <button
                   onClick={() => setSelectedTopic(null)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                  className={cn(
+                    "w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-between",
                     !selectedTopic
                       ? "bg-primary/10 text-primary font-medium"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
                 >
-                  {t.allTopics}
-                  <span className="ml-auto float-right text-xs opacity-60">{activeTutorials.length}</span>
+                  <span>{t.allTopics}</span>
+                  <span className="text-xs tabular-nums opacity-60">{activeTutorials.length}</span>
                 </button>
                 {topics.map((topic) => {
                   const Icon = getTopicIcon(topic);
@@ -162,39 +158,39 @@ export default function Tutorials() {
                     <button
                       key={topic}
                       onClick={() => setSelectedTopic(topic)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${
+                      className={cn(
+                        "w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2",
                         selectedTopic === topic
                           ? "bg-primary/10 text-primary font-medium"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      }`}
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      )}
                     >
-                      <Icon className="w-4 h-4 flex-shrink-0" />
+                      <Icon className="w-3.5 h-3.5 flex-shrink-0" />
                       <span className="flex-1 truncate">{topic}</span>
-                      <span className="text-xs opacity-60">{count}</span>
+                      <span className="text-xs tabular-nums opacity-60">{count}</span>
                     </button>
                   );
                 })}
               </nav>
             </aside>
 
-            {/* Main Content */}
+            {/* Main */}
             <main className="flex-1 min-w-0">
               {filteredTutorials.length === 0 ? (
                 <div className="text-center py-20">
-                  <PlayCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="font-semibold text-foreground mb-1">{t.noResults}</h3>
-                  <p className="text-sm text-muted-foreground">{t.noResultsDesc}</p>
+                  <p className="text-sm font-medium text-foreground mb-1">{t.noResults}</p>
+                  <p className="text-xs text-muted-foreground">{t.noResultsDesc}</p>
                 </div>
               ) : selectedTopic ? (
                 <div>
-                  <div className="flex items-center gap-2 mb-6">
+                  <div className="flex items-center gap-2 mb-5">
                     {(() => {
                       const Icon = getTopicIcon(selectedTopic);
-                      return <Icon className="w-5 h-5 text-primary" />;
+                      return <Icon className="w-4 h-4 text-primary" />;
                     })()}
-                    <h2 className="text-xl font-bold text-foreground">{selectedTopic}</h2>
-                    <span className="text-sm text-muted-foreground">
-                      — {t.videosCount(filteredTutorials.length)}
+                    <h2 className="text-base font-semibold text-foreground">{selectedTopic}</h2>
+                    <span className="text-xs text-muted-foreground">
+                      {t.videosCount(filteredTutorials.length)}
                     </span>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -208,14 +204,14 @@ export default function Tutorials() {
                   </div>
                 </div>
               ) : (
-                <div className="space-y-10">
+                <div className="space-y-8">
                   {Object.entries(groupedTutorials).map(([topic, tuts]) => {
                     const Icon = getTopicIcon(topic);
                     return (
                       <section key={topic}>
-                        <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
-                          <Icon className="w-5 h-5 text-primary" />
-                          <h2 className="text-lg font-semibold text-foreground">{topic}</h2>
+                        <div className="flex items-center gap-2 mb-4">
+                          <Icon className="w-4 h-4 text-primary" />
+                          <h2 className="text-sm font-semibold text-foreground">{topic}</h2>
                           <span className="text-xs text-muted-foreground">
                             {t.videosCount(tuts.length)}
                           </span>
@@ -242,13 +238,10 @@ export default function Tutorials() {
       {/* Video Dialog */}
       <Dialog open={!!selectedTutorial} onOpenChange={() => setSelectedTutorial(null)}>
         <DialogContent className="max-w-3xl p-0 overflow-hidden">
-          <DialogHeader className="p-4 pb-2">
-            <DialogTitle className="flex items-center gap-2">
-              <PlayCircle className="h-5 w-5 text-primary" />
-              {selectedTutorial?.title}
-            </DialogTitle>
+          <DialogHeader className="px-5 pt-5 pb-3">
+            <DialogTitle className="text-base">{selectedTutorial?.title}</DialogTitle>
             {selectedTutorial?.description && (
-              <p className="text-sm text-muted-foreground">{selectedTutorial.description}</p>
+              <p className="text-xs text-muted-foreground mt-1">{selectedTutorial.description}</p>
             )}
           </DialogHeader>
           <div className="aspect-video w-full">
@@ -279,11 +272,11 @@ const TutorialCard = ({
 
   return (
     <Card
-      className="cursor-pointer hover:shadow-md transition-all duration-200 group border-border/50 hover:border-primary/20"
+      className="cursor-pointer group border-border/40 hover:border-border hover:shadow-sm transition-all duration-200 overflow-hidden"
       onClick={onClick}
     >
       <CardContent className="p-0">
-        <div className="aspect-video bg-muted rounded-t-xl flex items-center justify-center relative overflow-hidden">
+        <div className="aspect-video bg-muted relative overflow-hidden">
           {thumbnail ? (
             <img
               src={thumbnail}
@@ -292,18 +285,20 @@ const TutorialCard = ({
               loading="lazy"
             />
           ) : (
-            <PlayCircle className="w-12 h-12 text-muted-foreground" />
+            <div className="w-full h-full flex items-center justify-center">
+              <PlayCircle className="w-10 h-10 text-muted-foreground/40" />
+            </div>
           )}
-          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center">
-              <PlayCircle className="w-7 h-7 text-primary-foreground" />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 flex items-center justify-center">
+            <div className="w-11 h-11 rounded-full bg-primary/90 flex items-center justify-center opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all duration-200">
+              <PlayCircle className="w-5 h-5 text-primary-foreground" />
             </div>
           </div>
         </div>
-        <div className="p-4">
-          <h3 className="font-semibold text-sm text-foreground line-clamp-2">{tutorial.title}</h3>
+        <div className="p-3">
+          <h3 className="font-medium text-sm text-foreground line-clamp-2 leading-snug">{tutorial.title}</h3>
           {tutorial.description && (
-            <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
+            <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
               {tutorial.description}
             </p>
           )}
