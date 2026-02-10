@@ -6,15 +6,14 @@ import {
   MessageSquare, 
   Video,
   LogOut,
-  Shield,
   Settings,
-   CheckCircle,
-   UserCog,
-   Mail,
-   Phone,
-   BarChart3,
-   Pill,
-   Inbox
+  CheckCircle,
+  UserCog,
+  Mail,
+  Phone,
+  BarChart3,
+  Pill,
+  Inbox
 } from "lucide-react";
 import {
   Sidebar,
@@ -30,62 +29,100 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
- import { useAuth } from "@/lib/auth";
- import { AdminStaffPermissions } from "@/hooks/useAdminStaff";
+import { useAuth } from "@/lib/auth";
+import { AdminStaffPermissions } from "@/hooks/useAdminStaff";
 import { useProfile } from "@/hooks/useProfile";
 import { cn } from "@/lib/utils";
 import chamberboxIcon from "@/assets/chamberbox-icon.png";
 
-const mainNavItems = [
-  { title: "Overview", url: "/admin", icon: LayoutDashboard },
- ];
- 
- const getNavItems = (permissions: AdminStaffPermissions | null) => {
-   if (!permissions) return mainNavItems;
-   
-   const items = [...mainNavItems];
-   
-   if (permissions.canManageDoctors) {
-     items.push({ title: "Doctors", url: "/admin/doctors", icon: Users });
-   }
-   if (permissions.canManageSubscriptions) {
-     items.push({ title: "Subscriptions", url: "/admin/subscriptions", icon: CreditCard });
-   }
-   if (permissions.canVerifyPayments) {
-     items.push({ title: "Payments", url: "/admin/payments", icon: CheckCircle });
-   }
-    items.push({ title: "Analytics", url: "/admin/analytics", icon: BarChart3 });
-    items.push({ title: "SMS Config", url: "/admin/sms", icon: Phone });
-    items.push({ title: "Medicines", url: "/admin/medicines", icon: Pill });
-   if (permissions.canConfigurePlans) {
-     items.push({ title: "Plan Config", url: "/admin/plans", icon: Settings });
-   }
-    if (permissions.canManageTickets) {
-      items.push({ title: "Support Tickets", url: "/admin/tickets", icon: MessageSquare });
-      items.push({ title: "Contact Messages", url: "/admin/contacts", icon: Inbox });
-    }
-     if (permissions.canManageTutorials) {
-       items.push({ title: "Video Tutorials", url: "/admin/tutorials", icon: Video });
-     }
-    if (permissions.canManageAdmins) {
-      items.push({ title: "Admin Users", url: "/admin/users", icon: UserCog });
-    }
-   
-   return items;
- };
+interface NavItem {
+  title: string;
+  url: string;
+  icon: typeof LayoutDashboard;
+}
 
- interface AdminSidebarProps {
-   permissions: AdminStaffPermissions | null;
- }
- 
- export const AdminSidebar = ({ permissions }: AdminSidebarProps) => {
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+const getNavGroups = (permissions: AdminStaffPermissions | null): NavGroup[] => {
+  if (!permissions) return [{ label: "Overview", items: [{ title: "Overview", url: "/admin", icon: LayoutDashboard }] }];
+
+  const groups: NavGroup[] = [];
+
+  // Overview - always visible
+  groups.push({
+    label: "Overview",
+    items: [{ title: "Dashboard", url: "/admin", icon: LayoutDashboard }],
+  });
+
+  // Doctor & Subscription Management
+  const doctorItems: NavItem[] = [];
+  if (permissions.canManageDoctors) {
+    doctorItems.push({ title: "Doctors", url: "/admin/doctors", icon: Users });
+  }
+  if (permissions.canManageSubscriptions) {
+    doctorItems.push({ title: "Subscriptions", url: "/admin/subscriptions", icon: CreditCard });
+  }
+  if (permissions.canVerifyPayments) {
+    doctorItems.push({ title: "Payments", url: "/admin/payments", icon: CheckCircle });
+  }
+  if (doctorItems.length > 0) {
+    groups.push({ label: "Doctors & Billing", items: doctorItems });
+  }
+
+  // Platform Config
+  const configItems: NavItem[] = [];
+  if (permissions.canConfigurePlans) {
+    configItems.push({ title: "Plan Config", url: "/admin/plans", icon: Settings });
+  }
+  configItems.push({ title: "SMS Config", url: "/admin/sms", icon: Phone });
+  configItems.push({ title: "Medicines", url: "/admin/medicines", icon: Pill });
+  groups.push({ label: "Configuration", items: configItems });
+
+  // Analytics
+  groups.push({
+    label: "Insights",
+    items: [{ title: "Analytics", url: "/admin/analytics", icon: BarChart3 }],
+  });
+
+  // Support & Content
+  const supportItems: NavItem[] = [];
+  if (permissions.canManageTickets) {
+    supportItems.push({ title: "Support Tickets", url: "/admin/tickets", icon: MessageSquare });
+    supportItems.push({ title: "Contact Messages", url: "/admin/contacts", icon: Inbox });
+  }
+  if (permissions.canManageTutorials) {
+    supportItems.push({ title: "Video Tutorials", url: "/admin/tutorials", icon: Video });
+  }
+  if (supportItems.length > 0) {
+    groups.push({ label: "Support & Content", items: supportItems });
+  }
+
+  // Admin Users
+  if (permissions.canManageAdmins) {
+    groups.push({
+      label: "Administration",
+      items: [{ title: "Admin Users", url: "/admin/users", icon: UserCog }],
+    });
+  }
+
+  return groups;
+};
+
+interface AdminSidebarProps {
+  permissions: AdminStaffPermissions | null;
+}
+
+export const AdminSidebar = ({ permissions }: AdminSidebarProps) => {
   const location = useLocation();
   const { signOut } = useAuth();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { profile } = useProfile();
- 
-   const navItems = getNavItems(permissions);
+
+  const navGroups = getNavGroups(permissions);
 
   const isActive = (path: string) => {
     if (path === "/admin") {
@@ -109,29 +146,31 @@ const mainNavItems = [
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className={cn(collapsed && "sr-only")}>
-            Management
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-               {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                  >
-                    <Link to={item.url}>
-                      <item.icon className="w-5 h-5" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {navGroups.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel className={cn(collapsed && "sr-only")}>
+              {group.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive(item.url)}
+                      tooltip={item.title}
+                    >
+                      <Link to={item.url}>
+                        <item.icon className="w-5 h-5" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border">
