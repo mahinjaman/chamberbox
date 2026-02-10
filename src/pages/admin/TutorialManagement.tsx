@@ -32,19 +32,20 @@ import { useVideoTutorials, VideoTutorial } from "@/hooks/useVideoTutorials";
 import { Loader2, Plus, Edit, Trash2, Video } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-// Available pages for tutorials
-const PAGE_OPTIONS = [
-  { path: "/dashboard", label: "Dashboard" },
-  { path: "/dashboard/patients", label: "Patients" },
-  { path: "/dashboard/patients/new", label: "New Patient" },
-  { path: "/dashboard/queue", label: "Queue Management" },
-  { path: "/dashboard/prescriptions", label: "Prescriptions" },
-  { path: "/dashboard/finances", label: "Finances" },
-  { path: "/dashboard/analytics", label: "Analytics" },
-  { path: "/dashboard/settings", label: "Settings" },
-  { path: "/dashboard/profile", label: "Public Profile" },
-  { path: "/dashboard/integrations", label: "Integrations" },
-  { path: "/queue-status", label: "Queue Status" },
+// Available topics for tutorials
+const TOPIC_OPTIONS = [
+  "Getting Started",
+  "Patient Management",
+  "Queue Management",
+  "Prescriptions",
+  "Finances",
+  "Analytics",
+  "Settings",
+  "Public Profile",
+  "Integrations",
+  "Booking System",
+  "SMS & Notifications",
+  "Staff Management",
 ];
 
 export default function TutorialManagement() {
@@ -59,6 +60,7 @@ export default function TutorialManagement() {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTutorial, setEditingTutorial] = useState<VideoTutorial | null>(null);
+  const [useCustomTopic, setUseCustomTopic] = useState(false);
   const [formData, setFormData] = useState({
     page_path: "",
     title: "",
@@ -71,6 +73,8 @@ export default function TutorialManagement() {
   const handleOpenDialog = (tutorial?: VideoTutorial) => {
     if (tutorial) {
       setEditingTutorial(tutorial);
+      const isCustom = !TOPIC_OPTIONS.includes(tutorial.page_path);
+      setUseCustomTopic(isCustom);
       setFormData({
         page_path: tutorial.page_path,
         title: tutorial.title,
@@ -81,6 +85,7 @@ export default function TutorialManagement() {
       });
     } else {
       setEditingTutorial(null);
+      setUseCustomTopic(false);
       setFormData({
         page_path: "",
         title: "",
@@ -104,14 +109,9 @@ export default function TutorialManagement() {
     }
   };
 
-  const getPageLabel = (path: string) => {
-    return PAGE_OPTIONS.find(p => p.path === path)?.label || path;
+  const getTopicLabel = (path: string) => {
+    return path;
   };
-
-  // Get pages that don't have tutorials yet
-  const availablePages = PAGE_OPTIONS.filter(
-    page => !tutorials?.some(t => t.page_path === page.path) || editingTutorial?.page_path === page.path
-  );
 
   return (
     <AdminLayout
@@ -137,8 +137,8 @@ export default function TutorialManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Page</TableHead>
-                  <TableHead>Title</TableHead>
+                   <TableHead>Topic</TableHead>
+                   <TableHead>Title</TableHead>
                   <TableHead>Video URL</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -148,7 +148,7 @@ export default function TutorialManagement() {
                 {tutorials.map((tutorial) => (
                   <TableRow key={tutorial.id}>
                     <TableCell className="font-medium">
-                      {getPageLabel(tutorial.page_path)}
+                      {getTopicLabel(tutorial.page_path)}
                     </TableCell>
                     <TableCell>{tutorial.title}</TableCell>
                     <TableCell className="max-w-[200px] truncate">
@@ -216,22 +216,44 @@ export default function TutorialManagement() {
           
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Page</Label>
-              <Select 
-                value={formData.page_path} 
-                onValueChange={(value) => setFormData({ ...formData, page_path: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a page" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availablePages.map((page) => (
-                    <SelectItem key={page.path} value={page.path}>
-                      {page.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center justify-between">
+                <Label>Topic</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-auto py-1"
+                  onClick={() => {
+                    setUseCustomTopic(!useCustomTopic);
+                    setFormData({ ...formData, page_path: "" });
+                  }}
+                >
+                  {useCustomTopic ? "Choose from list" : "Custom topic"}
+                </Button>
+              </div>
+              {useCustomTopic ? (
+                <Input
+                  value={formData.page_path}
+                  onChange={(e) => setFormData({ ...formData, page_path: e.target.value })}
+                  placeholder="Enter custom topic name"
+                />
+              ) : (
+                <Select 
+                  value={formData.page_path} 
+                  onValueChange={(value) => setFormData({ ...formData, page_path: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a topic" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TOPIC_OPTIONS.map((topic) => (
+                      <SelectItem key={topic} value={topic}>
+                        {topic}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             <div className="space-y-2">
