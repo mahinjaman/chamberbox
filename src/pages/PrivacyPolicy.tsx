@@ -3,6 +3,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import chamberboxIcon from "@/assets/chamberbox-icon.png";
+import Footer from "@/components/landing/Footer";
 
 const privacyText = {
   en: {
@@ -185,6 +186,8 @@ const PrivacyPolicy = () => {
           ))}
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 };
