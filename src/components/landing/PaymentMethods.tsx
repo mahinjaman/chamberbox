@@ -1,6 +1,27 @@
 import { ShieldCheck, Lock } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+
+const paymentText = {
+  en: {
+    badge: "Secure & Trusted",
+    title: "Flexible Payment Options",
+    subtitle: "Pay with your preferred method. All transactions are secured with bank-level encryption. Start free, upgrade when you're ready.",
+    ssl: "256-bit SSL Encryption",
+    pci: "PCI DSS Compliant",
+  },
+  bn: {
+    badge: "নিরাপদ ও বিশ্বস্ত",
+    title: "নমনীয় পেমেন্ট অপশন",
+    subtitle: "আপনার পছন্দের পদ্ধতিতে পেমেন্ট করুন। সকল লেনদেন ব্যাংক-লেভেল এনক্রিপশনে সুরক্ষিত। ফ্রি শুরু করুন, প্রস্তুত হলে আপগ্রেড করুন।",
+    ssl: "২৫৬-বিট SSL এনক্রিপশন",
+    pci: "PCI DSS সম্মত",
+  },
+};
 
 const PaymentMethods = () => {
+  const { language } = useLanguage();
+  const t = paymentText[language];
+
   return (
     <section className="py-20 md:py-24 bg-muted/30 relative overflow-hidden">
       {/* Background decorative elements */}
@@ -14,14 +35,13 @@ const PaymentMethods = () => {
         <div className="text-center max-w-3xl mx-auto mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 border border-success/20 mb-6">
             <ShieldCheck className="w-4 h-4 text-success" />
-            <span className="text-success text-sm font-medium">Secure & Trusted</span>
+            <span className="text-success text-sm font-medium">{t.badge}</span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-            Flexible Payment Options
+            {t.title}
           </h2>
           <p className="text-lg text-muted-foreground">
-            Pay with your preferred method. All transactions are secured with bank-level encryption. 
-            Start free, upgrade when you're ready.
+            {t.subtitle}
           </p>
         </div>
 
@@ -90,11 +110,11 @@ const PaymentMethods = () => {
         <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-muted-foreground">
           <div className="flex items-center gap-2">
             <Lock className="w-5 h-5 text-success" />
-            <span className="text-sm font-medium">256-bit SSL Encryption</span>
+            <span className="text-sm font-medium">{t.ssl}</span>
           </div>
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-success" />
-            <span className="text-sm font-medium">PCI DSS Compliant</span>
+            <span className="text-sm font-medium">{t.pci}</span>
           </div>
         </div>
       </div>
