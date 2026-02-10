@@ -26,7 +26,7 @@ import { useSupportTickets } from "@/hooks/useSupportTickets";
 import { useAuth } from "@/lib/auth";
 import { useProfile } from "@/hooks/useProfile";
 
-const SUPPORT_WHATSAPP = "+8801XXXXXXXXX";
+const SUPPORT_WHATSAPP = "+8801601025502";
 
 const CATEGORIES = [
   { value: "general", label: "General Inquiry" },

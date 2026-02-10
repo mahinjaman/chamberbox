@@ -147,7 +147,7 @@ const Signup = () => {
                 const message = encodeURIComponent(
                   `Hi, I just signed up on ChamberBox. My Doctor ID is ${doctorCode}. Please approve my account.`
                 );
-                window.open(`https://wa.me/8801XXXXXXXXX?text=${message}`, "_blank");
+                window.open(`https://wa.me/8801601025502?text=${message}`, "_blank");
               }}
             >
               <MessageCircle className="w-4 h-4 text-green-600" />
