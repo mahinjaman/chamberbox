@@ -42,6 +42,23 @@ const TOPIC_ICONS: Record<string, typeof BookOpen> = {
   "Booking System": ListOrdered,
   "SMS & Notifications": Bell,
   "Staff Management": Users,
+  "/dashboard": BookOpen,
+  "/patients": Users,
+  "/queue": Clock,
+  "/prescriptions": FileText,
+  "/finances": CreditCard,
+  "/analytics": BarChart3,
+  "/settings": Settings,
+  "/profile": Globe,
+  "/integrations": Plug,
+};
+
+const formatTopicLabel = (topic: string) => {
+  if (!topic.startsWith("/")) return topic;
+  return topic
+    .replace(/^\//, "")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase()) || "General";
 };
 
 const getYouTubeEmbedUrl = (url: string) => {
@@ -59,6 +76,7 @@ const getYouTubeThumbnail = (url: string) => {
 };
 
 const getTopicIcon = (topic: string) => TOPIC_ICONS[topic] || BookOpen;
+const getTopicLabel = (topic: string) => formatTopicLabel(topic);
 
 export default function Tutorials() {
   const { tutorials, tutorialsLoading } = useVideoTutorials();
@@ -166,7 +184,7 @@ export default function Tutorials() {
                       )}
                     >
                       <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-                      <span className="flex-1 truncate">{topic}</span>
+                      <span className="flex-1 truncate">{getTopicLabel(topic)}</span>
                       <span className="text-xs tabular-nums opacity-60">{count}</span>
                     </button>
                   );
@@ -188,7 +206,7 @@ export default function Tutorials() {
                       const Icon = getTopicIcon(selectedTopic);
                       return <Icon className="w-4 h-4 text-primary" />;
                     })()}
-                    <h2 className="text-base font-semibold text-foreground">{selectedTopic}</h2>
+                    <h2 className="text-base font-semibold text-foreground">{getTopicLabel(selectedTopic)}</h2>
                     <span className="text-xs text-muted-foreground">
                       {t.videosCount(filteredTutorials.length)}
                     </span>
@@ -211,7 +229,7 @@ export default function Tutorials() {
                       <section key={topic}>
                         <div className="flex items-center gap-2 mb-4">
                           <Icon className="w-4 h-4 text-primary" />
-                          <h2 className="text-sm font-semibold text-foreground">{topic}</h2>
+                          <h2 className="text-sm font-semibold text-foreground">{getTopicLabel(topic)}</h2>
                           <span className="text-xs text-muted-foreground">
                             {t.videosCount(tuts.length)}
                           </span>

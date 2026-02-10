@@ -57,6 +57,23 @@ const TOPIC_ICONS: Record<string, typeof LayoutDashboard> = {
   "Booking System": ListOrdered,
   "SMS & Notifications": HelpCircle,
   "Staff Management": Users,
+  "/dashboard": LayoutDashboard,
+  "/patients": Users,
+  "/queue": Clock,
+  "/prescriptions": FileText,
+  "/finances": CreditCard,
+  "/analytics": BarChart3,
+  "/settings": Settings,
+  "/profile": Globe,
+  "/integrations": Plug,
+};
+
+const formatTopicLabel = (topic: string) => {
+  if (!topic.startsWith("/")) return topic;
+  return topic
+    .replace(/^\//, "")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase()) || "General";
 };
 
 const getYouTubeEmbedUrl = (url: string) => {
@@ -148,13 +165,9 @@ const HelpCenter = () => {
     return groups;
   }, [filteredTutorials]);
 
-  const getCategoryLabel = (topic: string) => {
-    return topic; // topic name is the label itself
-  };
+  const getCategoryLabel = (topic: string) => formatTopicLabel(topic);
 
-  const getCategoryIcon = (topic: string) => {
-    return TOPIC_ICONS[topic] || HelpCircle;
-  };
+  const getCategoryIcon = (topic: string) => TOPIC_ICONS[topic] || BookOpen;
 
   return (
     <div className="min-h-screen bg-background">
