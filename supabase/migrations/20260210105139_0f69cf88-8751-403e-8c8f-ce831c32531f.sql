@@ -1,0 +1,1 @@
+ALTER TABLE public.subscription_plans ADD COLUMN show_on_landing boolean DEFAULT true;
