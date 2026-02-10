@@ -5,9 +5,9 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, UserCheck, MessageSquare, CreditCard, AlertTriangle, DatabaseBackup, Loader2 } from "lucide-react";
+import { Users, UserCheck, MessageSquare, CreditCard, AlertTriangle, DatabaseBackup, Loader2, Inbox } from "lucide-react";
 import { Link } from "react-router-dom";
-import { addDays } from "date-fns";
+import { addDays, formatDistanceToNow } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -17,6 +17,20 @@ export default function AdminDashboard() {
   const { doctors, doctorsLoading } = useAdmin();
   const { tickets, ticketsLoading } = useSupportTickets();
   const [isExporting, setIsExporting] = useState(false);
+
+  // Fetch recent contact messages
+  const { data: contactMessages, isLoading: contactsLoading } = useQuery({
+    queryKey: ["recentContactMessages"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("contact_messages")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      return data;
+    },
+  });
 
   // Check if user is super_admin
   const { data: isSuperAdmin } = useQuery({
@@ -114,10 +128,12 @@ export default function AdminDashboard() {
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <Link to="/admin/doctors">
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+            <Card className="hover:shadow-md transition-all cursor-pointer bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Doctors</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+                  <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -131,10 +147,12 @@ export default function AdminDashboard() {
           </Link>
 
           <Link to="/admin/doctors">
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+            <Card className="hover:shadow-md transition-all cursor-pointer bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Approved Doctors</CardTitle>
-                <UserCheck className="h-4 w-4 text-muted-foreground" />
+                <div className="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
+                  <UserCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -148,10 +166,12 @@ export default function AdminDashboard() {
           </Link>
 
           <Link to="/admin/subscriptions">
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+            <Card className="hover:shadow-md transition-all cursor-pointer bg-violet-50 dark:bg-violet-950/30 border-violet-200 dark:border-violet-800/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Active Subscriptions</CardTitle>
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                <div className="h-8 w-8 rounded-full bg-violet-100 dark:bg-violet-900/50 flex items-center justify-center">
+                  <CreditCard className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -165,10 +185,12 @@ export default function AdminDashboard() {
           </Link>
 
           <Link to="/admin/tickets">
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+            <Card className="hover:shadow-md transition-all cursor-pointer bg-cyan-50 dark:bg-cyan-950/30 border-cyan-200 dark:border-cyan-800/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Open Tickets</CardTitle>
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                <div className="h-8 w-8 rounded-full bg-cyan-100 dark:bg-cyan-900/50 flex items-center justify-center">
+                  <MessageSquare className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -182,10 +204,12 @@ export default function AdminDashboard() {
           </Link>
 
           <Link to="/admin/subscriptions?filter=expiring">
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer border-warning/50">
+            <Card className="hover:shadow-md transition-all cursor-pointer bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
-                <AlertTriangle className="h-4 w-4 text-warning" />
+                <div className="h-8 w-8 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-warning">
@@ -200,7 +224,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader>
               <CardTitle>Pending Approvals</CardTitle>
@@ -257,6 +281,44 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <p className="text-muted-foreground">No open tickets</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Contact Messages */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Inbox className="h-4 w-4" />
+                Recent Messages
+              </CardTitle>
+              <Link to="/admin/contacts" className="text-xs text-primary hover:underline">
+                View all
+              </Link>
+            </CardHeader>
+            <CardContent>
+              {contactsLoading ? (
+                <p className="text-muted-foreground">Loading...</p>
+              ) : contactMessages && contactMessages.length > 0 ? (
+                <div className="space-y-2">
+                  {contactMessages.map((msg) => (
+                    <div key={msg.id} className="p-2 rounded-lg bg-muted/50">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="font-medium text-sm line-clamp-1">{msg.name}</p>
+                        {!msg.is_read && (
+                          <span className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-xs font-medium text-foreground line-clamp-1">{msg.subject}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{msg.message}</p>
+                      <p className="text-xs text-muted-foreground/60 mt-1">
+                        {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">No messages yet</p>
               )}
             </CardContent>
           </Card>
