@@ -43,19 +43,20 @@ interface VideoTutorial {
   is_active: boolean;
 }
 
-const PAGE_CATEGORIES: Record<string, { en: string; bn: string; icon: typeof LayoutDashboard }> = {
-  "/dashboard": { en: "Dashboard", bn: "ড্যাশবোর্ড", icon: LayoutDashboard },
-  "/dashboard/patients": { en: "Patients", bn: "রোগী", icon: Users },
-  "/dashboard/patients/new": { en: "New Patient", bn: "নতুন রোগী", icon: Users },
-  "/dashboard/queue": { en: "Queue Management", bn: "কিউ ম্যানেজমেন্ট", icon: Clock },
-  "/dashboard/queue-status": { en: "Queue Status", bn: "কিউ স্ট্যাটাস", icon: ListOrdered },
-  "/dashboard/prescriptions": { en: "Prescriptions", bn: "প্রেসক্রিপশন", icon: FileText },
-  "/dashboard/finances": { en: "Finances", bn: "আর্থিক", icon: CreditCard },
-  "/dashboard/analytics": { en: "Analytics", bn: "অ্যানালিটিক্স", icon: BarChart3 },
-  "/dashboard/settings": { en: "Settings", bn: "সেটিংস", icon: Settings },
-  "/dashboard/profile": { en: "Public Profile", bn: "পাবলিক প্রোফাইল", icon: Globe },
-  "/dashboard/integrations": { en: "Integrations", bn: "ইন্টিগ্রেশন", icon: Plug },
-  "/queue-status": { en: "Queue Status (Public)", bn: "কিউ স্ট্যাটাস (পাবলিক)", icon: ListOrdered },
+// Topic-based icons (page_path now stores topic names, not URL paths)
+const TOPIC_ICONS: Record<string, typeof LayoutDashboard> = {
+  "Getting Started": BookOpen,
+  "Patient Management": Users,
+  "Queue Management": Clock,
+  "Prescriptions": FileText,
+  "Finances": CreditCard,
+  "Analytics": BarChart3,
+  "Settings": Settings,
+  "Public Profile": Globe,
+  "Integrations": Plug,
+  "Booking System": ListOrdered,
+  "SMS & Notifications": HelpCircle,
+  "Staff Management": Users,
 };
 
 const getYouTubeEmbedUrl = (url: string) => {
@@ -79,9 +80,10 @@ const helpText = {
     searchPlaceholder: "Search tutorials...",
     allCategories: "All",
     noResults: "No tutorials found",
-    noResultsDesc: "Try a different search or category filter.",
+    noResultsDesc: "Try a different search or topic filter.",
     backToHome: "Back to Home",
     videosCount: (n: number) => `${n} video${n !== 1 ? "s" : ""}`,
+    topics: "Topics",
   },
   bn: {
     title: "হেল্প সেন্টার",
@@ -89,9 +91,10 @@ const helpText = {
     searchPlaceholder: "টিউটোরিয়াল খুঁজুন...",
     allCategories: "সব",
     noResults: "কোনো টিউটোরিয়াল পাওয়া যায়নি",
-    noResultsDesc: "অন্য সার্চ বা ক্যাটাগরি ফিল্টার চেষ্টা করুন।",
+    noResultsDesc: "অন্য সার্চ বা টপিক ফিল্টার চেষ্টা করুন।",
     backToHome: "হোমে ফিরে যান",
     videosCount: (n: number) => `${n}টি ভিডিও`,
+    topics: "টপিক",
   },
 };
 
@@ -145,13 +148,12 @@ const HelpCenter = () => {
     return groups;
   }, [filteredTutorials]);
 
-  const getCategoryLabel = (path: string) => {
-    const cat = PAGE_CATEGORIES[path];
-    return cat ? cat[language] || cat.en : path;
+  const getCategoryLabel = (topic: string) => {
+    return topic; // topic name is the label itself
   };
 
-  const getCategoryIcon = (path: string) => {
-    return PAGE_CATEGORIES[path]?.icon || HelpCircle;
+  const getCategoryIcon = (topic: string) => {
+    return TOPIC_ICONS[topic] || HelpCircle;
   };
 
   return (
@@ -208,7 +210,7 @@ const HelpCenter = () => {
             {/* Sidebar - Category Filter */}
             <aside className="md:w-56 flex-shrink-0">
               <h3 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-3">
-                {language === "bn" ? "ক্যাটাগরি" : "Categories"}
+                {t.topics}
               </h3>
               <nav className="space-y-1">
                 <button
