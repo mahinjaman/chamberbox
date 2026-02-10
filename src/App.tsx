@@ -55,6 +55,7 @@ import DoctorDetail from "./pages/admin/DoctorDetail";
 import PaymentAnalytics from "./pages/admin/PaymentAnalytics";
 import AdminSmsConfig from "./pages/admin/AdminSmsConfig";
 import MedicineManagement from "./pages/admin/MedicineManagement";
+import ContactMessages from "./pages/admin/ContactMessages";
 
 // Staff Pages
 import StaffManagement from "./pages/StaffManagement";
@@ -417,6 +418,14 @@ const App = () => (
                element={
                  <ProtectedRoute>
                    <MedicineManagement />
+                 </ProtectedRoute>
+               }
+             />
+             <Route
+               path="/admin/contacts"
+               element={
+                 <ProtectedRoute>
+                   <ContactMessages />
                  </ProtectedRoute>
                }
              />

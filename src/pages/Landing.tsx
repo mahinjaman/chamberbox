@@ -4,6 +4,7 @@ import { Features } from "@/components/landing/Features";
 import Testimonials from "@/components/landing/Testimonials";
 import Pricing from "@/components/landing/Pricing";
 import PaymentMethods from "@/components/landing/PaymentMethods";
+import ContactSection from "@/components/landing/ContactSection";
 import Footer from "@/components/landing/Footer";
 
 const Landing = () => {
@@ -15,6 +16,7 @@ const Landing = () => {
       <Testimonials />
       <Pricing />
       <PaymentMethods />
+      <ContactSection />
       <Footer />
     </div>
   );
