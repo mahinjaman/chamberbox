@@ -6,7 +6,7 @@ import {
   MessageSquare, 
   BarChart3,
   Smartphone,
-  Globe
+  CalendarCheck
 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
@@ -22,7 +22,7 @@ const featuresData = {
       { icon: MessageSquare, title: "SMS Notifications", description: "Automated appointment reminders, follow-up alerts, and due payment notifications." },
       { icon: BarChart3, title: "Practice Analytics", description: "Monthly trends, patient retention rates, and revenue insights to grow your practice." },
       { icon: Smartphone, title: "Mobile-First Design", description: "Works beautifully on any smartphone. Large buttons and fonts for easy use." },
-      { icon: Globe, title: "Works Offline", description: "No internet? No problem. Core features work offline and sync when connected." },
+      { icon: CalendarCheck, title: "Public Profile & Booking", description: "Share your professional profile online. Patients can book serials directly from your public page." },
     ],
   },
   bn: {
@@ -36,7 +36,7 @@ const featuresData = {
       { icon: MessageSquare, title: "SMS নোটিফিকেশন", description: "স্বয়ংক্রিয় অ্যাপয়েন্টমেন্ট রিমাইন্ডার, ফলো-আপ অ্যালার্ট এবং বকেয়া পেমেন্ট নোটিফিকেশন।" },
       { icon: BarChart3, title: "প্র্যাকটিস অ্যানালিটিক্স", description: "মাসিক ট্রেন্ড, রোগী ধরে রাখার হার এবং আয়ের ইনসাইট আপনার প্র্যাকটিস বাড়াতে।" },
       { icon: Smartphone, title: "মোবাইল-ফার্স্ট ডিজাইন", description: "যেকোনো স্মার্টফোনে সুন্দরভাবে কাজ করে। সহজ ব্যবহারের জন্য বড় বাটন এবং ফন্ট।" },
-      { icon: Globe, title: "অফলাইনে কাজ করে", description: "ইন্টারনেট নেই? সমস্যা নেই। মূল ফিচারগুলো অফলাইনে কাজ করে এবং কানেক্ট হলে সিঙ্ক হয়।" },
+      { icon: CalendarCheck, title: "পাবলিক প্রোফাইল ও বুকিং", description: "আপনার পেশাদার প্রোফাইল অনলাইনে শেয়ার করুন। রোগীরা সরাসরি আপনার পাবলিক পেজ থেকে সিরিয়াল বুক করতে পারবে।" },
     ],
   },
 };
