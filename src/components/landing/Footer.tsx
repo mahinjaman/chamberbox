@@ -58,14 +58,14 @@ const Footer = () => {
             <h4 className="text-sidebar-foreground font-semibold mb-4">{t.product}</h4>
             <ul className="space-y-3">
               <li>
-                <a href="#features" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
+                <Link to="/#features" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
                   {t.features}
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#pricing" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
+                <Link to="/#pricing" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
                   {t.pricing}
-                </a>
+                </Link>
               </li>
               <li>
                 <Link to="/login" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
@@ -84,9 +84,9 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a href="#contact" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
+                <Link to="/#contact" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
                   {t.contactUs}
-                </a>
+                </Link>
               </li>
               <li>
                 <Link to="/privacy" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
