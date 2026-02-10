@@ -79,9 +79,9 @@ const Footer = () => {
             <h4 className="text-sidebar-foreground font-semibold mb-4">{t.support}</h4>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
+                <Link to="/help" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
                   {t.helpCenter}
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
