@@ -1299,6 +1299,7 @@ export type Database = {
           price_monthly: number | null
           price_quarterly: number | null
           price_yearly: number | null
+          show_on_landing: boolean | null
           sms_credits: number | null
           tier: Database["public"]["Enums"]["subscription_tier"]
           updated_at: string
@@ -1326,6 +1327,7 @@ export type Database = {
           price_monthly?: number | null
           price_quarterly?: number | null
           price_yearly?: number | null
+          show_on_landing?: boolean | null
           sms_credits?: number | null
           tier: Database["public"]["Enums"]["subscription_tier"]
           updated_at?: string
@@ -1353,6 +1355,7 @@ export type Database = {
           price_monthly?: number | null
           price_quarterly?: number | null
           price_yearly?: number | null
+          show_on_landing?: boolean | null
           sms_credits?: number | null
           tier?: Database["public"]["Enums"]["subscription_tier"]
           updated_at?: string

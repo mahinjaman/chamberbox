@@ -27,6 +27,7 @@ export interface SubscriptionPlan {
   discount_biannual: number;
   discount_yearly: number;
   currency: string;
+  show_on_landing: boolean;
   created_at: string;
   updated_at: string;
 }

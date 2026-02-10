@@ -21,7 +21,7 @@ import { useSubscriptionAdmin, SubscriptionPlan } from "@/hooks/useSubscription"
 import { 
   Loader2, Edit, Save, Crown, Users, FileText, MessageSquare, 
   Building2, UserPlus, Check, X, Sparkles, Globe, Bell, 
-  BarChart3, Download, Palette, Infinity, Percent
+  BarChart3, Download, Palette, Infinity, Percent, Eye
 } from "lucide-react";
 
 export default function PlanConfiguration() {
@@ -58,6 +58,7 @@ export default function PlanConfiguration() {
         discount_quarterly: Number(formData.discount_quarterly) || 5,
         discount_biannual: Number(formData.discount_biannual) || 10,
         discount_yearly: Number(formData.discount_yearly) || 17,
+        show_on_landing: formData.show_on_landing,
       },
     });
 
@@ -127,7 +128,7 @@ export default function PlanConfiguration() {
           {plans.map((plan) => {
             const config = tierConfig[plan.tier] || tierConfig.basic;
             return (
-              <Card key={plan.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
+              <Card key={plan.id} className={`overflow-hidden group hover:shadow-lg transition-shadow ${!(plan as any).show_on_landing ? 'opacity-60' : ''}`}>
                 {/* Header with gradient */}
                 <div className={`bg-gradient-to-r ${config.color} p-4 text-white`}>
                   <div className="flex items-center justify-between">
@@ -135,15 +136,30 @@ export default function PlanConfiguration() {
                       <Crown className="w-5 h-5" />
                       <h3 className="font-bold text-lg">{plan.name}</h3>
                     </div>
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      className="opacity-90 hover:opacity-100"
-                      onClick={() => handleEditPlan(plan)}
-                    >
-                      <Edit className="w-3 h-3 mr-1" />
-                      Edit
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5" title="Show on landing page">
+                        <Eye className="w-3.5 h-3.5 opacity-75" />
+                        <Switch 
+                          checked={(plan as any).show_on_landing !== false}
+                          onCheckedChange={(checked) => {
+                            updatePlan.mutate({
+                              tier: plan.tier,
+                              updates: { show_on_landing: checked } as any,
+                            });
+                          }}
+                          className="scale-75"
+                        />
+                      </div>
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        className="opacity-90 hover:opacity-100"
+                        onClick={() => handleEditPlan(plan)}
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Edit
+                      </Button>
+                    </div>
                   </div>
                   <p className="text-sm opacity-90 mt-1">{plan.description}</p>
                   <div className="mt-3 flex items-baseline gap-1">
