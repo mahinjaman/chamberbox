@@ -26,7 +26,7 @@ export const Navbar = () => {
           <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
             {t.nav.pricing}
           </a>
-          <a href="#about" className="text-muted-foreground hover:text-foreground transition-colors">
+          <a href="#contact" className="text-muted-foreground hover:text-foreground transition-colors">
             {t.nav.about}
           </a>
           <Link to="/queue-status" className="text-muted-foreground hover:text-foreground transition-colors">
@@ -74,7 +74,7 @@ export const Navbar = () => {
               {t.nav.pricing}
             </a>
             <a
-              href="#about"
+              href="#contact"
               className="text-foreground py-2"
               onClick={() => setMobileMenuOpen(false)}
             >
