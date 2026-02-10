@@ -114,6 +114,7 @@ export const DashboardSidebar = () => {
   ];
 
   const settingsSubItems = [
+    { title: language === "bn" ? "সাবস্ক্রিপশন ও প্রোফাইল" : "Subscription & Profile", url: "/dashboard/settings", icon: Shield },
     { title: t.nav.integrations, url: "/dashboard/integrations", icon: Plug },
     { title: t.nav.staffManagement, url: "/dashboard/staff", icon: UserCog },
     { title: language === "bn" ? "পেমেন্ট হিস্ট্রি" : "Payment History", url: "/dashboard/payments", icon: Receipt },
@@ -220,11 +221,14 @@ export const DashboardSidebar = () => {
               <Collapsible open={settingsMenuOpen} onOpenChange={setSettingsMenuOpen} className="group/settings">
                 <SidebarMenuItem>
                   <div className="flex items-center w-full">
-                    <SidebarMenuButton asChild tooltip={t.nav.settings} isActive={isActive("/dashboard/settings") || isSettingsRoute} className="flex-1">
-                      <Link to="/dashboard/settings">
-                        <Settings className="w-5 h-5" />
-                        <span>{t.nav.settings}</span>
-                      </Link>
+                    <SidebarMenuButton 
+                      tooltip={t.nav.settings} 
+                      isActive={isSettingsRoute} 
+                      className="flex-1 cursor-pointer"
+                      onClick={() => setSettingsMenuOpen(!settingsMenuOpen)}
+                    >
+                      <Settings className="w-5 h-5" />
+                      <span>{t.nav.settings}</span>
                     </SidebarMenuButton>
                     <CollapsibleTrigger asChild>
                       <button className="p-2 hover:bg-sidebar-accent rounded-md transition-colors" onClick={(e) => e.stopPropagation()}>
