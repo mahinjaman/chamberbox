@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Facebook } from "lucide-react";
 import chamberboxIcon from "@/assets/chamberbox-icon.png";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
@@ -48,7 +49,18 @@ const Footer = () => {
             <p className="text-sidebar-foreground/70 max-w-md mb-6">
               {t.description}
             </p>
-            <p className="text-sidebar-foreground/50 text-sm">
+            <div className="flex items-center gap-3 mt-4">
+              <a
+                href="https://www.facebook.com/chamberboxbd"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-sidebar-border text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-4 h-4" />
+              </a>
+            </div>
+            <p className="text-sidebar-foreground/50 text-sm mt-4">
               {t.madeWith}
             </p>
           </div>
