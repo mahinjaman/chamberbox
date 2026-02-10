@@ -33,6 +33,7 @@ import { Button } from "@/components/ui/button";
  import { AdminStaffPermissions } from "@/hooks/useAdminStaff";
 import { useProfile } from "@/hooks/useProfile";
 import { cn } from "@/lib/utils";
+import chamberboxIcon from "@/assets/chamberbox-icon.png";
 
 const mainNavItems = [
   { title: "Overview", url: "/admin", icon: LayoutDashboard },
@@ -95,13 +96,11 @@ const mainNavItems = [
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="p-4">
         <Link to="/admin" className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center flex-shrink-0 shadow-md">
-            <Shield className="text-primary-foreground w-5 h-5" />
-          </div>
+          <img src={chamberboxIcon} alt="ChamberBox" className="w-8 h-8 rounded-lg flex-shrink-0" />
           {!collapsed && (
             <div>
-              <span className="font-bold text-lg text-sidebar-foreground">Chamberbox</span>
-              <p className="text-xs text-sidebar-foreground/60 -mt-0.5">Crafters</p>
+              <span className="font-bold text-lg text-amber-100">Chamberbox</span>
+              <p className="text-xs text-amber-200/60 -mt-0.5">Crafters</p>
             </div>
           )}
         </Link>
