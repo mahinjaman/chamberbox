@@ -128,17 +128,17 @@ export default function PlanConfiguration() {
           {plans.map((plan) => {
             const config = tierConfig[plan.tier] || tierConfig.basic;
             return (
-              <Card key={plan.id} className={`overflow-hidden group hover:shadow-lg transition-shadow ${!(plan as any).show_on_landing ? 'opacity-60' : ''}`}>
-                {/* Header with gradient */}
-                <div className={`bg-gradient-to-r ${config.color} p-4 text-white`}>
+              <Card key={plan.id} className={`overflow-hidden group hover:shadow-lg transition-shadow bg-background ${!(plan as any).show_on_landing ? 'opacity-60' : ''}`}>
+                {/* Header */}
+                <div className="p-4 border-b border-border">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Crown className="w-5 h-5" />
-                      <h3 className="font-bold text-lg">{plan.name}</h3>
+                      <Crown className={`w-5 h-5 ${config.icon}`} />
+                      <h3 className="font-bold text-lg text-foreground">{plan.name}</h3>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1.5" title="Show on landing page">
-                        <Eye className="w-3.5 h-3.5 opacity-75" />
+                        <Eye className="w-3.5 h-3.5 text-muted-foreground" />
                         <Switch 
                           checked={(plan as any).show_on_landing !== false}
                           onCheckedChange={(checked) => {
@@ -151,9 +151,8 @@ export default function PlanConfiguration() {
                         />
                       </div>
                       <Button 
-                        variant="secondary" 
+                        variant="outline" 
                         size="sm"
-                        className="opacity-90 hover:opacity-100"
                         onClick={() => handleEditPlan(plan)}
                       >
                         <Edit className="w-3 h-3 mr-1" />
@@ -161,11 +160,11 @@ export default function PlanConfiguration() {
                       </Button>
                     </div>
                   </div>
-                  <p className="text-sm opacity-90 mt-1">{plan.description}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
                   <div className="mt-3 flex items-baseline gap-1">
-                    <span className="text-2xl font-bold">৳{plan.price_monthly.toLocaleString()}</span>
-                    <span className="opacity-75">/mo</span>
-                    <span className="text-xs opacity-60 ml-2">
+                    <span className="text-2xl font-bold text-foreground">৳{plan.price_monthly.toLocaleString()}</span>
+                    <span className="text-muted-foreground">/mo</span>
+                    <span className="text-xs text-muted-foreground ml-2">
                       or ৳{plan.price_yearly.toLocaleString()}/yr
                     </span>
                   </div>
