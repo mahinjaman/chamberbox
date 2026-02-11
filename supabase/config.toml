@@ -2,3 +2,6 @@ project_id = "dounpzdhnizerjpigyxf"
 
 [functions.export-database]
 verify_jwt = false
+
+[functions.export-schema]
+verify_jwt = false

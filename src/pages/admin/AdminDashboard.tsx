@@ -5,7 +5,7 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, UserCheck, MessageSquare, CreditCard, AlertTriangle, DatabaseBackup, Loader2, Inbox } from "lucide-react";
+import { Users, UserCheck, MessageSquare, CreditCard, AlertTriangle, DatabaseBackup, Loader2, Inbox, FileCode2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { addDays, formatDistanceToNow } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
@@ -17,6 +17,7 @@ export default function AdminDashboard() {
   const { doctors, doctorsLoading } = useAdmin();
   const { tickets, ticketsLoading } = useSupportTickets();
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingSchema, setIsExportingSchema] = useState(false);
 
   // Fetch recent contact messages
   const { data: contactMessages, isLoading: contactsLoading } = useQuery({
@@ -70,6 +71,35 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSchemaExport = async () => {
+    setIsExportingSchema(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("export-schema", {
+        headers: { Accept: "application/sql" },
+      });
+      if (error) throw error;
+
+      // data could be string (SQL) or object with error
+      const sqlContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+      const blob = new Blob([sqlContent], { type: "application/sql" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `chamberbox_schema_${new Date().toISOString().split("T")[0]}.sql`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Schema downloaded successfully!");
+    } catch (err: any) {
+      console.error("Schema export failed:", err);
+      toast.error("Schema export failed: " + (err.message || "Unknown error"));
+    } finally {
+      setIsExportingSchema(false);
+    }
+  };
+
+
   const now = new Date();
   const sevenDaysFromNow = addDays(now, 7);
 
@@ -101,6 +131,7 @@ export default function AdminDashboard() {
       <div className="space-y-6">
         {/* Super Admin: Database Backup */}
         {isSuperAdmin && (
+          <>
           <Card className="border-primary/30 bg-primary/5">
             <CardContent className="flex items-center justify-between py-4">
               <div className="flex items-center gap-3">
@@ -125,6 +156,32 @@ export default function AdminDashboard() {
               </Button>
             </CardContent>
           </Card>
+
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="flex items-center justify-between py-4">
+              <div className="flex items-center gap-3">
+                <FileCode2 className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-medium">Schema Export</p>
+                  <p className="text-sm text-muted-foreground">Download table schema as .sql (no data)</p>
+                </div>
+              </div>
+              <Button onClick={handleSchemaExport} disabled={isExportingSchema} size="sm" variant="outline">
+                {isExportingSchema ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <FileCode2 className="h-4 w-4 mr-2" />
+                    Download Schema
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+          </>
         )}
 
         {/* Stats Grid */}
