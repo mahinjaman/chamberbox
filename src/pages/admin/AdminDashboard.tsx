@@ -1,23 +1,16 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
-import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, UserCheck, MessageSquare, CreditCard, AlertTriangle, DatabaseBackup, Loader2, Inbox, FileCode2 } from "lucide-react";
+import { Users, UserCheck, MessageSquare, CreditCard, AlertTriangle, Inbox } from "lucide-react";
 import { Link } from "react-router-dom";
 import { addDays, formatDistanceToNow } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { toast } from "sonner";
 
 export default function AdminDashboard() {
-  const { user } = useAuth();
   const { doctors, doctorsLoading } = useAdmin();
   const { tickets, ticketsLoading } = useSupportTickets();
-  const [isExporting, setIsExporting] = useState(false);
-  const [isExportingSchema, setIsExportingSchema] = useState(false);
 
   // Fetch recent contact messages
   const { data: contactMessages, isLoading: contactsLoading } = useQuery({
@@ -33,72 +26,6 @@ export default function AdminDashboard() {
       return data;
     },
   });
-
-  // Check if user is super_admin
-  const { data: isSuperAdmin } = useQuery({
-    queryKey: ["isSuperAdmin", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return false;
-      const { data, error } = await supabase
-        .rpc("has_role", { _user_id: user.id, _role: "super_admin" });
-      if (error) return false;
-      return data as boolean;
-    },
-    enabled: !!user?.id,
-  });
-
-  const handleBackup = async () => {
-    setIsExporting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("export-database");
-      if (error) throw error;
-
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `chamberbox_backup_${new Date().toISOString().split("T")[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success("Database backup downloaded successfully!");
-    } catch (err: any) {
-      console.error("Backup failed:", err);
-      toast.error("Backup failed: " + (err.message || "Unknown error"));
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const handleSchemaExport = async () => {
-    setIsExportingSchema(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("export-schema", {
-        headers: { Accept: "application/sql" },
-      });
-      if (error) throw error;
-
-      // data could be string (SQL) or object with error
-      const sqlContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
-      const blob = new Blob([sqlContent], { type: "application/sql" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `chamberbox_schema_${new Date().toISOString().split("T")[0]}.sql`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success("Schema downloaded successfully!");
-    } catch (err: any) {
-      console.error("Schema export failed:", err);
-      toast.error("Schema export failed: " + (err.message || "Unknown error"));
-    } finally {
-      setIsExportingSchema(false);
-    }
-  };
-
 
   const now = new Date();
   const sevenDaysFromNow = addDays(now, 7);
@@ -129,61 +56,6 @@ export default function AdminDashboard() {
       description="Overview of platform management"
     >
       <div className="space-y-6">
-        {/* Super Admin: Database Backup */}
-        {isSuperAdmin && (
-          <>
-          <Card className="border-primary/30 bg-primary/5">
-            <CardContent className="flex items-center justify-between py-4">
-              <div className="flex items-center gap-3">
-                <DatabaseBackup className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">Database Backup</p>
-                  <p className="text-sm text-muted-foreground">Download full database as JSON file</p>
-                </div>
-              </div>
-              <Button onClick={handleBackup} disabled={isExporting} size="sm">
-                {isExporting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Exporting...
-                  </>
-                ) : (
-                  <>
-                    <DatabaseBackup className="h-4 w-4 mr-2" />
-                    Download Backup
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-primary/30 bg-primary/5">
-            <CardContent className="flex items-center justify-between py-4">
-              <div className="flex items-center gap-3">
-                <FileCode2 className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">Schema Export</p>
-                  <p className="text-sm text-muted-foreground">Download table schema as .sql (no data)</p>
-                </div>
-              </div>
-              <Button onClick={handleSchemaExport} disabled={isExportingSchema} size="sm" variant="outline">
-                {isExportingSchema ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Exporting...
-                  </>
-                ) : (
-                  <>
-                    <FileCode2 className="h-4 w-4 mr-2" />
-                    Download Schema
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-          </>
-        )}
-
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <Link to="/admin/doctors">

@@ -13,7 +13,8 @@ import {
   Phone,
   BarChart3,
   Pill,
-  Inbox
+  Inbox,
+  DatabaseBackup,
 } from "lucide-react";
 import {
   Sidebar,
@@ -98,7 +99,10 @@ const getNavGroups = (permissions: AdminStaffPermissions | null): NavGroup[] => 
   if (permissions.canManageAdmins) {
     groups.push({
       label: "Administration",
-      items: [{ title: "Admin Users", url: "/admin/users", icon: UserCog }],
+      items: [
+        { title: "Admin Users", url: "/admin/users", icon: UserCog },
+        { title: "Backup", url: "/admin/backup", icon: DatabaseBackup },
+      ],
     });
   }
 
