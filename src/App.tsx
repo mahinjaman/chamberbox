@@ -57,6 +57,7 @@ import PaymentAnalytics from "./pages/admin/PaymentAnalytics";
 import AdminSmsConfig from "./pages/admin/AdminSmsConfig";
 import MedicineManagement from "./pages/admin/MedicineManagement";
 import ContactMessages from "./pages/admin/ContactMessages";
+import AdminBackup from "./pages/admin/AdminBackup";
 
 // Staff Pages
 import StaffManagement from "./pages/StaffManagement";
@@ -431,7 +432,14 @@ const App = () => (
                  </ProtectedRoute>
                }
              />
-
+             <Route
+               path="/admin/backup"
+               element={
+                 <ProtectedRoute>
+                   <AdminBackup />
+                 </ProtectedRoute>
+               }
+             />
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
