@@ -1832,6 +1832,7 @@ export type Database = {
           is_approved: boolean
         }[]
       }
+      exec_sql: { Args: { query: string }; Returns: Json }
       get_staff_doctor_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
