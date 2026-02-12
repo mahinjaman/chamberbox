@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePrescriptions, PrescriptionMedicine, PrescriptionInvestigation } from "@/hooks/usePrescriptions";
-import { useMedicines } from "@/hooks/useMedicines";
+import { useMedicines, MedicineInsert } from "@/hooks/useMedicines";
 import { useProfile } from "@/hooks/useProfile";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { InvestigationSelector } from "@/components/prescription/InvestigationSelector";
@@ -37,6 +37,8 @@ import {
   Pill,
   AlertTriangle,
   Crown,
+  Plus,
+  BookmarkPlus,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -82,8 +84,8 @@ export const PrescriptionModal = ({
   onSuccess,
 }: PrescriptionModalProps) => {
   const { profile } = useProfile();
-  const { templates, createPrescription, isCreating } = usePrescriptions();
-  const { searchMedicines } = useMedicines();
+  const { templates, createPrescription, saveTemplate, isCreating } = usePrescriptions();
+  const { searchMedicines, createMedicine } = useMedicines();
   const { checkLimit, isExpired } = useFeatureAccess();
   const prescriptionLimit = checkLimit("prescriptions");
 
@@ -95,6 +97,10 @@ export const PrescriptionModal = ({
   const [language, setLanguage] = useState<"english" | "bangla">("english");
   const [symptoms, setSymptoms] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
+  const [templateName, setTemplateName] = useState("");
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [customMedicineName, setCustomMedicineName] = useState("");
+  const [showAddCustom, setShowAddCustom] = useState(false);
 
   const searchResults = searchMedicines(medicineSearch);
 
@@ -167,6 +173,32 @@ export const PrescriptionModal = ({
     setSymptoms("");
     setDiagnosis("");
     setMedicineSearch("");
+    setTemplateName("");
+    setShowSaveTemplate(false);
+    setShowAddCustom(false);
+    setCustomMedicineName("");
+  };
+
+  const handleAddCustomMedicine = async () => {
+    if (!customMedicineName.trim()) return;
+    const med = await createMedicine({
+      brand_name: customMedicineName.trim(),
+      generic_name: customMedicineName.trim(),
+    });
+    addMedicine(med);
+    setCustomMedicineName("");
+    setShowAddCustom(false);
+  };
+
+  const handleSaveTemplate = () => {
+    if (!templateName.trim() || selectedMedicines.length === 0) return;
+    saveTemplate({
+      name: templateName.trim(),
+      medicines: selectedMedicines,
+      advice: advice || undefined,
+    });
+    setTemplateName("");
+    setShowSaveTemplate(false);
   };
 
   const handleClose = () => {
@@ -293,6 +325,30 @@ export const PrescriptionModal = ({
                       <Badge variant="outline">{m.generic_name}</Badge>
                     </button>
                   ))}
+                </div>
+              )}
+              {medicineSearch && medicineSearch.length >= 2 && searchResults.length === 0 && (
+                <div className="border rounded-md p-3 text-center">
+                  <p className="text-sm text-muted-foreground mb-2">No medicines found for "{medicineSearch}"</p>
+                  {!showAddCustom ? (
+                    <Button variant="outline" size="sm" onClick={() => { setShowAddCustom(true); setCustomMedicineName(medicineSearch); }}>
+                      <Plus className="mr-1 h-3 w-3" />
+                      Add as custom medicine
+                    </Button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Medicine name"
+                        value={customMedicineName}
+                        onChange={(e) => setCustomMedicineName(e.target.value)}
+                        className="flex-1"
+                      />
+                      <Button size="sm" onClick={handleAddCustomMedicine}>Add</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setShowAddCustom(false)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -424,6 +480,33 @@ export const PrescriptionModal = ({
                     </Button>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Save as Template */}
+            {selectedMedicines.length > 0 && (
+              <div className="space-y-2">
+                {!showSaveTemplate ? (
+                  <Button variant="outline" size="sm" onClick={() => setShowSaveTemplate(true)}>
+                    <BookmarkPlus className="mr-1 h-4 w-4" />
+                    Save as Template
+                  </Button>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Template name..."
+                      value={templateName}
+                      onChange={(e) => setTemplateName(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button size="sm" onClick={handleSaveTemplate} disabled={!templateName.trim()}>
+                      Save
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setShowSaveTemplate(false)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>
