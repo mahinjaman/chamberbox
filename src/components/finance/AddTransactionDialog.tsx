@@ -244,17 +244,26 @@ export const AddTransactionDialog = ({ open, onOpenChange }: AddTransactionDialo
             />
           </div>
 
-          <Button
-            onClick={handleSubmit}
-            disabled={!amount || !category || isAdding}
-            className="w-full"
-          >
-            {isAdding ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
-            ) : (
-              <>Add Transaction</>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!amount || !category || isAdding}
+              className="flex-1"
+            >
+              {isAdding ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
+              ) : (
+                <>Add Transaction</>
+              )}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
