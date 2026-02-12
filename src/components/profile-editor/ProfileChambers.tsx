@@ -47,6 +47,7 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
     selectedDays: [] as number[],
     start_time: "18:00",
     end_time: "21:00",
+    avg_consultation_minutes: 5,
   });
 
   const openNewChamber = () => {
@@ -66,6 +67,7 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
       selectedDays: [],
       start_time: "18:00",
       end_time: "21:00",
+      avg_consultation_minutes: 5,
     });
     setEditingChamber(null);
     setShowChamberDialog(true);
@@ -105,6 +107,7 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
       selectedDays,
       start_time: startTime,
       end_time: endTime,
+      avg_consultation_minutes: chamberSlots[0]?.slot_duration_minutes || 5,
     });
     setEditingChamber(chamber);
     setShowChamberDialog(true);
@@ -134,7 +137,7 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
         day_of_week: day,
         start_time: chamberForm.start_time,
         end_time: chamberForm.end_time,
-        slot_duration_minutes: 15,
+        slot_duration_minutes: chamberForm.avg_consultation_minutes,
         is_active: true,
       }));
       await upsertAvailability.mutateAsync(slots);
@@ -373,6 +376,10 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
                           <span className="text-muted-foreground">Max/Session:</span>
                           <span className="font-medium ml-2">{(chamber as any).max_patients_per_session || 30}</span>
                         </div>
+                        <div>
+                          <span className="text-muted-foreground">Avg. Time:</span>
+                          <span className="font-medium ml-2">{getChamberSlots(chamber.id)[0]?.slot_duration_minutes || 5} min</span>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -455,6 +462,21 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
               />
               <p className="text-xs text-muted-foreground">
                 Default patient limit for each session in this chamber
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Avg. Consultation Time (minutes)</Label>
+              <Input
+                type="number"
+                min="1"
+                max="60"
+                value={chamberForm.avg_consultation_minutes}
+                onChange={(e) => setChamberForm(prev => ({ ...prev, avg_consultation_minutes: Number(e.target.value) || 5 }))}
+                placeholder="5"
+              />
+              <p className="text-xs text-muted-foreground">
+                Average time per patient. Used to calculate estimated wait time for patients.
               </p>
             </div>
 

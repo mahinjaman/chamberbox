@@ -171,6 +171,7 @@ export const BookingSuccessCard = ({
           <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-sky-50 dark:from-emerald-900/20 dark:to-sky-900/20 border border-emerald-200 dark:border-emerald-800 text-center">
             <p className="text-xs text-muted-foreground">Expected Call Time</p>
             <p className="text-xl font-bold text-emerald-600">{timeDetails?.estimatedTime}</p>
+            <p className="text-[9px] text-muted-foreground/60 italic mt-0.5">⚠️ System-generated estimate. Follow doctor's schedule.</p>
           </div>
           
           {/* Details */}

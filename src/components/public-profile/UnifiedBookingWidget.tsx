@@ -423,6 +423,7 @@ export const UnifiedBookingWidget = ({ profile, chamber, onClose }: UnifiedBooki
                       <p className="text-[10px] text-muted-foreground">Expected Call Time</p>
                       <p className="text-lg font-bold text-emerald-600">{expectedTime}</p>
                       <p className="text-[10px] text-muted-foreground">Based on ~{avgMinutes} min per patient</p>
+                      <p className="text-[9px] text-muted-foreground/60 italic mt-0.5">⚠️ System-generated estimate. Follow doctor's schedule.</p>
                     </div>
                   </div>
                 );
