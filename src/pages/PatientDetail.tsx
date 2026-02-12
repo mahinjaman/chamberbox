@@ -334,17 +334,17 @@ const PatientDetail = () => {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="visits">
-              <TabsList>
+              <TabsList className="flex-wrap h-auto">
                 <TabsTrigger value="visits">
-                  <Clock className="mr-2 h-4 w-4" />
+                  <Clock className="mr-1.5 h-4 w-4" />
                   Visits ({visits.length})
                 </TabsTrigger>
                 <TabsTrigger value="prescriptions">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Prescriptions ({prescriptions.length})
+                  <FileText className="mr-1.5 h-4 w-4" />
+                  Rx ({prescriptions.length})
                 </TabsTrigger>
                 <TabsTrigger value="notes">
-                  <StickyNote className="mr-2 h-4 w-4" />
+                  <StickyNote className="mr-1.5 h-4 w-4" />
                   Notes ({notes.length})
                 </TabsTrigger>
               </TabsList>
