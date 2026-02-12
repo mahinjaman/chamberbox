@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Moon, Sun, Languages, Home } from 'lucide-react';
+import { Languages, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { QueueInputForm } from '@/components/queue-status/QueueInputForm';
 import { CurrentSerialCard } from '@/components/queue-status/CurrentSerialCard';
@@ -14,7 +14,6 @@ import { useQueueStatus } from '@/components/queue-status/useQueueStatus';
 import { translations } from '@/components/queue-status/types';
 
 const QueueStatus: React.FC = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [language, setLanguage] = useState<'en' | 'bn'>('en');
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
@@ -33,24 +32,18 @@ const QueueStatus: React.FC = () => {
 
   const t = translations[language];
 
-  // Initialize dark mode from system preference or localStorage
+  // Force light mode on this page
   useEffect(() => {
-    const savedTheme = localStorage.getItem('queue_theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const shouldBeDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
-    setIsDarkMode(shouldBeDark);
-    if (shouldBeDark) {
-      document.documentElement.classList.add('dark');
-    }
+    document.documentElement.classList.remove('dark');
+    return () => {
+      // Restore theme on unmount based on system/saved preference
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.documentElement.classList.add('dark');
+      }
+    };
   }, []);
-
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-    localStorage.setItem('queue_theme', newMode ? 'dark' : 'light');
-    document.documentElement.classList.toggle('dark', newMode);
-  };
 
   // Toggle language
   const toggleLanguage = () => {
@@ -165,18 +158,6 @@ const QueueStatus: React.FC = () => {
                 className="h-9 w-9"
               >
                 <Languages className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleDarkMode}
-                className="h-9 w-9"
-              >
-                {isDarkMode ? (
-                  <Sun className="h-4 w-4" />
-                ) : (
-                  <Moon className="h-4 w-4" />
-                )}
               </Button>
             </div>
           </div>
