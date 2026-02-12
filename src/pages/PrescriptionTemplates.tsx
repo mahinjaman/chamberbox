@@ -34,7 +34,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, FileText, Pill, Search, BookTemplate, X } from "lucide-react";
+import { Plus, Trash2, FileText, Pill, Search, BookTemplate, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const DURATION_PRESETS = [
@@ -59,7 +59,7 @@ const ADVICE_SHORTCUTS = [
 export default function PrescriptionTemplates() {
   const { language } = useLanguage();
   const { templates, saveTemplate, deleteTemplate, isLoading } = usePrescriptions();
-  const { searchMedicines, createMedicine } = useMedicines();
+  const { searchMedicines, createMedicine, isCreating: isCreatingMedicine } = useMedicines();
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -70,8 +70,10 @@ export default function PrescriptionTemplates() {
   const [selectedMedicines, setSelectedMedicines] = useState<PrescriptionMedicine[]>([]);
   const [selectedInvestigations, setSelectedInvestigations] = useState<PrescriptionInvestigation[]>([]);
   const [medicineSearch, setMedicineSearch] = useState("");
-  const [showAddCustom, setShowAddCustom] = useState(false);
-  const [customMedicineName, setCustomMedicineName] = useState("");
+  const [showAddMedicineForm, setShowAddMedicineForm] = useState(false);
+  const [newMedName, setNewMedName] = useState("");
+  const [newMedGeneric, setNewMedGeneric] = useState("");
+  const [newMedStrength, setNewMedStrength] = useState("");
 
   const medicineResults = searchMedicines(medicineSearch);
 
@@ -104,14 +106,24 @@ export default function PrescriptionTemplates() {
   };
 
   const handleAddCustomMedicine = async () => {
-    if (!customMedicineName.trim()) return;
-    const med = await createMedicine({
-      brand_name: customMedicineName.trim(),
-      generic_name: customMedicineName.trim(),
-    });
-    addMedicine(med);
-    setCustomMedicineName("");
-    setShowAddCustom(false);
+    if (!newMedName.trim() || !newMedGeneric.trim()) return;
+    try {
+      const med = await createMedicine({
+        brand_name: newMedName.trim(),
+        generic_name: newMedGeneric.trim(),
+        strength: newMedStrength.trim() || undefined,
+      });
+      if (med) {
+        addMedicine(med);
+      }
+    } catch {
+      // error handled by mutation
+    } finally {
+      setShowAddMedicineForm(false);
+      setNewMedName("");
+      setNewMedGeneric("");
+      setNewMedStrength("");
+    }
   };
 
   const handleSaveTemplate = () => {
@@ -139,9 +151,10 @@ export default function PrescriptionTemplates() {
     setNewTemplateAdvice("");
     setSelectedMedicines([]);
     setSelectedInvestigations([]);
-    setMedicineSearch("");
-    setShowAddCustom(false);
-    setCustomMedicineName("");
+    setShowAddMedicineForm(false);
+    setNewMedName("");
+    setNewMedGeneric("");
+    setNewMedStrength("");
   };
 
   const handleDeleteTemplate = () => {
@@ -270,8 +283,8 @@ export default function PrescriptionTemplates() {
                   onChange={(e) => setMedicineSearch(e.target.value)}
                 />
               </div>
-              {medicineSearch && medicineSearch.length >= 2 && medicineResults.length > 0 && (
-                <div className="border rounded-md max-h-40 overflow-y-auto">
+              {medicineSearch && medicineSearch.length >= 2 && (
+                <div className="border rounded-md max-h-48 overflow-y-auto">
                   {medicineResults.map((m) => (
                     <button
                       key={m.id}
@@ -285,24 +298,65 @@ export default function PrescriptionTemplates() {
                       <Badge variant="outline">{m.generic_name}</Badge>
                     </button>
                   ))}
-                </div>
-              )}
-              {medicineSearch && medicineSearch.length >= 2 && medicineResults.length === 0 && (
-                <div className="border rounded-md p-3 text-center">
-                  <p className="text-sm text-muted-foreground mb-2">"{medicineSearch}" পাওয়া যায়নি</p>
-                  {!showAddCustom ? (
-                    <Button variant="outline" size="sm" onClick={() => { setShowAddCustom(true); setCustomMedicineName(medicineSearch); }}>
-                      <Plus className="mr-1 h-3 w-3" />
-                      কাস্টম ওষুধ হিসেবে যোগ করুন
-                    </Button>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Input value={customMedicineName} onChange={(e) => setCustomMedicineName(e.target.value)} placeholder="Medicine name" className="flex-1" />
-                      <Button size="sm" onClick={handleAddCustomMedicine}>Add</Button>
-                      <Button size="sm" variant="ghost" onClick={() => setShowAddCustom(false)}><X className="h-3 w-3" /></Button>
-                    </div>
+                  {!showAddMedicineForm && (
+                    <button
+                      className="w-full text-left px-3 py-2 hover:bg-primary/5 border-t flex items-center gap-2 text-primary"
+                      onClick={() => {
+                        setShowAddMedicineForm(true);
+                        setNewMedName(medicineSearch);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span className="text-sm font-medium">Add "{medicineSearch}" as new medicine</span>
+                    </button>
                   )}
                 </div>
+              )}
+              {showAddMedicineForm && (
+                <Card className="border-primary/30 bg-primary/5">
+                  <CardContent className="py-3 space-y-2">
+                    <p className="text-sm font-medium">{language === "bn" ? "নতুন ওষুধ যোগ করুন" : "Add New Medicine"}</p>
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      <Input
+                        placeholder={language === "bn" ? "ব্র্যান্ড নাম *" : "Brand Name *"}
+                        value={newMedName}
+                        onChange={(e) => setNewMedName(e.target.value)}
+                      />
+                      <Input
+                        placeholder={language === "bn" ? "জেনেরিক/ক্যাটাগরি *" : "Generic/Category *"}
+                        value={newMedGeneric}
+                        onChange={(e) => setNewMedGeneric(e.target.value)}
+                      />
+                      <Input
+                        placeholder={language === "bn" ? "স্ট্রেংথ (যেমন ৫০০mg)" : "Strength (e.g. 500mg)"}
+                        value={newMedStrength}
+                        onChange={(e) => setNewMedStrength(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setShowAddMedicineForm(false);
+                          setNewMedName("");
+                          setNewMedGeneric("");
+                          setNewMedStrength("");
+                        }}
+                      >
+                        {language === "bn" ? "বাতিল" : "Cancel"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        disabled={!newMedName.trim() || !newMedGeneric.trim() || isCreatingMedicine}
+                        onClick={handleAddCustomMedicine}
+                      >
+                        {isCreatingMedicine && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                        {language === "bn" ? "যোগ করুন" : "Add & Use"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
             </div>
 

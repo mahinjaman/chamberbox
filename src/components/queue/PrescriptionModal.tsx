@@ -85,7 +85,7 @@ export const PrescriptionModal = ({
 }: PrescriptionModalProps) => {
   const { profile } = useProfile();
   const { templates, createPrescription, saveTemplate, isCreating } = usePrescriptions();
-  const { searchMedicines, createMedicine } = useMedicines();
+  const { searchMedicines, createMedicine, isCreating: isCreatingMedicine } = useMedicines();
   const { checkLimit, isExpired } = useFeatureAccess();
   const prescriptionLimit = checkLimit("prescriptions");
 
@@ -99,8 +99,10 @@ export const PrescriptionModal = ({
   const [diagnosis, setDiagnosis] = useState("");
   const [templateName, setTemplateName] = useState("");
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
-  const [customMedicineName, setCustomMedicineName] = useState("");
-  const [showAddCustom, setShowAddCustom] = useState(false);
+  const [showAddMedicineForm, setShowAddMedicineForm] = useState(false);
+  const [newMedName, setNewMedName] = useState("");
+  const [newMedGeneric, setNewMedGeneric] = useState("");
+  const [newMedStrength, setNewMedStrength] = useState("");
 
   const searchResults = searchMedicines(medicineSearch);
 
@@ -175,19 +177,31 @@ export const PrescriptionModal = ({
     setMedicineSearch("");
     setTemplateName("");
     setShowSaveTemplate(false);
-    setShowAddCustom(false);
-    setCustomMedicineName("");
+    setShowAddMedicineForm(false);
+    setNewMedName("");
+    setNewMedGeneric("");
+    setNewMedStrength("");
   };
 
   const handleAddCustomMedicine = async () => {
-    if (!customMedicineName.trim()) return;
-    const med = await createMedicine({
-      brand_name: customMedicineName.trim(),
-      generic_name: customMedicineName.trim(),
-    });
-    addMedicine(med);
-    setCustomMedicineName("");
-    setShowAddCustom(false);
+    if (!newMedName.trim() || !newMedGeneric.trim()) return;
+    try {
+      const med = await createMedicine({
+        brand_name: newMedName.trim(),
+        generic_name: newMedGeneric.trim(),
+        strength: newMedStrength.trim() || undefined,
+      });
+      if (med) {
+        addMedicine(med);
+      }
+    } catch {
+      // error handled by mutation onError
+    } finally {
+      setShowAddMedicineForm(false);
+      setNewMedName("");
+      setNewMedGeneric("");
+      setNewMedStrength("");
+    }
   };
 
   const handleSaveTemplate = () => {
@@ -301,8 +315,8 @@ export const PrescriptionModal = ({
                   onChange={(e) => setMedicineSearch(e.target.value)}
                 />
               </div>
-              {medicineSearch && searchResults.length > 0 && (
-                <div className="border rounded-md max-h-40 overflow-y-auto">
+              {medicineSearch && medicineSearch.length >= 2 && (
+                <div className="border rounded-md max-h-48 overflow-y-auto">
                   {searchResults.map((m) => (
                     <button
                       key={m.id}
@@ -325,31 +339,67 @@ export const PrescriptionModal = ({
                       <Badge variant="outline">{m.generic_name}</Badge>
                     </button>
                   ))}
-                </div>
-              )}
-              {medicineSearch && medicineSearch.length >= 2 && searchResults.length === 0 && (
-                <div className="border rounded-md p-3 text-center">
-                  <p className="text-sm text-muted-foreground mb-2">No medicines found for "{medicineSearch}"</p>
-                  {!showAddCustom ? (
-                    <Button variant="outline" size="sm" onClick={() => { setShowAddCustom(true); setCustomMedicineName(medicineSearch); }}>
-                      <Plus className="mr-1 h-3 w-3" />
-                      Add as custom medicine
-                    </Button>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Medicine name"
-                        value={customMedicineName}
-                        onChange={(e) => setCustomMedicineName(e.target.value)}
-                        className="flex-1"
-                      />
-                      <Button size="sm" onClick={handleAddCustomMedicine}>Add</Button>
-                      <Button size="sm" variant="ghost" onClick={() => setShowAddCustom(false)}>
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
+                  {/* Add new medicine option */}
+                  {!showAddMedicineForm && (
+                    <button
+                      className="w-full text-left px-3 py-2 hover:bg-primary/5 border-t flex items-center gap-2 text-primary"
+                      onClick={() => {
+                        setShowAddMedicineForm(true);
+                        setNewMedName(medicineSearch);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span className="text-sm font-medium">Add "{medicineSearch}" as new medicine</span>
+                    </button>
                   )}
                 </div>
+              )}
+              {/* Inline Add Medicine Form */}
+              {showAddMedicineForm && (
+                <Card className="border-primary/30 bg-primary/5">
+                  <CardContent className="py-3 space-y-2">
+                    <p className="text-sm font-medium">Add New Medicine</p>
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      <Input
+                        placeholder="Brand Name *"
+                        value={newMedName}
+                        onChange={(e) => setNewMedName(e.target.value)}
+                      />
+                      <Input
+                        placeholder="Generic/Category *"
+                        value={newMedGeneric}
+                        onChange={(e) => setNewMedGeneric(e.target.value)}
+                      />
+                      <Input
+                        placeholder="Strength (e.g. 500mg)"
+                        value={newMedStrength}
+                        onChange={(e) => setNewMedStrength(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setShowAddMedicineForm(false);
+                          setNewMedName("");
+                          setNewMedGeneric("");
+                          setNewMedStrength("");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        disabled={!newMedName.trim() || !newMedGeneric.trim() || isCreatingMedicine}
+                        onClick={handleAddCustomMedicine}
+                      >
+                        {isCreatingMedicine && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                        Add & Use
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
             </div>
 
