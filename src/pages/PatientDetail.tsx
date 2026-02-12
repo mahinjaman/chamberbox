@@ -423,38 +423,40 @@ const PatientDetail = () => {
                 ) : (
                   <div className="space-y-4">
                     {prescriptions.map((rx) => (
-                      <Card key={rx.id} className="bg-muted/30">
-                        <CardContent className="py-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <Pill className="h-4 w-4 text-primary" />
-                              <span className="font-medium">
-                                {format(new Date(rx.created_at), "dd MMM yyyy")}
-                              </span>
+                      <Link key={rx.id} to={`/dashboard/prescriptions`} className="block">
+                        <Card className="bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer">
+                          <CardContent className="py-4">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center gap-2">
+                                <Pill className="h-4 w-4 text-primary" />
+                                <span className="font-medium">
+                                  {format(new Date(rx.created_at), "dd MMM yyyy")}
+                                </span>
+                              </div>
+                              <Badge variant="outline">
+                                {rx.medicines.length} medicine{rx.medicines.length !== 1 && "s"}
+                              </Badge>
                             </div>
-                            <Badge variant="outline">
-                              {rx.medicines.length} medicine{rx.medicines.length !== 1 && "s"}
-                            </Badge>
-                          </div>
-                          <div className="space-y-1">
-                            {rx.medicines.slice(0, 3).map((med: any, i: number) => (
-                              <p key={i} className="text-sm text-muted-foreground">
-                                • {med.name} - {med.dosage} ({med.duration})
-                              </p>
-                            ))}
-                            {rx.medicines.length > 3 && (
-                              <p className="text-sm text-muted-foreground">
-                                +{rx.medicines.length - 3} more
+                            <div className="space-y-1">
+                              {rx.medicines.slice(0, 3).map((med: any, i: number) => (
+                                <p key={i} className="text-sm text-muted-foreground">
+                                  • {med.name} - {med.dosage} ({med.duration})
+                                </p>
+                              ))}
+                              {rx.medicines.length > 3 && (
+                                <p className="text-sm text-muted-foreground">
+                                  +{rx.medicines.length - 3} more
+                                </p>
+                              )}
+                            </div>
+                            {rx.next_visit_date && (
+                              <p className="text-sm text-primary mt-2">
+                                Next visit: {format(new Date(rx.next_visit_date), "dd MMM yyyy")}
                               </p>
                             )}
-                          </div>
-                          {rx.next_visit_date && (
-                            <p className="text-sm text-primary mt-2">
-                              Next visit: {format(new Date(rx.next_visit_date), "dd MMM yyyy")}
-                            </p>
-                          )}
-                        </CardContent>
-                      </Card>
+                          </CardContent>
+                        </Card>
+                      </Link>
                     ))}
                   </div>
                 )}
