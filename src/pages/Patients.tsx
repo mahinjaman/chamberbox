@@ -2,6 +2,7 @@ import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Table, 
   TableBody, 
@@ -46,12 +47,17 @@ import {
   Loader2,
   Eye,
   Lock,
-  Crown
+  Crown,
+  X
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { useProfile } from "@/hooks/useProfile";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -59,12 +65,17 @@ const Patients = () => {
   const { checkLimit, isExpired } = useFeatureAccess();
   const patientLimit = checkLimit("patients");
   const { patients, isLoading, searchPatients, deletePatient, isDeleting } = usePatients();
+  const { profile } = useProfile();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<Patient | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [genderFilter, setGenderFilter] = useState<string>("all");
   const [bloodGroupFilter, setBloodGroupFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   // Apply filters
   const filteredPatients = searchPatients(searchQuery).filter(patient => {
@@ -93,6 +104,49 @@ const Patients = () => {
       setDeleteConfirm(null);
     }
   };
+
+  // Bulk selection
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === paginatedPatients.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(paginatedPatients.map(p => p.id)));
+    }
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setIsBulkDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("patients")
+        .delete()
+        .in("id", Array.from(selectedIds));
+      if (error) throw error;
+      toast.success(`${selectedIds.size} patients deleted successfully`);
+      setSelectedIds(new Set());
+      setBulkDeleteConfirm(false);
+      queryClient.invalidateQueries({ queryKey: ["patients", profile?.id] });
+    } catch (err: any) {
+      toast.error("Failed to delete patients: " + err.message);
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
+  const isAllSelected = paginatedPatients.length > 0 && selectedIds.size === paginatedPatients.length;
+  const isSomeSelected = selectedIds.size > 0;
 
   return (
     <TooltipProvider>
@@ -167,6 +221,25 @@ const Patients = () => {
         </div>
       </div>
 
+      {/* Bulk Action Bar */}
+      {isSomeSelected && (
+        <div className="mb-4 flex items-center gap-3 rounded-lg border bg-muted/30 px-4 py-3">
+          <span className="text-sm font-medium">{selectedIds.size} selected</span>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setBulkDeleteConfirm(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Delete Selected
+          </Button>
+          <Button variant="ghost" size="sm" onClick={clearSelection}>
+            <X className="h-4 w-4 mr-1" />
+            Clear
+          </Button>
+        </div>
+      )}
+
       {/* Patients Table */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
@@ -200,6 +273,12 @@ const Patients = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[40px]">
+                    <Checkbox 
+                      checked={isAllSelected}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                  </TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Phone</TableHead>
                   <TableHead className="hidden sm:table-cell">Age/Gender</TableHead>
@@ -210,7 +289,13 @@ const Patients = () => {
               </TableHeader>
               <TableBody>
                 {paginatedPatients.map((patient) => (
-                <TableRow key={patient.id} className="cursor-pointer hover:bg-muted/50">
+                <TableRow key={patient.id} className={`cursor-pointer hover:bg-muted/50 ${selectedIds.has(patient.id) ? "bg-primary/5" : ""}`}>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Checkbox 
+                      checked={selectedIds.has(patient.id)}
+                      onCheckedChange={() => toggleSelect(patient.id)}
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">
                     <Link to={`/dashboard/patients/${patient.id}`} className="hover:text-primary hover:underline">
                       {patient.name}
@@ -313,7 +398,7 @@ const Patients = () => {
         </div>
       )}
 
-      {/* Delete Confirmation */}
+      {/* Single Delete Confirmation */}
       <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -337,6 +422,36 @@ const Patients = () => {
                 </>
               ) : (
                 "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={bulkDeleteConfirm} onOpenChange={setBulkDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedIds.size} Patients</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{selectedIds.size}</strong> selected patients? 
+              This will also delete all their visit records and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isBulkDeleting}
+            >
+              {isBulkDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                `Delete ${selectedIds.size} Patients`
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
