@@ -155,8 +155,7 @@ const PatientDetail = () => {
 
   return (
     <DashboardLayout
-      title={patient.name}
-      description={patient.phone}
+      title="Patient Details"
       actions={
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleAddToQueue} disabled={isAdding}>
