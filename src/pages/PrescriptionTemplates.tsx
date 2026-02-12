@@ -391,11 +391,11 @@ export default function PrescriptionTemplates() {
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={resetForm}>
+          <DialogFooter className="flex-row gap-2">
+            <Button variant="outline" onClick={resetForm} className="flex-1">
               {language === "bn" ? "বাতিল" : "Cancel"}
             </Button>
-            <Button onClick={handleSaveTemplate} disabled={!newTemplateName.trim() || selectedMedicines.length === 0}>
+            <Button onClick={handleSaveTemplate} disabled={!newTemplateName.trim() || selectedMedicines.length === 0} className="flex-1">
               {language === "bn" ? "সংরক্ষণ করুন" : "Save Template"}
             </Button>
           </DialogFooter>
