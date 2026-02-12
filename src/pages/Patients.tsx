@@ -34,6 +34,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { usePatients, Patient } from "@/hooks/usePatients";
+import { AddPatientDialog } from "@/components/patients/AddPatientDialog";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { 
   Search, 
@@ -60,6 +61,7 @@ const Patients = () => {
   const { patients, isLoading, searchPatients, deletePatient, isDeleting } = usePatients();
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<Patient | null>(null);
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const [genderFilter, setGenderFilter] = useState<string>("all");
   const [bloodGroupFilter, setBloodGroupFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -99,11 +101,9 @@ const Patients = () => {
       description="Manage your patient records"
       actions={
         patientLimit.withinLimit ? (
-          <Button asChild>
-            <Link to="/dashboard/patients/new">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add Patient
-            </Link>
+          <Button onClick={() => setIsAddOpen(true)}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add Patient
           </Button>
         ) : (
           <Tooltip>
@@ -188,11 +188,9 @@ const Patients = () => {
               : "Add your first patient to get started"}
           </p>
           {!searchQuery && genderFilter === "all" && bloodGroupFilter === "all" && (
-            <Button asChild>
-              <Link to="/dashboard/patients/new">
-                <UserPlus className="mr-2 h-4 w-4" />
-                Add Patient
-              </Link>
+            <Button onClick={() => setIsAddOpen(true)}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Add Patient
             </Button>
           )}
         </div>
@@ -345,6 +343,7 @@ const Patients = () => {
         </AlertDialogContent>
       </AlertDialog>
     </DashboardLayout>
+    <AddPatientDialog open={isAddOpen} onOpenChange={setIsAddOpen} />
     </TooltipProvider>
   );
 };

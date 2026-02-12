@@ -10,6 +10,7 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { useQueueSessions } from "@/hooks/useQueueSessions";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
 import { AddTransactionDialog } from "@/components/finance/AddTransactionDialog";
+import { AddPatientDialog } from "@/components/patients/AddPatientDialog";
 import { 
   Users, 
   Clock, 
@@ -37,6 +38,7 @@ const Dashboard = () => {
   const { tickets } = useSupportTickets();
   const { t, language } = useLanguage();
   const [isTransactionDialogOpen, setIsTransactionDialogOpen] = useState(false);
+  const [isPatientDialogOpen, setIsPatientDialogOpen] = useState(false);
 
   const todaysPatients = completedCount + (currentToken ? 1 : 0);
   const today = new Date();
@@ -99,14 +101,12 @@ const Dashboard = () => {
             <CardDescription>{t.common.actions}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2">
-            <Button asChild size="lg" className="justify-start h-auto py-4">
-              <Link to="/dashboard/patients/new">
+            <Button size="lg" className="justify-start h-auto py-4" onClick={() => setIsPatientDialogOpen(true)}>
                 <UserPlus className="mr-3 h-5 w-5" />
                 <div className="text-left">
                   <div className="font-medium">{t.dashboard.newPatient}</div>
                   <div className="text-xs opacity-80">{t.patients.addPatient}</div>
                 </div>
-              </Link>
             </Button>
             <Button 
               size="lg" 
@@ -328,6 +328,10 @@ const Dashboard = () => {
       <AddTransactionDialog 
         open={isTransactionDialogOpen} 
         onOpenChange={setIsTransactionDialogOpen} 
+      />
+      <AddPatientDialog
+        open={isPatientDialogOpen}
+        onOpenChange={setIsPatientDialogOpen}
       />
     </DashboardLayout>
   );
