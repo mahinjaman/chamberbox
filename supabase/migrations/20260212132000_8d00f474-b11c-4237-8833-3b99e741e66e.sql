@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS track_patient_usage ON public.patients;
