@@ -105,6 +105,11 @@ export const WaitTimeCard: React.FC<WaitTimeCardProps> = ({
           </div>
         )}
 
+        {/* System-generated disclaimer */}
+        <p className="text-[10px] text-center text-muted-foreground/70 italic">
+          ⚠️ This is a system-generated estimated call time. Please follow the doctor's schedule and arrive at the chamber accordingly.
+        </p>
+
         {/* Notification Toggle */}
         <Button
           variant={notificationsEnabled ? 'default' : 'outline'}
