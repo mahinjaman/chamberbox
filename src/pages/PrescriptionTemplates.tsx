@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { usePrescriptions, PrescriptionMedicine } from "@/hooks/usePrescriptions";
+import { usePrescriptions, PrescriptionMedicine, PrescriptionInvestigation } from "@/hooks/usePrescriptions";
+import { useMedicines } from "@/hooks/useMedicines";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { InvestigationSelector } from "@/components/prescription/InvestigationSelector";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +17,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,39 +34,84 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, FileText, Pill, Search, BookTemplate } from "lucide-react";
+import { Plus, Trash2, FileText, Pill, Search, BookTemplate, X } from "lucide-react";
 import { toast } from "sonner";
+
+const DURATION_PRESETS = [
+  { value: "3 days", label_en: "3 days", label_bn: "৩ দিন" },
+  { value: "5 days", label_en: "5 days", label_bn: "৫ দিন" },
+  { value: "7 days", label_en: "7 days", label_bn: "৭ দিন" },
+  { value: "10 days", label_en: "10 days", label_bn: "১০ দিন" },
+  { value: "14 days", label_en: "14 days", label_bn: "১৪ দিন" },
+  { value: "1 month", label_en: "1 month", label_bn: "১ মাস" },
+  { value: "continue", label_en: "Continue", label_bn: "চলবে" },
+];
+
+const ADVICE_SHORTCUTS = [
+  "প্রচুর পানি পান করুন",
+  "বিশ্রাম নিন",
+  "ঝাল খাবার এড়িয়ে চলুন",
+  "সমস্যা থাকলে ফলো-আপে আসুন",
+  "খাবারের পরে ওষুধ খান",
+  "ঠান্ডা পানীয় এড়িয়ে চলুন",
+];
 
 export default function PrescriptionTemplates() {
   const { language } = useLanguage();
   const { templates, saveTemplate, deleteTemplate, isLoading } = usePrescriptions();
+  const { searchMedicines, createMedicine } = useMedicines();
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  
+
   // New template form state
   const [newTemplateName, setNewTemplateName] = useState("");
   const [newTemplateAdvice, setNewTemplateAdvice] = useState("");
-  const [newMedicines, setNewMedicines] = useState<PrescriptionMedicine[]>([
-    { name: "", dosage: "", duration: "", instructions: "" }
-  ]);
+  const [selectedMedicines, setSelectedMedicines] = useState<PrescriptionMedicine[]>([]);
+  const [selectedInvestigations, setSelectedInvestigations] = useState<PrescriptionInvestigation[]>([]);
+  const [medicineSearch, setMedicineSearch] = useState("");
+  const [showAddCustom, setShowAddCustom] = useState(false);
+  const [customMedicineName, setCustomMedicineName] = useState("");
+
+  const medicineResults = searchMedicines(medicineSearch);
 
   const filteredTemplates = templates.filter((t) =>
     t.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddMedicine = () => {
-    setNewMedicines([...newMedicines, { name: "", dosage: "", duration: "", instructions: "" }]);
+  const addMedicine = (med: { brand_name: string; brand_name_bn: string | null; default_dosage: string | null; strength: string | null }) => {
+    setSelectedMedicines([
+      ...selectedMedicines,
+      {
+        name: `${med.brand_name}${med.strength ? ` ${med.strength}` : ""}`,
+        name_bn: med.brand_name_bn || undefined,
+        dosage: med.default_dosage || "1+0+1",
+        duration: "7 days",
+        instructions: "",
+      },
+    ]);
+    setMedicineSearch("");
   };
 
-  const handleRemoveMedicine = (index: number) => {
-    setNewMedicines(newMedicines.filter((_, i) => i !== index));
+  const updateMedicine = (index: number, updates: Partial<PrescriptionMedicine>) => {
+    const updated = [...selectedMedicines];
+    updated[index] = { ...updated[index], ...updates };
+    setSelectedMedicines(updated);
   };
 
-  const handleMedicineChange = (index: number, field: keyof PrescriptionMedicine, value: string) => {
-    const updated = [...newMedicines];
-    updated[index] = { ...updated[index], [field]: value };
-    setNewMedicines(updated);
+  const removeMedicine = (index: number) => {
+    setSelectedMedicines(selectedMedicines.filter((_, i) => i !== index));
+  };
+
+  const handleAddCustomMedicine = async () => {
+    if (!customMedicineName.trim()) return;
+    const med = await createMedicine({
+      brand_name: customMedicineName.trim(),
+      generic_name: customMedicineName.trim(),
+    });
+    addMedicine(med);
+    setCustomMedicineName("");
+    setShowAddCustom(false);
   };
 
   const handleSaveTemplate = () => {
@@ -64,24 +119,29 @@ export default function PrescriptionTemplates() {
       toast.error(language === "bn" ? "টেমপ্লেট নাম দিন" : "Enter template name");
       return;
     }
-    
-    const validMedicines = newMedicines.filter(m => m.name.trim());
-    if (validMedicines.length === 0) {
+    if (selectedMedicines.length === 0) {
       toast.error(language === "bn" ? "অন্তত একটি ওষুধ যোগ করুন" : "Add at least one medicine");
       return;
     }
 
     saveTemplate({
       name: newTemplateName,
-      medicines: validMedicines,
+      medicines: selectedMedicines,
       advice: newTemplateAdvice || undefined,
     });
 
-    // Reset form
+    resetForm();
+  };
+
+  const resetForm = () => {
     setIsCreateOpen(false);
     setNewTemplateName("");
     setNewTemplateAdvice("");
-    setNewMedicines([{ name: "", dosage: "", duration: "", instructions: "" }]);
+    setSelectedMedicines([]);
+    setSelectedInvestigations([]);
+    setMedicineSearch("");
+    setShowAddCustom(false);
+    setCustomMedicineName("");
   };
 
   const handleDeleteTemplate = () => {
@@ -119,15 +179,8 @@ export default function PrescriptionTemplates() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
               <Card key={i} className="animate-pulse">
-                <CardHeader>
-                  <div className="h-5 bg-muted rounded w-1/2"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="h-4 bg-muted rounded w-3/4"></div>
-                    <div className="h-4 bg-muted rounded w-1/2"></div>
-                  </div>
-                </CardContent>
+                <CardHeader><div className="h-5 bg-muted rounded w-1/2"></div></CardHeader>
+                <CardContent><div className="space-y-2"><div className="h-4 bg-muted rounded w-3/4"></div><div className="h-4 bg-muted rounded w-1/2"></div></div></CardContent>
               </Card>
             ))}
           </div>
@@ -141,9 +194,7 @@ export default function PrescriptionTemplates() {
                   : (language === "bn" ? "কোনো টেমপ্লেট নেই" : "No templates yet")}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                {language === "bn" 
-                  ? "দ্রুত প্রেসক্রিপশন তৈরির জন্য টেমপ্লেট সংরক্ষণ করুন" 
-                  : "Save templates for quick prescription creation"}
+                {language === "bn" ? "দ্রুত প্রেসক্রিপশন তৈরির জন্য টেমপ্লেট সংরক্ষণ করুন" : "Save templates for quick prescription creation"}
               </p>
             </CardContent>
           </Card>
@@ -157,12 +208,7 @@ export default function PrescriptionTemplates() {
                       <FileText className="w-4 h-4 text-primary" />
                       {template.name}
                     </CardTitle>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => setDeleteId(template.id)}
-                    >
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => setDeleteId(template.id)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -175,24 +221,15 @@ export default function PrescriptionTemplates() {
                     </p>
                     <div className="flex flex-wrap gap-1">
                       {template.medicines.slice(0, 3).map((med, i) => (
-                        <span
-                          key={i}
-                          className="text-xs bg-muted px-2 py-0.5 rounded-full"
-                        >
-                          {med.name}
-                        </span>
+                        <span key={i} className="text-xs bg-muted px-2 py-0.5 rounded-full">{med.name}</span>
                       ))}
                       {template.medicines.length > 3 && (
-                        <span className="text-xs text-muted-foreground">
-                          +{template.medicines.length - 3} more
-                        </span>
+                        <span className="text-xs text-muted-foreground">+{template.medicines.length - 3} more</span>
                       )}
                     </div>
                   </div>
                   {template.advice && (
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {template.advice}
-                    </p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{template.advice}</p>
                   )}
                 </CardContent>
               </Card>
@@ -202,7 +239,7 @@ export default function PrescriptionTemplates() {
       </div>
 
       {/* Create Template Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+      <Dialog open={isCreateOpen} onOpenChange={(open) => { if (!open) resetForm(); }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
@@ -211,6 +248,7 @@ export default function PrescriptionTemplates() {
           </DialogHeader>
 
           <div className="space-y-4">
+            {/* Template Name */}
             <div className="space-y-2">
               <Label>{language === "bn" ? "টেমপ্লেট নাম" : "Template Name"}</Label>
               <Input
@@ -220,67 +258,144 @@ export default function PrescriptionTemplates() {
               />
             </div>
 
+            {/* Medicine Search */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>{language === "bn" ? "ওষুধ" : "Medicines"}</Label>
-                <Button type="button" variant="outline" size="sm" onClick={handleAddMedicine}>
-                  <Plus className="w-3 h-3 mr-1" />
-                  {language === "bn" ? "যোগ করুন" : "Add"}
-                </Button>
+              <Label>{language === "bn" ? "ওষুধ খুঁজুন" : "Search Medicines"}</Label>
+              <div className="relative">
+                <Pill className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search medicine (Napa, Seclo...)"
+                  className="pl-10"
+                  value={medicineSearch}
+                  onChange={(e) => setMedicineSearch(e.target.value)}
+                />
               </div>
-              
-              <div className="space-y-3">
-                {newMedicines.map((med, index) => (
-                  <div key={index} className="grid grid-cols-12 gap-2 items-start">
-                    <Input
-                      className="col-span-4"
-                      placeholder={language === "bn" ? "ওষুধের নাম" : "Medicine name"}
-                      value={med.name}
-                      onChange={(e) => handleMedicineChange(index, "name", e.target.value)}
-                    />
-                    <Input
-                      className="col-span-3"
-                      placeholder={language === "bn" ? "ডোজ" : "Dosage"}
-                      value={med.dosage}
-                      onChange={(e) => handleMedicineChange(index, "dosage", e.target.value)}
-                    />
-                    <Input
-                      className="col-span-3"
-                      placeholder={language === "bn" ? "সময়কাল" : "Duration"}
-                      value={med.duration}
-                      onChange={(e) => handleMedicineChange(index, "duration", e.target.value)}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="col-span-2 h-10 text-muted-foreground hover:text-destructive"
-                      onClick={() => handleRemoveMedicine(index)}
-                      disabled={newMedicines.length === 1}
+              {medicineSearch && medicineSearch.length >= 2 && medicineResults.length > 0 && (
+                <div className="border rounded-md max-h-40 overflow-y-auto">
+                  {medicineResults.map((m) => (
+                    <button
+                      key={m.id}
+                      className="w-full text-left px-3 py-2 hover:bg-muted flex justify-between items-center"
+                      onClick={() => addMedicine(m)}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <div>
+                        <span className="font-medium">{m.brand_name}</span>
+                        {m.strength && <span className="text-sm text-muted-foreground ml-1">{m.strength}</span>}
+                      </div>
+                      <Badge variant="outline">{m.generic_name}</Badge>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {medicineSearch && medicineSearch.length >= 2 && medicineResults.length === 0 && (
+                <div className="border rounded-md p-3 text-center">
+                  <p className="text-sm text-muted-foreground mb-2">"{medicineSearch}" পাওয়া যায়নি</p>
+                  {!showAddCustom ? (
+                    <Button variant="outline" size="sm" onClick={() => { setShowAddCustom(true); setCustomMedicineName(medicineSearch); }}>
+                      <Plus className="mr-1 h-3 w-3" />
+                      কাস্টম ওষুধ হিসেবে যোগ করুন
                     </Button>
-                  </div>
-                ))}
-              </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input value={customMedicineName} onChange={(e) => setCustomMedicineName(e.target.value)} placeholder="Medicine name" className="flex-1" />
+                      <Button size="sm" onClick={handleAddCustomMedicine}>Add</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setShowAddCustom(false)}><X className="h-3 w-3" /></Button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
+            {/* Selected Medicines */}
+            <div className="space-y-2">
+              <Label>{language === "bn" ? "নির্বাচিত ওষুধ" : "Selected Medicines"} ({selectedMedicines.length})</Label>
+              {selectedMedicines.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-3">
+                  {language === "bn" ? "উপরে থেকে ওষুধ খুঁজে যোগ করুন" : "Search and add medicines above"}
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {selectedMedicines.map((med, index) => (
+                    <Card key={index} className="bg-muted/30">
+                      <CardContent className="py-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 space-y-2">
+                            <div className="font-medium text-sm">{med.name}</div>
+                            <div className="flex gap-2 flex-wrap">
+                              <Input
+                                className="w-24 h-8 text-sm"
+                                placeholder="Dosage"
+                                value={med.dosage}
+                                onChange={(e) => updateMedicine(index, { dosage: e.target.value })}
+                              />
+                              <Select value={med.duration} onValueChange={(v) => updateMedicine(index, { duration: v })}>
+                                <SelectTrigger className="w-28 h-8 text-sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {DURATION_PRESETS.map((d) => (
+                                    <SelectItem key={d.value} value={d.value}>
+                                      {language === "bn" ? d.label_bn : d.label_en}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Input
+                                className="flex-1 min-w-[100px] h-8 text-sm"
+                                placeholder="Instructions"
+                                value={med.instructions || ""}
+                                onChange={(e) => updateMedicine(index, { instructions: e.target.value })}
+                              />
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeMedicine(index)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Investigations */}
+            <InvestigationSelector
+              selected={selectedInvestigations}
+              onSelect={setSelectedInvestigations}
+              language="english"
+            />
+
+            {/* Advice */}
             <div className="space-y-2">
               <Label>{language === "bn" ? "উপদেশ (ঐচ্ছিক)" : "Advice (Optional)"}</Label>
               <Textarea
                 placeholder={language === "bn" ? "সাধারণ উপদেশ..." : "General advice..."}
                 value={newTemplateAdvice}
                 onChange={(e) => setNewTemplateAdvice(e.target.value)}
-                rows={3}
+                rows={2}
               />
+              <div className="flex flex-wrap gap-1">
+                {ADVICE_SHORTCUTS.map((shortcut) => (
+                  <Button
+                    key={shortcut}
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => setNewTemplateAdvice(newTemplateAdvice ? `${newTemplateAdvice}\n${shortcut}` : shortcut)}
+                  >
+                    {shortcut}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+            <Button variant="outline" onClick={resetForm}>
               {language === "bn" ? "বাতিল" : "Cancel"}
             </Button>
-            <Button onClick={handleSaveTemplate}>
+            <Button onClick={handleSaveTemplate} disabled={!newTemplateName.trim() || selectedMedicines.length === 0}>
               {language === "bn" ? "সংরক্ষণ করুন" : "Save Template"}
             </Button>
           </DialogFooter>
@@ -291,23 +406,12 @@ export default function PrescriptionTemplates() {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {language === "bn" ? "টেমপ্লেট মুছে ফেলুন?" : "Delete Template?"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {language === "bn"
-                ? "এই টেমপ্লেটটি স্থায়ীভাবে মুছে ফেলা হবে।"
-                : "This template will be permanently deleted."}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{language === "bn" ? "টেমপ্লেট মুছে ফেলুন?" : "Delete Template?"}</AlertDialogTitle>
+            <AlertDialogDescription>{language === "bn" ? "এই টেমপ্লেটটি স্থায়ীভাবে মুছে ফেলা হবে।" : "This template will be permanently deleted."}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>
-              {language === "bn" ? "বাতিল" : "Cancel"}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteTemplate}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+            <AlertDialogCancel>{language === "bn" ? "বাতিল" : "Cancel"}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteTemplate} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {language === "bn" ? "মুছে ফেলুন" : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
