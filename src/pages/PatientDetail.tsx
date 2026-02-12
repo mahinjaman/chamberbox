@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PrescriptionView } from "@/components/prescription/PrescriptionView";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,7 @@ const PatientDetail = () => {
     payment_status: "paid",
   });
   const [newNote, setNewNote] = useState("");
+  const [selectedRx, setSelectedRx] = useState<any>(null);
 
   // Fetch patient notes
   const { data: notes = [], isLoading: notesLoading } = useQuery({
@@ -423,8 +425,8 @@ const PatientDetail = () => {
                 ) : (
                   <div className="space-y-4">
                     {prescriptions.map((rx) => (
-                      <Link key={rx.id} to={`/dashboard/prescriptions`} className="block">
-                        <Card className="bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer">
+                      <div key={rx.id} onClick={() => setSelectedRx(rx)} className="cursor-pointer">
+                        <Card className="bg-muted/30 hover:bg-muted/50 transition-colors">
                           <CardContent className="py-4">
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-2">
@@ -456,7 +458,7 @@ const PatientDetail = () => {
                             )}
                           </CardContent>
                         </Card>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -524,6 +526,12 @@ const PatientDetail = () => {
           </CardContent>
         </Card>
       </div>
+
+      <PrescriptionView
+        prescription={selectedRx}
+        isOpen={!!selectedRx}
+        onClose={() => setSelectedRx(null)}
+      />
     </DashboardLayout>
   );
 };
