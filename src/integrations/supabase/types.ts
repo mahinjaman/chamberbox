@@ -352,12 +352,6 @@ export type Database = {
       }
       integration_settings: {
         Row: {
-          calendly_buffer_minutes: number | null
-          calendly_display_mode: string | null
-          calendly_enabled: boolean | null
-          calendly_event_type: string | null
-          calendly_url: string | null
-          calendly_verified: boolean | null
           confirmation_template: string | null
           created_at: string
           doctor_id: string
@@ -376,12 +370,6 @@ export type Database = {
           whatsapp_template_id: string | null
         }
         Insert: {
-          calendly_buffer_minutes?: number | null
-          calendly_display_mode?: string | null
-          calendly_enabled?: boolean | null
-          calendly_event_type?: string | null
-          calendly_url?: string | null
-          calendly_verified?: boolean | null
           confirmation_template?: string | null
           created_at?: string
           doctor_id: string
@@ -400,12 +388,6 @@ export type Database = {
           whatsapp_template_id?: string | null
         }
         Update: {
-          calendly_buffer_minutes?: number | null
-          calendly_display_mode?: string | null
-          calendly_enabled?: boolean | null
-          calendly_event_type?: string | null
-          calendly_url?: string | null
-          calendly_verified?: boolean | null
           confirmation_template?: string | null
           created_at?: string
           doctor_id?: string
@@ -1771,57 +1753,6 @@ export type Database = {
           youtube_url?: string | null
         }
         Relationships: []
-      }
-      public_integration_settings: {
-        Row: {
-          calendly_buffer_minutes: number | null
-          calendly_display_mode: string | null
-          calendly_enabled: boolean | null
-          calendly_event_type: string | null
-          calendly_url: string | null
-          doctor_id: string | null
-          id: string | null
-          whatsapp_enabled: boolean | null
-          whatsapp_number: string | null
-        }
-        Insert: {
-          calendly_buffer_minutes?: number | null
-          calendly_display_mode?: string | null
-          calendly_enabled?: boolean | null
-          calendly_event_type?: string | null
-          calendly_url?: string | null
-          doctor_id?: string | null
-          id?: string | null
-          whatsapp_enabled?: boolean | null
-          whatsapp_number?: string | null
-        }
-        Update: {
-          calendly_buffer_minutes?: number | null
-          calendly_display_mode?: string | null
-          calendly_enabled?: boolean | null
-          calendly_event_type?: string | null
-          calendly_url?: string | null
-          doctor_id?: string | null
-          id?: string | null
-          whatsapp_enabled?: boolean | null
-          whatsapp_number?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "integration_settings_doctor_id_fkey"
-            columns: ["doctor_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "integration_settings_doctor_id_fkey"
-            columns: ["doctor_id"]
-            isOneToOne: true
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Functions: {

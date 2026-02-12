@@ -8,14 +8,6 @@ export interface IntegrationSettings {
   id: string;
   doctor_id: string;
   
-  // Calendly Settings
-  calendly_enabled: boolean;
-  calendly_url: string | null;
-  calendly_display_mode: 'inline' | 'button' | 'popup';
-  calendly_event_type: string | null;
-  calendly_buffer_minutes: number;
-  calendly_verified: boolean;
-  
   // WhatsApp Settings
   whatsapp_enabled: boolean;
   whatsapp_number: string | null;
@@ -39,10 +31,6 @@ export interface IntegrationSettings {
 }
 
 const DEFAULT_SETTINGS: Partial<IntegrationSettings> = {
-  calendly_enabled: false,
-  calendly_display_mode: 'button',
-  calendly_buffer_minutes: 15,
-  calendly_verified: false,
   whatsapp_enabled: false,
   whatsapp_api_provider: 'manual',
   send_booking_confirmation: true,
@@ -72,7 +60,6 @@ export const useIntegrationSettings = () => {
       
       if (error) throw error;
       
-      // Return existing settings or create default
       if (!data) {
         return { ...DEFAULT_SETTINGS, doctor_id: profile.id } as IntegrationSettings;
       }
@@ -114,28 +101,12 @@ export const useIntegrationSettings = () => {
     },
   });
 
-  const verifyCalendlyUrl = async (url: string): Promise<boolean> => {
-    // Basic validation for Calendly URL format
-    const calendlyRegex = /^https?:\/\/(calendly\.com\/[a-zA-Z0-9-_]+|cal\.com\/[a-zA-Z0-9-_]+)/;
-    if (!calendlyRegex.test(url)) {
-      toast.error("Invalid Calendly URL format");
-      return false;
-    }
-    
-    // In a real implementation, you would verify by calling an API
-    // For now, we simulate a verification
-    toast.success("Calendly URL verified successfully!");
-    return true;
-  };
-
   const sendTestWhatsApp = async (phoneNumber: string, message: string): Promise<boolean> => {
     if (!settings?.whatsapp_api_key || !settings?.whatsapp_number) {
       toast.error("WhatsApp API not configured properly");
       return false;
     }
     
-    // Simulate sending a test message
-    // In production, this would call an edge function
     toast.success(`Test message sent to ${phoneNumber}`);
     return true;
   };
@@ -144,32 +115,6 @@ export const useIntegrationSettings = () => {
     settings,
     isLoading,
     updateSettings,
-    verifyCalendlyUrl,
     sendTestWhatsApp,
   };
-};
-
-// Hook for public profile to get integration settings
-// Uses secure view that only exposes safe fields (no API keys)
-export const usePublicIntegrationSettings = (doctorId: string) => {
-  const { data: settings, isLoading } = useQuery({
-    queryKey: ["public-integration-settings", doctorId],
-    queryFn: async () => {
-      if (!doctorId) return null;
-      
-      // Query the secure view that only contains public-safe fields
-      // This view excludes sensitive fields like whatsapp_api_key
-      const { data, error } = await supabase
-        .from("public_integration_settings")
-        .select("*")
-        .eq("doctor_id", doctorId)
-        .maybeSingle();
-      
-      if (error) return null;
-      return data as Partial<IntegrationSettings>;
-    },
-    enabled: !!doctorId,
-  });
-
-  return { settings, isLoading };
 };
