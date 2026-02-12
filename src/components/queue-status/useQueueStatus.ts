@@ -303,7 +303,21 @@ export const useQueueStatus = () => {
     const ahead = patientsAhead || 0;
     const avgTime = session.avg_consultation_minutes || 5;
     const estimatedWaitMinutes = ahead * avgTime;
-    const expectedCallTime = new Date();
+    // Calculate expected call time based on session start time or current time
+    const now = new Date();
+    let baseTime: Date;
+    
+    if (session.status === 'running') {
+      // Session is running - use current time as base
+      baseTime = now;
+    } else {
+      // Session not started yet - use session start time as base
+      const today = token.queue_date;
+      const sessionStartTime = new Date(`${today}T${session.start_time}`);
+      baseTime = sessionStartTime > now ? sessionStartTime : now;
+    }
+    
+    const expectedCallTime = new Date(baseTime);
     expectedCallTime.setMinutes(expectedCallTime.getMinutes() + estimatedWaitMinutes);
 
     // Determine queue status
