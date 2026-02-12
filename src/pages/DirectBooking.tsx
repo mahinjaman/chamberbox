@@ -2,7 +2,7 @@ import { useParams, Link, useSearchParams } from "react-router-dom";
 import { usePublicDoctorProfile } from "@/hooks/useDoctorProfile";
 import { UnifiedBookingWidget } from "@/components/public-profile/UnifiedBookingWidget";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Stethoscope, MapPin, BadgeCheck } from "lucide-react";
+import { Loader2, ArrowLeft, Stethoscope, MapPin, BadgeCheck, Clock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const DirectBooking = () => {
@@ -108,6 +108,18 @@ const DirectBooking = () => {
             />
           </div>
         </div>
+
+        {/* Queue Status Check */}
+        {!isEmbed && (
+          <div className="mt-4">
+            <Button variant="outline" className="w-full" asChild>
+              <Link to="/queue-status">
+                <Clock className="w-4 h-4 mr-2" />
+                Check Queue Status
+              </Link>
+            </Button>
+          </div>
+        )}
 
         {/* Footer - hidden in embed mode */}
         {!isEmbed && (

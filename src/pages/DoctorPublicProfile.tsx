@@ -473,6 +473,16 @@ const DoctorPublicProfile = () => {
                   </Button>
                 </CardContent>
               </Card>
+              <Card className="overflow-hidden">
+                <CardContent className="p-4 text-center">
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link to="/queue-status">
+                      <Clock className="w-4 h-4 mr-2" />
+                      Check Queue Status
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
