@@ -14,6 +14,10 @@ import { usePatients } from "@/hooks/usePatients";
 import { useVisits, VisitInsert } from "@/hooks/useVisits";
 import { usePrescriptions } from "@/hooks/usePrescriptions";
 import { useQueue } from "@/hooks/useQueue";
+import { useProfile } from "@/hooks/useProfile";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { 
   ArrowLeft, 
   Edit, 
@@ -26,7 +30,10 @@ import {
   Activity,
   Plus,
   Loader2,
-  UserPlus
+  UserPlus,
+  StickyNote,
+  Trash2,
+  Send
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -35,9 +42,11 @@ const PatientDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { patients } = usePatients();
+  const { profile } = useProfile();
   const { visits, createVisit, isCreating } = useVisits(id);
   const { prescriptions } = usePrescriptions(id);
   const { addToQueue, isAdding } = useQueue();
+  const queryClient = useQueryClient();
 
   const patient = patients.find(p => p.id === id);
 
@@ -48,6 +57,56 @@ const PatientDetail = () => {
     advice: "",
     fees: 0,
     payment_status: "paid",
+  });
+  const [newNote, setNewNote] = useState("");
+
+  // Fetch patient notes
+  const { data: notes = [], isLoading: notesLoading } = useQuery({
+    queryKey: ["patient-notes", id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data, error } = await supabase
+        .from("patient_notes")
+        .select("*")
+        .eq("patient_id", id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  // Add note mutation
+  const addNote = useMutation({
+    mutationFn: async (note: string) => {
+      if (!profile?.id || !id) throw new Error("Missing data");
+      const { error } = await supabase
+        .from("patient_notes")
+        .insert({ patient_id: id, doctor_id: profile.id, note });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["patient-notes", id] });
+      setNewNote("");
+      toast.success("Note added");
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  // Delete note mutation
+  const deleteNote = useMutation({
+    mutationFn: async (noteId: string) => {
+      const { error } = await supabase
+        .from("patient_notes")
+        .delete()
+        .eq("id", noteId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["patient-notes", id] });
+      toast.success("Note deleted");
+    },
+    onError: (err: any) => toast.error(err.message),
   });
 
   if (!patient) {
@@ -87,6 +146,11 @@ const PatientDetail = () => {
   const handleAddToQueue = () => {
     if (!id) return;
     addToQueue(id);
+  };
+
+  const handleAddNote = () => {
+    if (!newNote.trim()) return;
+    addNote.mutate(newNote.trim());
   };
 
   return (
@@ -219,7 +283,6 @@ const PatientDetail = () => {
               </Badge>
             )}
             
-            {/* Allergies Alert */}
             {patient.allergies && patient.allergies.length > 0 && (
               <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/20">
                 <div className="flex items-center gap-2 text-destructive mb-2">
@@ -236,7 +299,6 @@ const PatientDetail = () => {
               </div>
             )}
 
-            {/* Chronic Conditions */}
             {patient.chronic_conditions && patient.chronic_conditions.length > 0 && (
               <div className="p-3 bg-warning/10 rounded-lg border border-warning/20">
                 <div className="flex items-center gap-2 text-warning mb-2">
@@ -266,7 +328,7 @@ const PatientDetail = () => {
           </CardContent>
         </Card>
 
-        {/* Visit History & Prescriptions */}
+        {/* Visit History, Prescriptions & Notes */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Medical History</CardTitle>
@@ -282,6 +344,10 @@ const PatientDetail = () => {
                 <TabsTrigger value="prescriptions">
                   <FileText className="mr-2 h-4 w-4" />
                   Prescriptions ({prescriptions.length})
+                </TabsTrigger>
+                <TabsTrigger value="notes">
+                  <StickyNote className="mr-2 h-4 w-4" />
+                  Notes ({notes.length})
                 </TabsTrigger>
               </TabsList>
 
@@ -374,7 +440,7 @@ const PatientDetail = () => {
                             </Badge>
                           </div>
                           <div className="space-y-1">
-                            {rx.medicines.slice(0, 3).map((med, i) => (
+                            {rx.medicines.slice(0, 3).map((med: any, i: number) => (
                               <p key={i} className="text-sm text-muted-foreground">
                                 • {med.name} - {med.dosage} ({med.duration})
                               </p>
@@ -392,6 +458,65 @@ const PatientDetail = () => {
                           )}
                         </CardContent>
                       </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="notes" className="mt-4">
+                {/* Add Note */}
+                <div className="flex gap-2 mb-4">
+                  <Textarea
+                    placeholder="Write an internal note about this patient..."
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    className="min-h-[80px]"
+                  />
+                </div>
+                <Button 
+                  onClick={handleAddNote} 
+                  disabled={!newNote.trim() || addNote.isPending}
+                  size="sm"
+                  className="mb-4"
+                >
+                  {addNote.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="mr-2 h-4 w-4" />
+                  )}
+                  Add Note
+                </Button>
+
+                {/* Notes List */}
+                {notesLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : notes.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <StickyNote className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>No notes yet</p>
+                    <p className="text-xs mt-1">Add internal notes about this patient</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {notes.map((note: any) => (
+                      <div key={note.id} className="bg-muted/30 rounded-lg p-4 group">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm whitespace-pre-wrap flex-1">{note.note}</p>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                            onClick={() => deleteNote.mutate(note.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {format(new Date(note.created_at), "dd MMM yyyy, hh:mm a")}
+                        </p>
+                      </div>
                     ))}
                   </div>
                 )}
