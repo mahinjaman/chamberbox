@@ -256,6 +256,9 @@ const PatientDetail = () => {
             <CardTitle>Patient Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="mb-2">
+              <h3 className="text-lg font-semibold">{patient.name}</h3>
+            </div>
             <div className="flex items-center gap-3">
               <Phone className="h-4 w-4 text-muted-foreground" />
               <span>{patient.phone}</span>
