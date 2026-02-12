@@ -251,30 +251,33 @@ const PatientDetail = () => {
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Patient Info Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Patient Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="mb-2">
-              <h3 className="text-lg font-semibold">{patient.name}</h3>
-            </div>
+        <Card className="overflow-hidden">
+          <div className="bg-primary/5 px-6 py-5 border-b">
             <div className="flex items-center gap-3">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <span>{patient.phone}</span>
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                {patient.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold leading-tight">{patient.name}</h3>
+                <p className="text-sm text-muted-foreground">{patient.phone}</p>
+              </div>
             </div>
-            {patient.age && (
-              <div className="flex items-center gap-3">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>{patient.age} years old</span>
-              </div>
-            )}
-            {patient.gender && (
-              <div className="flex items-center gap-3">
-                <Activity className="h-4 w-4 text-muted-foreground" />
-                <span className="capitalize">{patient.gender}</span>
-              </div>
-            )}
+          </div>
+          <CardContent className="space-y-3 pt-5">
+            <div className="grid grid-cols-2 gap-3">
+              {patient.age && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span>{patient.age} yrs</span>
+                </div>
+              )}
+              {patient.gender && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Activity className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="capitalize">{patient.gender}</span>
+                </div>
+              )}
+            </div>
             {patient.blood_group && (
               <Badge variant="outline" className="text-destructive border-destructive">
                 {patient.blood_group}
@@ -282,10 +285,10 @@ const PatientDetail = () => {
             )}
             
             {patient.allergies && patient.allergies.length > 0 && (
-              <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+              <div className="p-3 bg-destructive/5 rounded-lg border border-destructive/15">
                 <div className="flex items-center gap-2 text-destructive mb-2">
-                  <AlertTriangle className="h-4 w-4" />
-                  <span className="font-medium">Allergies</span>
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  <span className="text-sm font-medium">Allergies</span>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {patient.allergies.map((allergy, i) => (
@@ -298,10 +301,10 @@ const PatientDetail = () => {
             )}
 
             {patient.chronic_conditions && patient.chronic_conditions.length > 0 && (
-              <div className="p-3 bg-warning/10 rounded-lg border border-warning/20">
+              <div className="p-3 bg-warning/5 rounded-lg border border-warning/15">
                 <div className="flex items-center gap-2 text-warning mb-2">
-                  <Activity className="h-4 w-4" />
-                  <span className="font-medium">Chronic Conditions</span>
+                  <Activity className="h-3.5 w-3.5" />
+                  <span className="text-sm font-medium">Chronic Conditions</span>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {patient.chronic_conditions.map((condition, i) => (
@@ -328,23 +331,19 @@ const PatientDetail = () => {
 
         {/* Visit History, Prescriptions & Notes */}
         <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Medical History</CardTitle>
-            <CardDescription>{visits.length} visits recorded</CardDescription>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <Tabs defaultValue="visits">
-              <TabsList className="flex-wrap h-auto">
-                <TabsTrigger value="visits">
-                  <Clock className="mr-1.5 h-4 w-4" />
+              <TabsList className="w-full justify-start h-auto flex-wrap gap-1 bg-muted/50 p-1">
+                <TabsTrigger value="visits" className="text-xs sm:text-sm">
+                  <Clock className="mr-1.5 h-3.5 w-3.5" />
                   Visits ({visits.length})
                 </TabsTrigger>
-                <TabsTrigger value="prescriptions">
-                  <FileText className="mr-1.5 h-4 w-4" />
+                <TabsTrigger value="prescriptions" className="text-xs sm:text-sm">
+                  <FileText className="mr-1.5 h-3.5 w-3.5" />
                   Rx ({prescriptions.length})
                 </TabsTrigger>
-                <TabsTrigger value="notes">
-                  <StickyNote className="mr-1.5 h-4 w-4" />
+                <TabsTrigger value="notes" className="text-xs sm:text-sm">
+                  <StickyNote className="mr-1.5 h-3.5 w-3.5" />
                   Notes ({notes.length})
                 </TabsTrigger>
               </TabsList>
