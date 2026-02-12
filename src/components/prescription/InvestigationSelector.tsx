@@ -113,8 +113,8 @@ export const InvestigationSelector = ({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="border rounded-md bg-popover shadow-md">
-          <ScrollArea className="max-h-64">
+        <div className="border rounded-md bg-popover shadow-md max-h-64 overflow-y-auto">
+          <div>
             {search.length >= 2 ? (
               // Search Results
               searchResults.length > 0 ? (
@@ -175,7 +175,7 @@ export const InvestigationSelector = ({
                 ))}
               </div>
             )}
-          </ScrollArea>
+          </div>
         </div>
       )}
     </div>
