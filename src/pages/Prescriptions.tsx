@@ -394,7 +394,7 @@ const Prescriptions = () => {
                           onChange={(e) => setNewMedName(e.target.value)}
                         />
                         <Input
-                          placeholder="Generic/Category *"
+                          placeholder="Generic/Category"
                           value={newMedGeneric}
                           onChange={(e) => setNewMedGeneric(e.target.value)}
                         />
@@ -419,12 +419,12 @@ const Prescriptions = () => {
                         </Button>
                         <Button
                           size="sm"
-                          disabled={!newMedName.trim() || !newMedGeneric.trim() || isCreatingMedicine}
+                          disabled={!newMedName.trim() || isCreatingMedicine}
                           onClick={async () => {
                             try {
                               const created = await createMedicine({
                                 brand_name: newMedName.trim(),
-                                generic_name: newMedGeneric.trim(),
+                                generic_name: newMedGeneric.trim() || newMedName.trim(),
                                 strength: newMedStrength.trim() || undefined,
                               });
                               if (created) {

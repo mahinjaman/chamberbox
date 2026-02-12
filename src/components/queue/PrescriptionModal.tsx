@@ -184,11 +184,11 @@ export const PrescriptionModal = ({
   };
 
   const handleAddCustomMedicine = async () => {
-    if (!newMedName.trim() || !newMedGeneric.trim()) return;
+    if (!newMedName.trim()) return;
     try {
       const med = await createMedicine({
         brand_name: newMedName.trim(),
-        generic_name: newMedGeneric.trim(),
+        generic_name: newMedGeneric.trim() || newMedName.trim(),
         strength: newMedStrength.trim() || undefined,
       });
       if (med) {
@@ -366,7 +366,7 @@ export const PrescriptionModal = ({
                         onChange={(e) => setNewMedName(e.target.value)}
                       />
                       <Input
-                        placeholder="Generic/Category *"
+                        placeholder="Generic/Category"
                         value={newMedGeneric}
                         onChange={(e) => setNewMedGeneric(e.target.value)}
                       />
@@ -391,7 +391,7 @@ export const PrescriptionModal = ({
                       </Button>
                       <Button
                         size="sm"
-                        disabled={!newMedName.trim() || !newMedGeneric.trim() || isCreatingMedicine}
+                        disabled={!newMedName.trim() || isCreatingMedicine}
                         onClick={handleAddCustomMedicine}
                       >
                         {isCreatingMedicine && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
