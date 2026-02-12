@@ -165,9 +165,31 @@ export const useQueue = (sessionId?: string, date?: string) => {
         .eq("id", id);
 
       if (error) throw error;
+
+      // Auto-create visit record when patient is completed
+      if (status === "completed" && profile?.id) {
+        const token = queue.find(t => t.id === id);
+        if (token) {
+          const { error: visitError } = await supabase
+            .from("visits")
+            .insert({
+              patient_id: token.patient_id,
+              doctor_id: profile.id,
+              fees: token.payment_amount || 0,
+              payment_status: token.payment_collected ? "paid" : "due",
+              symptoms: token.visiting_reason || null,
+            });
+          if (visitError) {
+            console.error("Auto visit creation failed:", visitError);
+          }
+        }
+      }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["queue", profile?.id] });
+      if (variables.status === "completed") {
+        queryClient.invalidateQueries({ queryKey: ["visits"] });
+      }
     },
     onError: (error) => {
       toast.error(mapDatabaseError(error));
