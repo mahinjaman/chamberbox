@@ -158,10 +158,6 @@ const PatientDetail = () => {
       title="Patient Details"
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleAddToQueue} disabled={isAdding}>
-            {isAdding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
-            Add to Queue
-          </Button>
           <Button variant="outline" asChild>
             <Link to={`/dashboard/patients/${id}/edit`}>
               <Edit className="mr-2 h-4 w-4" />
