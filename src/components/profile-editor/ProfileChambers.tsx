@@ -10,7 +10,7 @@ import { TimeSelect } from "@/components/ui/time-select";
 import { useDoctorProfile, DoctorProfile, Chamber, AvailabilitySlot } from "@/hooks/useDoctorProfile";
 import { useSubscription } from "@/hooks/useSubscription";
 import { DAYS_OF_WEEK, formatPhoneNumber, formatTime12Hour } from "@/lib/doctor-profile-utils";
-import { Loader2, Plus, Trash2, MapPin, Clock, Phone, Building2, AlertTriangle, Power } from "lucide-react";
+import { Loader2, Plus, Trash2, MapPin, Clock, Phone, Building2, AlertTriangle, Power, DollarSign, Users, Calendar, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -392,129 +392,177 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
 
       {/* Chamber Dialog */}
       <Dialog open={showChamberDialog} onOpenChange={setShowChamberDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editingChamber ? "Edit Chamber" : "Add New Chamber"}</DialogTitle>
-            <DialogDescription>
-              Enter your chamber details and schedule
-            </DialogDescription>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="pb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg">{editingChamber ? "Edit Chamber" : "Add New Chamber"}</DialogTitle>
+                <DialogDescription className="text-xs">
+                  Configure your chamber details and schedule
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="chamber-name">Chamber Name</Label>
-              <Input
-                id="chamber-name"
-                value={chamberForm.name}
-                onChange={(e) => setChamberForm(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="e.g., City Heart Clinic"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="chamber-address">Full Address</Label>
-              <Input
-                id="chamber-address"
-                value={chamberForm.address}
-                onChange={(e) => setChamberForm(prev => ({ ...prev, address: e.target.value }))}
-                placeholder="House 123, Road 5, Dhanmondi, Dhaka"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="chamber-phone">Contact Number</Label>
-              <Input
-                id="chamber-phone"
-                value={chamberForm.contact_number}
-                onChange={(e) => setChamberForm(prev => ({ ...prev, contact_number: e.target.value }))}
-                placeholder="01712345678"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>New Patient Fee (৳)</Label>
-                <Input
-                  type="number"
-                  value={chamberForm.new_patient_fee}
-                  onChange={(e) => setChamberForm(prev => ({ ...prev, new_patient_fee: Number(e.target.value) }))}
-                />
+          <div className="space-y-5 py-2">
+            {/* Section: Basic Info */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Building2 className="w-3.5 h-3.5" />
+                <span>Basic Information</span>
               </div>
-              <div className="space-y-2">
-                <Label>Follow-up Fee (৳)</Label>
-                <Input
-                  type="number"
-                  value={chamberForm.return_patient_fee}
-                  onChange={(e) => setChamberForm(prev => ({ ...prev, return_patient_fee: Number(e.target.value) }))}
-                />
+              <div className="space-y-3 pl-0.5">
+                <div className="space-y-1.5">
+                  <Label htmlFor="chamber-name" className="text-xs">Chamber Name *</Label>
+                  <Input
+                    id="chamber-name"
+                    value={chamberForm.name}
+                    onChange={(e) => setChamberForm(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="e.g., City Heart Clinic"
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="chamber-address" className="text-xs">Full Address *</Label>
+                  <Input
+                    id="chamber-address"
+                    value={chamberForm.address}
+                    onChange={(e) => setChamberForm(prev => ({ ...prev, address: e.target.value }))}
+                    placeholder="House 123, Road 5, Dhanmondi, Dhaka"
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="chamber-phone" className="text-xs">Contact Number</Label>
+                  <Input
+                    id="chamber-phone"
+                    value={chamberForm.contact_number}
+                    onChange={(e) => setChamberForm(prev => ({ ...prev, contact_number: e.target.value }))}
+                    placeholder="01712345678"
+                    className="h-9"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Max Patients Per Session</Label>
-              <Input
-                type="number"
-                min="1"
-                max="200"
-                value={chamberForm.max_patients_per_session}
-                onChange={(e) => setChamberForm(prev => ({ ...prev, max_patients_per_session: Number(e.target.value) || 30 }))}
-                placeholder="30"
-              />
-              <p className="text-xs text-muted-foreground">
-                Default patient limit for each session in this chamber
-              </p>
-            </div>
+            <div className="border-t" />
 
-            <div className="space-y-2">
-              <Label>Avg. Consultation Time (minutes)</Label>
-              <Input
-                type="number"
-                min="1"
-                max="60"
-                value={chamberForm.avg_consultation_minutes}
-                onChange={(e) => setChamberForm(prev => ({ ...prev, avg_consultation_minutes: Number(e.target.value) || 5 }))}
-                placeholder="5"
-              />
-              <p className="text-xs text-muted-foreground">
-                Average time per patient. Used to calculate estimated wait time for patients.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Available Days</Label>
-              <div className="flex flex-wrap gap-2">
-                {DAYS_OF_WEEK.map(day => (
-                  <Badge
-                    key={day.value}
-                    variant={chamberForm.selectedDays.includes(day.value) ? "default" : "outline"}
-                    className="cursor-pointer"
-                    onClick={() => toggleDay(day.value)}
-                  >
-                    {day.short}
-                  </Badge>
-                ))}
+            {/* Section: Fees & Capacity */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <DollarSign className="w-3.5 h-3.5" />
+                <span>Fees & Capacity</span>
+              </div>
+              <div className="space-y-3 pl-0.5">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">New Patient Fee (৳)</Label>
+                    <Input
+                      type="number"
+                      value={chamberForm.new_patient_fee}
+                      onChange={(e) => setChamberForm(prev => ({ ...prev, new_patient_fee: Number(e.target.value) }))}
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Follow-up Fee (৳)</Label>
+                    <Input
+                      type="number"
+                      value={chamberForm.return_patient_fee}
+                      onChange={(e) => setChamberForm(prev => ({ ...prev, return_patient_fee: Number(e.target.value) }))}
+                      className="h-9"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Max Patients/Session</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="200"
+                      value={chamberForm.max_patients_per_session}
+                      onChange={(e) => setChamberForm(prev => ({ ...prev, max_patients_per_session: Number(e.target.value) || 30 }))}
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Avg. Time/Patient (min)</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="60"
+                      value={chamberForm.avg_consultation_minutes}
+                      onChange={(e) => setChamberForm(prev => ({ ...prev, avg_consultation_minutes: Number(e.target.value) || 5 }))}
+                      className="h-9"
+                    />
+                  </div>
+                </div>
+                <p className="text-[10px] text-muted-foreground/70">
+                  Avg. time is used to calculate estimated wait time for patients booking online.
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Start Time</Label>
-                <TimeSelect
-                  value={chamberForm.start_time}
-                  onChange={(value) => setChamberForm(prev => ({ ...prev, start_time: value }))}
-                />
+            <div className="border-t" />
+
+            {/* Section: Schedule */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Calendar className="w-3.5 h-3.5" />
+                <span>Schedule</span>
               </div>
-              <div className="space-y-2">
-                <Label>End Time</Label>
-                <TimeSelect
-                  value={chamberForm.end_time}
-                  onChange={(value) => setChamberForm(prev => ({ ...prev, end_time: value }))}
-                />
+              <div className="space-y-3 pl-0.5">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Available Days</Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {DAYS_OF_WEEK.map(day => (
+                      <Badge
+                        key={day.value}
+                        variant={chamberForm.selectedDays.includes(day.value) ? "default" : "outline"}
+                        className={cn(
+                          "cursor-pointer text-xs px-2.5 py-1 transition-all",
+                          chamberForm.selectedDays.includes(day.value) 
+                            ? "shadow-sm" 
+                            : "hover:bg-muted/50"
+                        )}
+                        onClick={() => toggleDay(day.value)}
+                      >
+                        {day.short}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Start Time</Label>
+                    <TimeSelect
+                      value={chamberForm.start_time}
+                      onChange={(value) => setChamberForm(prev => ({ ...prev, start_time: value }))}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">End Time</Label>
+                    <TimeSelect
+                      value={chamberForm.end_time}
+                      onChange={(value) => setChamberForm(prev => ({ ...prev, end_time: value }))}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2">
-              <Label htmlFor="is-primary">Set as Primary Chamber</Label>
+            <div className="border-t" />
+
+            {/* Primary Toggle */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border">
+              <div className="flex items-center gap-2">
+                <Star className="w-4 h-4 text-primary" />
+                <Label htmlFor="is-primary" className="text-sm font-medium cursor-pointer">Set as Primary Chamber</Label>
+              </div>
               <Switch
                 id="is-primary"
                 checked={chamberForm.is_primary}
@@ -523,13 +571,14 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowChamberDialog(false)}>
+          <DialogFooter className="gap-2 pt-2">
+            <Button variant="outline" onClick={() => setShowChamberDialog(false)} className="flex-1 sm:flex-none">
               Cancel
             </Button>
             <Button 
               onClick={saveChamber} 
               disabled={upsertChamber.isPending || !chamberForm.name || !chamberForm.address}
+              className="flex-1 sm:flex-none"
             >
               {upsertChamber.isPending ? (
                 <>
@@ -537,7 +586,10 @@ export const ProfileChambers = ({ profile, chambers, availabilitySlots }: Profil
                   Saving...
                 </>
               ) : (
-                "Save Chamber"
+                <>
+                  <Building2 className="w-4 h-4 mr-2" />
+                  Save Chamber
+                </>
               )}
             </Button>
           </DialogFooter>
